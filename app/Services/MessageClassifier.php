@@ -16,7 +16,7 @@ class MessageClassifier
         if(preg_match('/(izin|sakit|cuti)/', $message)) //chat classifier
             return 'attendance';
 
-        if(str_contains($message, '#lapor') || str_contains($message, '\lapor')) //chat classifier
+        if(str_contains($message, '#lapor') || str_contains($message, '/lapor')) //chat classifier
         {
             return 'daily_report';
         }

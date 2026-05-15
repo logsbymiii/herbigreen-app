@@ -19,6 +19,7 @@ class WebhookController extends Controller
         $message = $request->input('message');
         $urlFile = $request->input('url');
 
+        // 1. Cari data karyawan berdasarkan nomor WA
         $employee = Employee::where('phone', $sender)->first();
 
         if (!$employee) {
@@ -26,24 +27,29 @@ class WebhookController extends Controller
             return response()->json(['status' => false, 'message' => 'Unregistered number']);
         }
 
+        // 2. Klasifikasi tipe pesan (daily_report, attendance, atau gmv_report)
         $type = $classifier->classify($sender, $message, !empty($urlFile));
 
+        // Bersihin teks dari mantra biar gak masuk ke database
         $cleanContent = preg_replace('/(#lapor|\/lapor)\s*/i', '', $message);
 
         Log::info("WA MASUK PAK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");
 
+        // 3. LOGIKA LEMPAR NOTA KE DAPUR (Sesuai Tipe)
         if ($type === 'daily_report') {
             ProcessDailyReportJob::dispatch($employee->id, $cleanContent, $urlFile);
             Log::info("KASIR: Nota Laporan dilempar ke dapur!");
 
-        } elseif ($type === 'attendance') {
+        } elseif ($type === 'attendance') { // 2. PAKE ELSEIF BIAR RAPI
             ProcessAttendanceJob::dispatch($employee->id, $message);
             Log::info("KASIR: Nota Absen dilempar ke dapur!");
 
         } elseif ($type === 'gmv_report') {
+            // Nanti kita bikin koki khusus GMV di sini
             Log::info("KASIR: Pesanan GMV terdeteksi tapi koki belum siap.");
         }
 
+        // 4. Kasih tau Fonnte kalau datanya udah kita terima
         return response()->json([
             'status' => true
         ]);

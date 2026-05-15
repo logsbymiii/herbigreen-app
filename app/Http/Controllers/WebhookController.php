@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Jobs\ProcessDailyReportJob;
 use App\Jobs\ProcessAttendanceJob;
 use App\Models\Employee;
+use App\Jobs\ProcessGmvReportJob;
 
 class WebhookController extends Controller
 {
@@ -36,7 +37,7 @@ class WebhookController extends Controller
         Log::info("WA MASUK PAK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");
 
         // 3. LOGIKA LEMPAR NOTA KE DAPUR (Sesuai Tipe)
-        if ($type === 'daily_report') {
+       if ($type === 'daily_report') {
             ProcessDailyReportJob::dispatch($employee->id, $cleanContent, $urlFile);
             Log::info("KASIR: Nota Laporan dilempar ke dapur!");
 
@@ -45,8 +46,8 @@ class WebhookController extends Controller
             Log::info("KASIR: Nota Absen dilempar ke dapur!");
 
         } elseif ($type === 'gmv_report') {
-            // Nanti kita bikin koki khusus GMV di sini
-            Log::info("KASIR: Pesanan GMV terdeteksi tapi koki belum siap.");
+            ProcessGmvReportJob::dispatch($employee->id, $urlFile);
+            Log::info("KASIR: Nota GMV (Screenshot) dilempar ke dapur!");
         }
 
         // 4. Kasih tau Fonnte kalau datanya udah kita terima

@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@herbigreen.test'],
             [
                 'name' => 'Helmi Admin',
-                'password' => Hash::make('suskes123'),
+                'password' => Hash::make('sukses123'),
             ]
         );
 

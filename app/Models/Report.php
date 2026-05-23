@@ -16,4 +16,8 @@ class Report extends Model
         'media_path',
         'reported_at',
     ];
+
+    public function employee(){
+        return $this -> belongsTo(Employee::class);
+    }
 }

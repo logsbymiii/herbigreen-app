@@ -25,24 +25,20 @@ class ProcessAttendanceJob implements ShouldQueue
 
     public function handle(): void
     {
-        try {
-            $messageLower = strtolower($this->message);
+        $messageLower = strtolower($this->message);
 
-           $attendanceType = 'alpa';
-        if (str_contains($messageLower, 'izin')) $attendanceType = 'sakit';
+        $attendanceType = 'alpa';
         if (str_contains($messageLower, 'sakit')) $attendanceType = 'sakit';
-        if (str_contains($messageLower, 'cuti')) $attendanceType = 'cuti';
+        elseif (str_contains($messageLower, 'cuti')) $attendanceType = 'cuti';
+        elseif (str_contains($messageLower, 'izin')) $attendanceType = 'izin';
 
-             Attendance::create([
-                'employee_id' => $this->employeeId,
-                'type'        => $attendanceType,
-                'note'        => $this->message,
-                'date'        => now()->format('Y-m-d'),
-            ]);
+        Attendance::create([
+            'employee_id' => $this->employeeId,
+            'type'        => $attendanceType,
+            'note'        => $this->message,
+            'date'        => now()->format('Y-m-d'),
+        ]);
 
-            Log::info("KOKI ABSEN: ID {$this->employeeId} berhasil absen dengan status: {$attendanceType}");
-        } catch (\Exception $e) {
-            Log::error("KOKI ABSEN GAGAL: " . $e->getMessage());
-        }
+        Log::info("KOKI ABSEN: ID {$this->employeeId} berhasil absen dengan status: {$attendanceType}");
     }
 }

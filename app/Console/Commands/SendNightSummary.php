@@ -43,24 +43,18 @@ class SendNightSummary extends Command
                . "❌ Belum Lapor: {$countBelumLapor}\n\n"
                . "Daftar belum lapor:\n{$listBelumLapor}";
 
-        $token = env('FONNTE_TOKEN');
         $adminPhone = env('ADMIN_PHONE');
 
-        if ($token && $adminPhone) {
-            $response = Http::withHeaders([
-                'Authorization' => $token,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $adminPhone,
-                'message' => $pesan,
-            ]);
+        if (!$adminPhone) {
+            $this->error("❌ ADMIN_PHONE belum di-set di .env!");
+            return;
+        }
 
-            if ($response->successful()) {
-                $this->info("✅ Berhasil kirim rekap malam ke Bos ({$adminPhone}).");
-            } else {
-                $this->error("❌ Gagal kirim rekap malam ke Bos.");
-            }
+        $provider = \App\Services\MessageProviderFactory::create();
+        if ($provider->sendMessage($adminPhone, $pesan)) {
+            $this->info("✅ Berhasil kirim rekap malam ke Bos ({$adminPhone}).");
         } else {
-            $this->error("❌ Token Fonnte atau Nomor Admin belum di-set di .env!");
+            $this->error("❌ Gagal kirim rekap malam ke Bos.");
         }
     }
 }

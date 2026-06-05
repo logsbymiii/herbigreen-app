@@ -1,0 +1,109 @@
+/* Herbigreen Filament Custom UI - Starpaye (Mac Window Edition) */
+
+/* 1. Latar Belakang Paling Belakang (Abu-abu Kehijauan Lembut) */
+body {
+    background-color: #E8ECEB !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    height: 100vh !important;
+    overflow: hidden !important; /* Mencegah body scroll */
+}
+
+/* 2. Pembungkus Raksasa (App Window) */
+.fi-layout {
+    background-color: #FFFFFF !important;
+    border-radius: 40px !important;
+    overflow-y: auto !important; /* Scroll di dalam aplikasi */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05) !important;
+    height: calc(100vh - 40px) !important;
+}
+
+/* Matikan background main biar ngikut layout putih */
+.fi-main {
+    background-color: transparent !important;
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* 3. Sidebar - Menyatu dengan Window */
+.fi-sidebar {
+    background-color: transparent !important;
+    border-right: none !important;
+}
+.fi-sidebar-header {
+    border-bottom: none !important;
+}
+
+/* 4. Menu Aktif Sidebar (Gaya Outline Hijau ala Starpaye) */
+.fi-sidebar-item-active a {
+    background-color: transparent !important;
+    border: 1.5px solid #00C253 !important;
+    border-radius: 9999px !important;
+    padding: 0.75rem 1.5rem !important;
+    box-shadow: none !important;
+}
+.fi-sidebar-item-active span, .fi-sidebar-item-active svg {
+    color: #00C253 !important;
+}
+
+/* Menu Hover Biasa */
+.fi-sidebar-item-button {
+    transition: all 0.2s ease-in-out !important;
+}
+.fi-sidebar-item-button:hover {
+    transform: translateX(4px) !important;
+}
+
+/* 5. Topbar - Transparan & Menyatu dengan Layout */
+.fi-topbar, .fi-topbar > nav {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+/* Paksa hilangkan background di container nav-nya */
+.fi-topbar nav, .fi-topbar .fi-topbar-nav {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+/* 6. Widget Cards (.fi-wi) - Flat & Abu-abu Terang ala Starpaye */
+.fi-wi {
+    border-radius: 24px !important;
+    border: none !important;
+    background-color: #F6F8F7 !important; /* Soft light greenish-gray */
+    box-shadow: none !important; /* Tanpa bayangan / Flat design */
+    transition: all 0.3s ease-in-out !important;
+}
+
+/* Hover efek pada Widget (Sangat halus) */
+.fi-wi:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Stats Overview Cards */
+.fi-wi-stats-overview-stat {
+    border-radius: 24px !important;
+    border: none !important;
+    background-color: #F6F8F7 !important;
+    box-shadow: none !important;
+}
+
+/* 7. Tombol */
+.fi-btn {
+    border-radius: 9999px !important;
+    transition: all 0.3s ease-in-out !important;
+    box-shadow: none !important;
+}
+.fi-btn:hover {
+    transform: translateY(-1px) scale(1.02) !important;
+}
+
+/* Animasi */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

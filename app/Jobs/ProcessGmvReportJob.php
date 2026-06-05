@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\GmvReports;
 
 class ProcessGmvReportJob implements ShouldQueue
 {
@@ -27,32 +28,30 @@ class ProcessGmvReportJob implements ShouldQueue
 
     public function handle(): void
     {
-        try {
-            if (!$this->urlFile) {
-                Log::warning("KOKI GMV: Karyawan ID {$this->employeeId} lapor GMV tapi lupa ngirim screenshot!");
-                return;
-            }
+        if (!$this->urlFile) {
+            Log::warning("KOKI GMV: Karyawan ID {$this->employeeId} lapor GMV tapi lupa ngirim screenshot!");
+            return;
+        }
 
-            // 1. Eksekusi Download dari Fonnte
-            $response = Http::get($this->urlFile);
+        $response = Http::get($this->urlFile);
 
-            if ($response->successful()) {
-                // 2. Bikin nama file unik biar gak ketimpa (contoh: gmv_1_20260516_12345.jpg)
-                $filename = 'gmv_' . $this->employeeId . '_' . now()->format('Ymd_His') . '_' . Str::random(5) . '.jpg';
+        if ($response->successful()) {
+            $filename = 'gmv_' . $this->employeeId . '_' . now()->format('Ymd_His') . '_' . Str::random(5) . '.jpg';
+            $path = 'public/gmv/' . $filename;
 
-                // 3. Tentukan folder tujuan (storage/app/public/gmv)
-                $path = 'public/gmv/' . $filename;
+            Storage::put($path, $response->body());
 
-                // 4. Simpan filenya!
-                Storage::put($path, $response->body());
+            GmvReports::create([
+                'employee_id'       => $this->employeeId,
+                'screenshot_path'   => $path,
+                'gmv_amount'        => null,
+                'raw_ocr_text'      => null,
+                'live_date'         =>now()->format('Y-m-d'),
+            ]);
 
-                Log::info("KOKI GMV: Berhasil simpan screenshot GMV di {$path}. (Integrasi AI tunggu Fase 6)");
-            } else {
-                Log::error("KOKI GMV GAGAL: File dari URL gak bisa didownload.");
-            }
-
-        } catch (\Exception $e) {
-            Log::error("KOKI GMV SYSTEM ERROR: " . $e->getMessage());
+            Log::info("KOKI GMV: Berhasil simpan screenshot GMV di {$path}. (Integrasi AI tunggu Fase 6)");
+        } else {
+            throw new \Exception("KOKI GMV GAGAL: File dari URL gak bisa didownload. Status: " . $response->status());
         }
     }
 }

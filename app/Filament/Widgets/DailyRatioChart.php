@@ -12,14 +12,13 @@ class DailyRatioChart extends ChartWidget
 {
     protected ?string $heading = 'Rasio Kehadiran Hari Ini';
     protected static ?int $sort = 2;
+    protected int | string | array $columnSpan = 1;
 
     protected function getData(): array
     {
         $today = Carbon::today();
-
         $laporanMasuk = Report::whereDate('created_at', $today)->count();
         $izin = Attendance::whereDate('created_at', $today)->count();
-
         $totalAktif = Employee::where('is_active', true)->count();
         $belumLapor = max(0, $totalAktif - $laporanMasuk - $izin);
 
@@ -29,12 +28,15 @@ class DailyRatioChart extends ChartWidget
                     'label' => 'Jumlah Karyawan',
                     'data' => [$laporanMasuk, $izin, $belumLapor],
                     'backgroundColor' => [
-                        '#00C253', // Hijau Herbigreen (Hadir)
-                        '#F59E0B', // Kuning/Orange (Izin)
-                        '#EF4444', // Merah (Belum Lapor)
+                        '#4EA674', // Ocean Green (Hadir)
+                        '#F0D411', // Pending Yellow (Izin)
+                        '#EF4343', // Error Red (Belum Lapor)
                     ],
                     'hoverOffset' => 4,
                     'borderWidth' => 0,
+                    'hoverBorderWidth' => 0,
+                    'borderColor' => 'transparent',
+                    'hoverBorderColor' => 'transparent',
                 ],
             ],
             'labels' => ['Hadir/Lapor', 'Izin/Sakit', 'Belum Lapor'],
@@ -44,5 +46,16 @@ class DailyRatioChart extends ChartWidget
     protected function getType(): string
     {
         return 'doughnut';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                ],
+            ],
+        ];
     }
 }

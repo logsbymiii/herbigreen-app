@@ -32,8 +32,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/logo-herbigreen.png'))
             ->brandLogoHeight('3rem')
             ->colors([
-                'primary' => Color::hex('#00C253'),
-                'gray' => Color::Slate,
+                'primary' => Color::hex('#4EA674'), // Ocean Green (Enak di mata)
+                'danger' => Color::hex('#EF4343'),
+                'warning' => Color::hex('#F0D411'),
+                'success' => Color::hex('#21C45D'),
+                'gray' => Color::Zinc,
             ])
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -42,6 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([])
+            ->font('Plus Jakarta Sans')
+            ->favicon(asset('images/logo-herbigreen.png'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

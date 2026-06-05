@@ -8,21 +8,43 @@ use Carbon\Carbon;
 
 class WeeklyTrendChart extends ChartWidget
 {
-    protected ?string $heading = 'Tren Laporan Masuk (7 Hari Terakhir)';
-    protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 'full'; // Biar ngebentang luas
+    protected static ?int $sort = 2;
+    protected int | string | array $columnSpan = 2;
+
+    public ?string $filter = 'days';
+
+    protected function getFilters(): ?array
+    {
+        return [
+            'days' => '7 Hari Terakhir',
+            'weeks' => '7 Minggu Terakhir',
+        ];
+    }
+
+    public function getHeading(): string
+    {
+        return 'Tren Laporan Masuk';
+    }
 
     protected function getData(): array
     {
         $data = [];
         $labels = [];
+        $activeFilter = $this->filter;
 
-        // Looping mundur dari 6 hari lalu sampai hari ini
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $labels[] = $date->format('d M'); // Format: "22 May"
-
-            $data[] = Report::whereDate('created_at', $date)->count();
+        if ($activeFilter === 'weeks') {
+            for ($i = 6; $i >= 0; $i--) {
+                $startOfWeek = Carbon::now()->subWeeks($i)->startOfWeek();
+                $endOfWeek = Carbon::now()->subWeeks($i)->endOfWeek();
+                $labels[] = 'Mg ' . $startOfWeek->format('W');
+                $data[] = Report::whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
+            }
+        } else {
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $labels[] = $date->translatedFormat('D');
+                $data[] = Report::whereDate('created_at', $date)->count();
+            }
         }
 
         return [
@@ -30,9 +52,13 @@ class WeeklyTrendChart extends ChartWidget
                 [
                     'label' => 'Total Laporan',
                     'data' => $data,
-                    'borderColor' => '#00C253', // Garis hijau
-                    'fill' => false,
-                    'tension' => 0.3, // Biar garisnya agak melengkung estetik, nggak kaku
+                    'borderColor' => '#4EA674',
+                    'backgroundColor' => 'rgba(78, 166, 116, 0.15)',
+                    'fill' => true,
+                    'tension' => 0.4,
+                    'pointBackgroundColor' => '#4EA674',
+                    'pointRadius' => 4,
+                    'pointHoverRadius' => 6,
                 ],
             ],
             'labels' => $labels,
@@ -44,14 +70,20 @@ class WeeklyTrendChart extends ChartWidget
         return 'line';
     }
 
-    // Opsional: Buang angka desimal di sumbu Y
     protected function getOptions(): array
     {
         return [
             'scales' => [
                 'y' => [
                     'ticks' => ['stepSize' => 1],
+                    'grid' => ['display' => true, 'color' => 'rgba(0,0,0,0.04)'],
                 ],
+                'x' => [
+                    'grid' => ['display' => false],
+                ],
+            ],
+            'plugins' => [
+                'legend' => ['display' => false],
             ],
         ];
     }

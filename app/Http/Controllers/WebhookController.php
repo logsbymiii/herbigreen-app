@@ -10,10 +10,11 @@ use App\Jobs\ProcessAttendanceJob;
 use App\Models\Employee;
 use App\Jobs\ProcessGmvReportJob;
 use App\Models\Report;
-use App\Services\FonnteService;
+use App\Services\MessageProviderFactory;
+
 class WebhookController extends Controller
 {
-    public function receive(Request $request, MessageClassifier $classifier, FonnteService $fonnte)
+    public function receive(Request $request, MessageClassifier $classifier)
     {
         Log::info("RAW DATA DARI FONNTE:", $request->all());
 
@@ -25,57 +26,130 @@ class WebhookController extends Controller
             $sender = '62'. substr($sender, 1);
         }
 
-        // 1. Cari data karyawan berdasarkan nomor
+        // Coba handle sebagai bot command (/daftar, /start) atau percakapan interaktif
+        $handler = \App\Services\BotHandlers\BotHandlerFactory::create('fonnte');
+        $handlerResult = $handler->handle($sender, (string)$message, $request->all());
+
+        if (isset($handlerResult['status']) && $handlerResult['status'] === true) {
+            return response()->json(['status' => true]);
+        }
+
+        // Jika bukan command atau percakapan, cek apakah employee sudah terdaftar
         $employee = Employee::where('phone', $sender)->first();
 
-      if (!$employee) {
-      Log::warning("Pesan ditolak! Nomor $sender nggak terdaftar.");
+        if (!$employee) {
+            Log::warning("Pesan ditolak! Nomor $sender nggak terdaftar.");
+            $provider = MessageProviderFactory::create();
+            $balasan = "Maaf, nomor WA Anda belum terdaftar di sistem kami. Ketik /daftar untuk melakukan pendaftaran mandiri. 🙏";
+            $provider->sendMessage($sender, $balasan);
+            return response()->json(['status' => false, 'message' => 'Unregistered number']);
+        }
 
-      // Panggil mulut bot buat bales otomatis
-        $balasan = "Maaf, nomor WA Anda belum terdaftar di sistem kami. Silakan hubungi (Admin) untuk pendaftaran. 🙏";
-        $fonnte->sendMessage($sender, $balasan);
+        $this->processMessage($employee, $message, $urlFile, $sender, $classifier);
 
-    return response()->json(['status' => false, 'message' => 'Unregistered number']);
-}
+        return response()->json(['status' => true]);
+    }
 
-        // 2. Klasifikasi tipe pesan (daily_report, attendance, atau gmv_report)
+    public function receiveTelegram(Request $request, MessageClassifier $classifier)
+    {
+        Log::info("RAW DATA DARI TELEGRAM:", $request->all());
+
+        $update = $request->all();
+        if (!isset($update['message'])) {
+            return response()->json(['status' => false, 'message' => 'No message in update']);
+        }
+
+        $message_data = $update['message'];
+        $chatId = $message_data['from']['id'] ?? null;
+        $message = $message_data['text'] ?? $message_data['caption'] ?? '';
+        $urlFile = null;
+
+        // Ambil URL file dari Telegram jika ada foto atau dokumen
+        $fileId = null;
+        if (isset($message_data['photo']) && is_array($message_data['photo'])) {
+            // Ambil resolusi tertinggi (elemen terakhir dari array photo)
+            $fileId = end($message_data['photo'])['file_id'];
+        } elseif (isset($message_data['document'])) {
+            $fileId = $message_data['document']['file_id'];
+        }
+
+        if ($fileId) {
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'file_id' => $fileId
+            ]);
+
+            if ($response->successful()) {
+                $filePath = $response->json('result.file_path');
+                if ($filePath) {
+                    // Konstruksi full URL download, sama seperti format URL dari Fonnte
+                    $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                }
+            }
+        }
+
+        if (!$chatId || ($message === '' && !$urlFile)) {
+            Log::warning("Telegram data tidak lengkap");
+            return response()->json(['status' => false, 'message' => 'Incomplete data']);
+        }
+
+        // Coba handle sebagai bot command (/daftar, /start) atau percakapan interaktif
+        $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
+        $handlerResult = $handler->handle($chatId, $message, $update);
+
+        if (isset($handlerResult['status']) && $handlerResult['status'] === true) {
+            return response()->json(['status' => true]);
+        }
+
+        // Jika bukan command atau percakapan, cek apakah employee sudah terdaftar
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            Log::warning("Pesan Telegram ditolak! Chat ID $chatId nggak terdaftar.");
+            $provider = MessageProviderFactory::create();
+            $balasan = "Maaf, Telegram Anda belum terdaftar di sistem kami. Ketik /daftar untuk melakukan pendaftaran mandiri. 🙏";
+            $provider->sendMessage($chatId, $balasan);
+            return response()->json(['status' => false, 'message' => 'Unregistered user']);
+        }
+
+        $this->processMessage($employee, $message, $urlFile, $chatId, $classifier);
+
+        return response()->json(['status' => true]);
+    }
+
+    private function processMessage($employee, $message, $urlFile, $sender, MessageClassifier $classifier): void
+    {
         $type = $classifier->classify($sender, $message, !empty($urlFile));
-
-        // Bersihin teks dari mantra biar gak masuk ke database
         $cleanContent = preg_replace('/(#lapor|\/lapor)\s*/i', '', $message);
 
-        Log::info("WA MASUK PAK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");
+        Log::info("PESAN MASUK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");
 
-       // 3. LOGIKA LEMPAR NOTA KE DAPUR (Sesuai Tipe)
+        $provider = MessageProviderFactory::create();
+
         if ($type === 'daily_report') {
-
-            // Cek apakah karyawan ini udah setor laporan hari ini
             $sudahLapor = Report::where('employee_id', $employee->id)
                 ->whereDate('created_at', now()->format('Y-m-d'))
                 ->exists();
 
             if ($sudahLapor) {
                 Log::warning("KASIR: Laporan {$employee->name} ditolak karena sudah lapor hari ini.");
-
-                $balasan = "Halo {$employee->name}, kamu sudah mengirim laporan untuk hari ini. Laporan cukup dikirim 1 kali sehari saja ya. Terima kasih! 🙏";
-                $fonnte->sendMessage($sender, $balasan);
+                $balasan = "Yth. {$employee->name}, Anda sudah mengirimkan laporan untuk hari ini. Laporan hanya perlu dikirimkan satu kali dalam sehari. Terima kasih.";
+                $provider->sendMessage($sender, $balasan);
             } else {
                 ProcessDailyReportJob::dispatch($employee->id, $cleanContent, $urlFile);
                 Log::info("KASIR: Nota Laporan dilempar ke dapur!");
+                $provider->sendMessage($sender, "✅ *Terima Kasih*\nLaporan harian Anda telah berhasil dicatat ke dalam sistem kami.");
             }
 
         } elseif ($type === 'attendance') {
             ProcessAttendanceJob::dispatch($employee->id, $message);
             Log::info("KASIR: Nota Absen dilempar ke dapur!");
+            $provider->sendMessage($sender, "✅ *Tercatat*\nInformasi absensi/izin Anda telah berhasil diperbarui di sistem absensi.");
 
         } elseif ($type === 'gmv_report') {
             ProcessGmvReportJob::dispatch($employee->id, $urlFile);
             Log::info("KASIR: Nota GMV (Screenshot) dilempar ke dapur!");
+            $provider->sendMessage($sender, "✅ *Laporan GMV Diterima*\nScreenshot laporan GMV Anda sedang diproses. Terima kasih atas kerja kerasnya hari ini.");
         }
-
-        // 4. Kasih tau Fonnte kalau datanya udah kita terima
-        return response()->json([
-            'status' => true
-        ]);
     }
 }

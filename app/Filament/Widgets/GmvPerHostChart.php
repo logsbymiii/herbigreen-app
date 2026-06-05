@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
 class GmvPerHostChart extends ChartWidget
 {
    protected ?string $heading = 'Top 5 GMV Host (Minggu Ini)';
-    protected static ?int $sort = 4;
-    protected int | string | array $columnSpan = 'full';
+    protected static ?int $sort = 3;
+    protected int | string | array $columnSpan = 1;
 
     protected function getData(): array
     {
@@ -32,9 +32,12 @@ class GmvPerHostChart extends ChartWidget
                 [
                     'label' => 'Total GMV (Rp)',
                     'data' => $reports->pluck('total_gmv')->toArray(),
-                    'backgroundColor' => '#00C253',
+                    'backgroundColor' => '#023337',
                     'borderRadius' => 4,
                     'borderWidth' => 0,
+                    'hoverBorderWidth' => 0,
+                    'borderColor' => 'transparent',
+                    'hoverBorderColor' => 'transparent',
                 ],
             ],
             'labels' => $reports->map(function($report) {
@@ -46,5 +49,16 @@ class GmvPerHostChart extends ChartWidget
     protected function getType(): string
     {
         return 'bar';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => false,
+                ],
+            ],
+        ];
     }
 }

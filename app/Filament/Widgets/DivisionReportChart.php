@@ -9,8 +9,8 @@ use Carbon\Carbon;
 class DivisionReportChart extends ChartWidget
 {
     protected ?string $heading = 'Laporan per Divisi (7 Hari Terakhir)';
-    protected int | string | array $columnSpan = 'full';
-    protected static ?int $sort = 2;
+    protected int | string | array $columnSpan = 1;
+    protected static ?int $sort = 3;
 
     protected function getData(): array
     {
@@ -31,8 +31,12 @@ class DivisionReportChart extends ChartWidget
                 [
                     'label' => 'Jumlah Laporan',
                     'data' => $data->values()->toArray(),
-                    'backgroundColor' => '#00C253', // Ijo khas Herbigreen
-                    'borderRadius' => 4, // Biar ujung barnya agak melengkung dikit, gen Z aesthetic wkwk
+                    'backgroundColor' => '#4EA674',
+                    'borderRadius' => 6,
+                    'borderWidth' => 0,
+                    'hoverBorderWidth' => 0,
+                    'borderColor' => 'transparent',
+                    'hoverBorderColor' => 'transparent',
                 ],
             ],
             'labels' => $data->keys()->toArray(),
@@ -44,15 +48,20 @@ class DivisionReportChart extends ChartWidget
         return 'bar';
     }
     protected function getOptions(): array
-{
-    return [
-        'scales' => [
-            'y' => [
-                'ticks' => [
-                    'stepSize' => 1, // Maksa angkanya naik per 1 (1, 2, 3, dst)
+    {
+        return [
+            'scales' => [
+                'y' => [
+                    'ticks' => [
+                        'stepSize' => 1, // Maksa angkanya naik per 1 (1, 2, 3, dst)
+                    ],
                 ],
             ],
-        ],
-    ];
-}
+            'plugins' => [
+                'legend' => [
+                    'display' => false,
+                ],
+            ],
+        ];
+    }
 }

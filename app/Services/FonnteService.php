@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Contracts\MessageProviderInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class FonnteService
+class FonnteService implements MessageProviderInterface
 {
     public function sendMessage(string $phone, string $message): bool
     {
@@ -37,5 +38,10 @@ class FonnteService
             Log::error("SYSTEM ERROR (FonnteService): " . $e->getMessage());
             return false;
         }
+    }
+
+    public function getProviderName(): string
+    {
+        return 'fonnte';
     }
 }

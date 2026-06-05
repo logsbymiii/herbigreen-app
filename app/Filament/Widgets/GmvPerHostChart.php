@@ -3,7 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\GmvReport;
-use App\Models\GmvReports;
 use Filament\Widgets\ChartWidget;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +18,7 @@ class GmvPerHostChart extends ChartWidget
         $startOfWeek = Carbon::now()->startOfWeek();
 
         // Ambil data GMV, jumlahkan per karyawan (Host), urutkan dari yang terbesar
-        $reports = GmvReports::with('employee')
+        $reports = GmvReport::with('employee')
             ->where('created_at', '>=', $startOfWeek)
             ->select('employee_id', DB::raw('SUM(gmv_amount) as total_gmv'))
             ->groupBy('employee_id')

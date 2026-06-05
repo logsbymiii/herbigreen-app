@@ -8,7 +8,6 @@ use App\Filament\Resources\GmvReports\Pages\ListGmvReports;
 use App\Filament\Resources\GmvReports\Schemas\GmvReportForm;
 use App\Filament\Resources\GmvReports\Tables\GmvReportsTable; // <-- Ini wajib biar file Table lu kepake!
 use App\Models\GmvReport;
-use App\Models\GmvReports;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,7 +16,7 @@ use Filament\Tables\Table;
 
 class GmvReportResource extends Resource
 {
-    protected static ?string $model = GmvReports::class;
+    protected static ?string $model = GmvReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

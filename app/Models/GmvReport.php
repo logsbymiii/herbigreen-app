@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class GmvReports extends Model
+class GmvReport extends Model
 {
     protected $guarded = [];
     public function employee()

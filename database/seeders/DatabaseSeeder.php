@@ -7,7 +7,7 @@ use App\Models\Division;
 use App\Models\Employee;
 use App\Models\Report;
 use App\Models\Attendance;
-use App\Models\GmvReports;
+use App\Models\GmvReport;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 2. Create Divisions
-        $divisions = ['Host Live', 'Customer Service', 'Packing', 'Marketing', 'Gudang'];
+        $divisions = ['Editor', 'CRM', 'Packing', 'Admin Toko', 'Admin Affiliate', 'Host Live', 'VideoGrapher', 'Content Creator'];
         $divisionMap = [];
         foreach ($divisions as $divName) {
             $division = Division::firstOrCreate(['name' => $divName]);
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
         // 3. Create Employees
         $faker = \Faker\Factory::create('id_ID');
         $employees = [];
-        
+
         // Buat 20 karyawan acak
         for ($i = 0; $i < 20; $i++) {
             $divName = $faker->randomElement($divisions);
@@ -57,10 +57,10 @@ class DatabaseSeeder extends Seeder
         foreach ($employees as $employee) {
             for ($daysAgo = 60; $daysAgo >= 0; $daysAgo--) {
                 $date = Carbon::now()->subDays($daysAgo);
-                
+
                 // Hari minggu libur (opsional, tapi biarin aja ada yg lapor)
                 $chance = rand(1, 100);
-                
+
                 if ($chance <= 85) {
                     // 85% chance Hadir / Lapor
                     Report::create([
@@ -75,7 +75,7 @@ class DatabaseSeeder extends Seeder
 
                     // Jika dia anak Host Live, kasih GMV
                     if ($employee->division_id == $divisionMap['Host Live']) {
-                        GmvReports::create([
+                        GmvReport::create([
                             'employee_id' => $employee->id,
                             'screenshot_path' => 'dummy.png',
                             'gmv_amount' => rand(1000000, 15000000), // 1jt - 15jt

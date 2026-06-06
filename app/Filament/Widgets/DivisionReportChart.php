@@ -53,7 +53,7 @@ class DivisionReportChart extends ChartWidget
             'scales' => [
                 'y' => [
                     'ticks' => [
-                        'stepSize' => 1, // Maksa angkanya naik per 1 (1, 2, 3, dst)
+                        'stepSize' => 1
                     ],
                 ],
             ],

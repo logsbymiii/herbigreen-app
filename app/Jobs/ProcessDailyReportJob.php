@@ -40,10 +40,10 @@ class ProcessDailyReportJob implements ShouldQueue
                 $response = Http::withoutVerifying()->timeout(30)->get($this->mediaPath);
 
                 if ($response->successful()) {
-                    $filename = 'reports/' . Str::random(30) . '.png'; // Paksa .png dulu buat tes
+                    $filename = 'reports/' . Str::random(30) . '.jpg';
 
-                    // Simpen fisiknya
-                    $stored = Storage::disk('public')->put($filename, $response->body());
+                    // Upload ke Cloudflare R2 bukan lokal
+                    $stored = Storage::disk('r2')->put($filename, $response->body(), 'public');
 
                     if ($stored) {
                         $finalPath = $filename;

@@ -4,6 +4,9 @@ namespace App\Services\BotHandlers;
 
 use App\Models\Employee;
 use App\Models\Division;
+use App\Jobs\ProcessDailyReportJob;
+use App\Jobs\ProcessAttendanceJob;
+use App\Jobs\ProcessGmvReportJob;
 
 class TelegramBotCommandHandler extends BaseBotCommandHandler
 {
@@ -19,6 +22,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'start' => $this->handleStart($chatId),
                 'daftar' => $this->handleDaftar($chatId),
                 'bantuan' => $this->handleBantuan($chatId),
+                'lapor' => $this->handleLapor($chatId),
+                'absen' => $this->handleAbsen($chatId),
                 default => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -28,10 +33,135 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($currentStep && $currentStep !== 'start') {
             $this->logConversation($chatId, $currentStep, $message);
-            return $this->handleConversationStep($chatId, $currentStep, $message);
+            return $this->handleConversationStep($chatId, $currentStep, $message, $rawUpdate);
         }
 
         return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
+    }
+
+    private function handleLapor(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true, 'message' => 'Not registered'];
+        }
+
+        $nama = $employee->name;
+        $isHostLive = strtolower($employee->division->name ?? '') === 'host live';
+
+        $menu = "👋 Halo, *{$nama}*! Mau laporan apa hari ini?\n\n";
+        $menu .= "1️⃣ Laporan Harian (teks)\n";
+        $menu .= "2️⃣ Laporan Harian + Foto\n";
+        if ($isHostLive) {
+            $menu .= "3️⃣ Laporan GMV (Screenshot)\n";
+        }
+        $menu .= "\nBalas dengan angka pilihanmu!";
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_report_type', [
+            'is_host_live' => $isHostLive,
+        ]);
+
+        $this->sendMessage($chatId, $menu);
+        return ['status' => true, 'message' => 'Lapor menu shown'];
+    }
+
+    private function handleAbsen(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true, 'message' => 'Not registered'];
+        }
+
+        $nama = $employee->name;
+        $menu = "👋 Halo, *{$nama}*! Mau lapor absen apa?\n\n";
+        $menu .= "1️⃣ Sakit\n";
+        $menu .= "2️⃣ Izin\n";
+        $menu .= "3️⃣ Cuti\n";
+        $menu .= "\nBalas dengan angka pilihanmu!";
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_type');
+        $this->sendMessage($chatId, $menu);
+        return ['status' => true, 'message' => 'Absen menu shown'];
+    }
+
+    private function processReportType(int | string $chatId, string $message, array $rawUpdate): array
+    {
+        $choice = trim($message);
+        $tempData = $this->conversationState->getTempData($chatId);
+        $isHostLive = $tempData['is_host_live'] ?? false;
+
+        // Cek apakah ada foto yang dikirim langsung
+        $hasPhoto = isset($rawUpdate['message']['photo']) || isset($rawUpdate['message']['document']);
+
+        if ($choice === '1') {
+            $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');
+            $this->sendMessage($chatId, "📝 Silakan ketik laporan harianmu sekarang!");
+            return ['status' => true];
+        } elseif ($choice === '2') {
+            $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');
+            $this->sendMessage($chatId, "📸 Silakan kirim *foto beserta caption* laporan harianmu!");
+            return ['status' => true];
+        } elseif ($choice === '3' && $isHostLive) {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "📊 Silakan kirim *screenshot GMV* kamu sekarang!");
+            return ['status' => true];
+        } else {
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka yang tersedia ya!");
+            return ['status' => true];
+        }
+    }
+
+    private function processReportText(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->conversationState->clearState($chatId);
+            return ['status' => false];
+        }
+
+        $sudahLapor = \App\Models\Report::where('employee_id', $employee->id)
+            ->whereDate('created_at', now()->format('Y-m-d'))
+            ->exists();
+
+        if ($sudahLapor) {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "⚠️ Kamu sudah lapor hari ini, *{$employee->name}*. Laporan hanya bisa dikirim sekali sehari ya!");
+            return ['status' => true];
+        }
+
+        ProcessDailyReportJob::dispatch($employee->id, $message, null);
+        $this->conversationState->clearState($chatId);
+        $this->sendMessage($chatId, "✅ *Terima kasih, {$employee->name}!*\nLaporan harianmu sudah berhasil dicatat. Semangat terus! 💪");
+        return ['status' => true];
+    }
+
+    private function processAbsenType(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->conversationState->clearState($chatId);
+            return ['status' => false];
+        }
+
+        $typeMap = ['1' => 'sakit', '2' => 'izin', '3' => 'cuti'];
+        $choice = trim($message);
+
+        if (!isset($typeMap[$choice])) {
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1, 2, atau 3 ya!");
+            return ['status' => true];
+        }
+
+        $type = $typeMap[$choice];
+        ProcessAttendanceJob::dispatch($employee->id, $type);
+        $this->conversationState->clearState($chatId);
+        $this->sendMessage($chatId, "✅ *Tercatat, {$employee->name}!*\nAbsen *{$type}* kamu sudah berhasil direkam. Semoga lekas sembuh/istirahat ya! 🙏");
+        return ['status' => true];
     }
 
     private function handleStart(int | string $chatId): array
@@ -85,13 +215,16 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         return ['status' => true, 'message' => 'Help command handled'];
     }
 
-    private function handleConversationStep(int | string $chatId, string $step, string $message): array
+    private function handleConversationStep(int | string $chatId, string $step, string $message, array $rawUpdate = []): array
     {
         return match ($step) {
-            'awaiting_name' => $this->processName($chatId, $message),
-            'awaiting_division' => $this->processDivision($chatId, $message),
-            'awaiting_phone' => $this->processPhone($chatId, $message),
-            'confirm_registration' => $this->processConfirmation($chatId, $message),
+            'awaiting_name'         => $this->processName($chatId, $message),
+            'awaiting_division'     => $this->processDivision($chatId, $message),
+            'awaiting_phone'        => $this->processPhone($chatId, $message),
+            'confirm_registration'  => $this->processConfirmation($chatId, $message),
+            'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
+            'awaiting_report_text'  => $this->processReportText($chatId, $message),
+            'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
             default => ['status' => false, 'message' => 'Unknown step'],
         };
     }

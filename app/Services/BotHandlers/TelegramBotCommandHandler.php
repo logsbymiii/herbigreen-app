@@ -7,6 +7,7 @@ use App\Models\Division;
 use App\Jobs\ProcessDailyReportJob;
 use App\Jobs\ProcessAttendanceJob;
 use App\Jobs\ProcessGmvReportJob;
+use App\Services\AiResponseService;
 
 class TelegramBotCommandHandler extends BaseBotCommandHandler
 {
@@ -19,12 +20,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->logConversation($chatId, "command_{$command}", $message);
 
             return match ($command) {
-                'start' => $this->handleStart($chatId),
-                'daftar' => $this->handleDaftar($chatId),
+                'start'   => $this->handleStart($chatId),
+                'daftar'  => $this->handleDaftar($chatId),
                 'bantuan' => $this->handleBantuan($chatId),
-                'lapor' => $this->handleLapor($chatId),
-                'absen' => $this->handleAbsen($chatId),
-                default => ['status' => false, 'message' => 'Command tidak dikenal'],
+                'lapor'   => $this->handleLapor($chatId),
+                'absen'   => $this->handleAbsen($chatId),
+                'izin'    => $this->handleAbsen($chatId), // alias /absen
+                default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
 
@@ -51,7 +53,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $nama = $employee->name;
         $isHostLive = strtolower($employee->division->name ?? '') === 'host live';
 
-        $menu = "👋 Halo, *{$nama}*! Mau laporan apa hari ini?\n\n";
+        // AI generate sapaan yang beda tiap hari
+        $ai = new AiResponseService();
+        $sapaan = $ai->greetingLapor($nama);
+
+        $menu = "{$sapaan}\n\n";
+        $menu .= "Mau laporan apa hari ini?\n\n";
         $menu .= "1️⃣ Laporan Harian (teks)\n";
         $menu .= "2️⃣ Laporan Harian + Foto\n";
         if ($isHostLive) {
@@ -76,8 +83,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true, 'message' => 'Not registered'];
         }
 
-        $nama = $employee->name;
-        $menu = "👋 Halo, *{$nama}*! Mau lapor absen apa?\n\n";
+        // AI generate sapaan yang empatik
+        $ai = new AiResponseService();
+        $sapaan = $ai->greetingAbsen($employee->name);
+
+        $menu = "{$sapaan}\n\nMau lapor apa?\n\n";
         $menu .= "1️⃣ Sakit\n";
         $menu .= "2️⃣ Izin\n";
         $menu .= "3️⃣ Cuti\n";
@@ -143,7 +153,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         ProcessDailyReportJob::dispatch($employee->id, $cleanMessage, null);
         $this->conversationState->clearState($chatId);
-        $this->sendMessage($chatId, "✅ *Terima kasih, {$employee->name}!*\nLaporan harianmu sudah berhasil dicatat. Semangat terus! 💪");
+
+        // AI generate konfirmasi yang beda tiap hari
+        $ai = new AiResponseService();
+        $konfirmasi = $ai->confirmLaporan($employee->name);
+        $this->sendMessage($chatId, $konfirmasi);
         return ['status' => true];
     }
 
@@ -167,7 +181,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $type = $typeMap[$choice];
         ProcessAttendanceJob::dispatch($employee->id, $type);
         $this->conversationState->clearState($chatId);
-        $this->sendMessage($chatId, "✅ *Tercatat, {$employee->name}!*\nAbsen *{$type}* kamu sudah berhasil direkam. Semoga lekas sembuh/istirahat ya! 🙏");
+
+        // AI generate konfirmasi yang kontekstual
+        $ai = new AiResponseService();
+        $konfirmasi = $ai->confirmAbsen($employee->name, $type);
+        $this->sendMessage($chatId, $konfirmasi);
         return ['status' => true];
     }
 
@@ -197,8 +215,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => false, 'message' => 'Already registered'];
         }
 
+        // AI generate sapaan pembuka yang beda-beda
+        $ai = new AiResponseService();
+        $sapaan = $ai->greetingDaftar();
+
         $this->conversationState->setCurrentStep($chatId, 'awaiting_name');
-        $this->sendMessage($chatId, "📝 Baik! Mari daftar.\n\nSilakan masukkan *nama lengkapmu*:");
+        $this->sendMessage($chatId, "{$sapaan}\n\nYuk mulai daftar! Silakan masukkan *nama lengkapmu*:");
 
         return ['status' => true, 'message' => 'Daftar conversation started'];
     }

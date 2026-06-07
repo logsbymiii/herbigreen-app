@@ -15,6 +15,20 @@ class AiResponseService
     }
 
     /**
+     * Generate sapaan dinamis saat user bilang halo/hai/selamat pagi
+     */
+    public function greetingMenu(string $nama): string
+    {
+        $prompt = "Kamu adalah asisten HR bot WhatsApp Herbigreen.
+Buatkan sapaan singkat yang hangat dan casual (1 kalimat saja) untuk karyawan bernama {$nama} yang baru aja chat bot.
+Variasikan gaya — bisa pagi/siang/malam yang kontekstual, fun, atau friendly.
+Gunakan bahasa Indonesia. Akhiri dengan emoji.
+PENTING: Balas HANYA sapaan singkatnya saja, tanpa penjelasan.";
+
+        return $this->generate($prompt, "Halo, *{$nama}*! Senang bisa membantu 😊");
+    }
+
+    /**
      * Generate sapaan dinamis saat user ketik /lapor
      */
     public function greetingLapor(string $nama): string

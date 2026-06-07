@@ -8,6 +8,15 @@ class MessageClassifier
     {
         $lower = strtolower(trim($message));
 
+        // Deteksi sapaan — halo, hai, p, selamat pagi, dll
+        $greetings = ['halo', 'hai', 'hi', 'hey', 'hei', 'p', 'ping',
+                      'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
+                      'pagi', 'siang', 'sore', 'malam', 'assalamualaikum', 'ass', 'waalaikumsalam',
+                      'om', 'permisi', 'hallo', 'hello', 'menu'];
+        if (in_array($lower, $greetings) || preg_match('/^(halo|hai|hi|hey|hei|selamat)/i', $lower)) {
+            return 'greeting';
+        }
+
         // Deteksi absen — kata kunci sakit/izin/cuti
         if (preg_match('/^(izin|sakit|cuti)/', $lower)) {
             return 'attendance';

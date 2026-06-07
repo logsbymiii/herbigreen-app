@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Jobs\ProcessGmvReportJob;
 use App\Models\Report;
 use App\Services\MessageProviderFactory;
+use App\Services\AiResponseService;
 
 class WebhookController extends Controller
 {
@@ -127,7 +128,22 @@ class WebhookController extends Controller
 
         $provider = MessageProviderFactory::create();
 
-        if ($type === 'daily_report') {
+        if ($type === 'greeting') {
+            $ai = new AiResponseService();
+            $sapaan = $ai->greetingMenu($employee->name);
+
+            $menu  = "{$sapaan}\n\n";
+            $menu .= "📌 *Menu Herbigreen Bot:*\n\n";
+            $menu .= "1️⃣ */lapor* — Kirim laporan harian\n";
+            $menu .= "2️⃣ */absen* — Lapor izin/sakit/cuti\n";
+            $menu .= "3️⃣ */status* — Cek status laporanmu hari ini\n";
+            $menu .= "4️⃣ */bantuan* — Panduan penggunaan\n\n";
+            $menu .= "Ketik salah satu perintah di atas ya! 😊";
+
+            $provider->sendMessage($sender, $menu);
+            Log::info("KASIR: Greeting terdeteksi, menu dikirim ke {$employee->name}");
+
+        } elseif ($type === 'daily_report') {
             $sudahLapor = Report::where('employee_id', $employee->id)
                 ->whereDate('created_at', now()->format('Y-m-d'))
                 ->exists();

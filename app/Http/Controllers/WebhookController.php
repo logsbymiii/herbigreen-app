@@ -119,7 +119,8 @@ class WebhookController extends Controller
 
     private function processMessage($employee, $message, $urlFile, $sender, MessageClassifier $classifier): void
     {
-        $type = $classifier->classify($sender, $message, !empty($urlFile));
+        $division = $employee->division->name ?? null;
+        $type = $classifier->classify($sender, $message, !empty($urlFile), $division);
         $cleanContent = preg_replace('/(#lapor|\/lapor)\s*/i', '', $message);
 
         Log::info("PESAN MASUK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");

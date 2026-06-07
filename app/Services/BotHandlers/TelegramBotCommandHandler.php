@@ -124,6 +124,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => false];
         }
 
+        // Validasi: laporan tidak boleh kosong atau terlalu pendek
+        $cleanMessage = trim($message);
+        if (strlen($cleanMessage) < 10) {
+            $this->sendMessage($chatId, "⚠️ Laporan terlalu singkat, *{$employee->name}*!\nMinimal 10 karakter ya. Ceritain sedikit aktivitas hari ini! 📝");
+            return ['status' => true];
+        }
+
         $sudahLapor = \App\Models\Report::where('employee_id', $employee->id)
             ->whereDate('created_at', now()->format('Y-m-d'))
             ->exists();
@@ -134,7 +141,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
-        ProcessDailyReportJob::dispatch($employee->id, $message, null);
+        ProcessDailyReportJob::dispatch($employee->id, $cleanMessage, null);
         $this->conversationState->clearState($chatId);
         $this->sendMessage($chatId, "✅ *Terima kasih, {$employee->name}!*\nLaporan harianmu sudah berhasil dicatat. Semangat terus! 💪");
         return ['status' => true];

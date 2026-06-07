@@ -4,28 +4,26 @@ namespace App\Services;
 
 class MessageClassifier
 {
-    protected $hostLiveNumbers = [
-        '6285606178752',
-        '628987654321',
-    ];
-
-    public function classify($sender, $message, $hasMedia = false)
+    public function classify($sender, $message, $hasMedia = false, $employeeDivision = null)
     {
-        $message = strtolower($message);
+        $lower = strtolower(trim($message));
 
-        if (preg_match('/(izin|sakit|cuti)/', $message)) {
+        // Deteksi absen — kata kunci sakit/izin/cuti
+        if (preg_match('/^(izin|sakit|cuti)/', $lower)) {
             return 'attendance';
         }
 
-        if (str_contains($message, '#lapor') || str_contains($message, '/lapor')) {
+        // Deteksi laporan harian via hashtag (alternatif selain /lapor command)
+        if (str_contains($lower, '#lapor')) {
             return 'daily_report';
         }
 
-        if (str_contains($message, '/gmv') || ($hasMedia && in_array($sender, $this->hostLiveNumbers))) {
+        // Deteksi GMV — via command /gmv ATAU foto dari divisi Host Live
+        $isHostLive = strtolower($employeeDivision ?? '') === 'host live';
+        if (str_contains($lower, '/gmv') || ($hasMedia && $isHostLive)) {
             return 'gmv_report';
         }
 
         return 'general_chat';
     }
 }
-

@@ -40,7 +40,7 @@ class TestAiConnection extends Command
         $this->info("API Key found. Attempting to connect to Gemini...");
 
         try {
-            $response = Http::timeout(10)->post(
+            $response = Http::timeout(60)->post(
                 "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}",
                 [
                     'contents' => [[

@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->brandName('Herbigreen Reporting')
             ->brandLogo(asset('images/logo-herbigreen.png'))
@@ -47,10 +48,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->font('Plus Jakarta Sans')
             ->favicon(asset('images/logo-herbigreen.png'))
-            ->renderHook(
-                'panels::head.end',
-                fn () => view('filament.head')
-            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

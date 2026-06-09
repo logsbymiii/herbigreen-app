@@ -11,7 +11,8 @@ class AiResponseService
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.api_key') ?: env('GEMINI_API_KEY');
+        // Ganti jadi pakai Groq
+        $this->apiKey = env('GROQ_API_KEY');
     }
 
     /**
@@ -253,39 +254,47 @@ Format JSON yang diharapkan:
     }
 
     /**
-     * Core function: hit Gemini API, fallback ke static kalo gagal
+     * Core function: hit Groq API, fallback ke static kalo gagal
      */
     private function generate(string $prompt, string $fallback): string
     {
         if (!$this->apiKey) {
+            \Illuminate\Support\Facades\Log::warning('AiResponseService: GROQ_API_KEY belum diset.');
             return $fallback;
         }
 
         try {
-            $response = Http::timeout(60)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$this->apiKey}",
-                [
-                    'contents' => [[
-                        'parts' => [['text' => $prompt]]
-                    ]],
-                    'generationConfig' => [
-                        'temperature' => 0.3,      // Rendahkan supaya nurut format JSON
-                        'maxOutputTokens' => 300,  // Cukup panjang untuk JSON
-                        'responseMimeType' => 'application/json',
+            // Groq API Endpoint (OpenAI compatible)
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => 'llama3-70b-8192',
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a helpful assistant that outputs ONLY valid JSON. Do not include any markdown blocks or conversational text outside the JSON.'
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt
                     ]
-                ]
-            );
+                ],
+                'temperature' => 0.3,
+                'max_tokens' => 500,
+                'response_format' => ['type' => 'json_object']
+            ]);
 
             if ($response->successful()) {
-                $text = $response->json('candidates.0.content.parts.0.text');
+                $text = $response->json('choices.0.message.content');
                 if ($text) {
                     return trim($text);
                 }
             }
 
-            Log::warning('AiResponseService: Gemini response kosong, pakai fallback.');
+            \Illuminate\Support\Facades\Log::warning('AiResponseService: Groq response gagal atau kosong. Status: ' . $response->status() . ' Body: ' . $response->body());
         } catch (\Exception $e) {
-            Log::error('AiResponseService: Gagal hit Gemini API: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('AiResponseService Error: ' . $e->getMessage());
         }
 
         return $fallback;

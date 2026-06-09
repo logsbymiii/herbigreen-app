@@ -3,63 +3,50 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\AiResponseService;
 use Illuminate\Support\Facades\Http;
 
 class TestAiConnection extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'ai:test';
+    protected $description = 'Test Groq AI Connection';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Test Gemini AI Connection';
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $this->info("Testing Gemini AI Connection...");
+        $this->info("Testing Groq AI Connection...");
 
-        $apiKey = config('services.gemini.api_key') ?: env('GEMINI_API_KEY');
+        $apiKey = env('GROQ_API_KEY');
 
         if (!$apiKey) {
-            $this->error("❌ FAIL: GEMINI_API_KEY is missing in your .env file!");
-            $this->line("Please open .env and add: GEMINI_API_KEY=your_key_here");
+            $this->error("❌ FAIL: GROQ_API_KEY is missing in your .env file!");
+            $this->line("Please open .env and add: GROQ_API_KEY=your_key_here");
             return 1;
         }
 
-        $this->info("API Key found. Attempting to connect to Gemini...");
+        $this->info("API Key found. Attempting to connect to Groq...");
 
         try {
-            $response = Http::timeout(60)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}",
-                [
-                    'contents' => [[
-                        'parts' => [['text' => 'Balas pesan ini dengan "Halo! Koneksi AI Berhasil!"']]
-                    ]],
-                    'generationConfig' => [
-                        'temperature' => 0.1,
-                        'maxOutputTokens' => 50,
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => 'llama3-70b-8192',
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => 'Balas pesan ini dengan "Halo! Koneksi AI Berhasil!" tanpa tambahan teks apapun.'
                     ]
-                ]
-            );
+                ],
+                'temperature' => 0.1,
+                'max_tokens' => 50,
+            ]);
 
             if ($response->successful()) {
-                $text = $response->json('candidates.0.content.parts.0.text');
-                $this->info("✅ SUCCESS! Gemini responded: " . trim($text));
+                $text = $response->json('choices.0.message.content');
+                $this->info("✅ SUCCESS! Groq responded: " . trim($text));
                 return 0;
             }
 
-            $this->error("❌ FAIL: Connected but received error from Gemini.");
+            $this->error("❌ FAIL: Connected but received error from Groq.");
             $this->line("Response: " . $response->body());
             return 1;
 

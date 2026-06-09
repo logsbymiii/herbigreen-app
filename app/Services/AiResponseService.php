@@ -269,7 +269,7 @@ Format JSON yang diharapkan:
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model' => 'llama3-70b-8192',
+                'model' => 'llama-3.3-70b-versatile',
                 'messages' => [
                     [
                         'role' => 'system',

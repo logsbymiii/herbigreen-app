@@ -1,24 +1,21 @@
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
-
-@source '../../../../app/Filament/**/*';
-@source '../../../../resources/views/filament/**/*';
-
 /*
- * HERBIGREEN — Filament v5 Custom Theme
- * !important dipakai karena Tailwind v4 @layer utilities bisa menang
+ * ============================================================
+ * HERBIGREEN — Custom Filament v5 Theme
+ * Hanya custom overrides — TANPA @import Filament
+ * (Filament sudah load CSS-nya sendiri via index.css)
+ * ============================================================
  */
 
-/* ── Body ── */
-.fi-body {
+/* ── Body & Layout ── */
+.fi-body,
+.fi-body.fi-panel-admin {
     background-color: #dde3ea !important;
 }
 
-/* ── Layout wrapper ── */
 .fi-layout {
     background-color: #dde3ea !important;
 }
 
-/* ── Main content ── */
 .fi-main {
     background-color: transparent !important;
     animation: hbFadeIn 0.35s ease-out;
@@ -32,6 +29,7 @@
 
 .fi-sidebar-header {
     border-bottom: 1px solid #e2e8f0 !important;
+    background-color: transparent !important;
 }
 
 .fi-sidebar-item-button:hover {
@@ -57,11 +55,11 @@
     border: 1px solid #e2e8f0 !important;
     border-radius: 1rem !important;
     box-shadow: 0 2px 8px rgb(0 0 0 / 5%) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .fi-wi-stats-overview-stat:hover {
-    transform: translateY(-3px) !important;
+    transform: translateY(-3px);
     box-shadow: 0 8px 24px rgb(16 185 129 / 12%) !important;
 }
 
@@ -129,8 +127,8 @@
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1 !important; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8 !important; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* ── Fade in ── */
 @keyframes hbFadeIn {

@@ -41,7 +41,8 @@ class WebhookController extends Controller
         if (!$employee) {
             Log::warning("Pesan ditolak! Nomor $sender nggak terdaftar.");
             $provider = MessageProviderFactory::create();
-            $balasan = "Maaf, nomor WA Anda belum terdaftar di sistem kami. Ketik /daftar untuk melakukan pendaftaran mandiri. 🙏";
+            $ai = new AiResponseService();
+            $balasan = $ai->greetingUnregistered($message);
             $provider->sendMessage($sender, $balasan);
             return response()->json(['status' => false, 'message' => 'Unregistered number']);
         }
@@ -108,7 +109,8 @@ class WebhookController extends Controller
         if (!$employee) {
             Log::warning("Pesan Telegram ditolak! Chat ID $chatId nggak terdaftar.");
             $provider = MessageProviderFactory::create();
-            $balasan = "Maaf, Telegram Anda belum terdaftar di sistem kami. Ketik /daftar untuk melakukan pendaftaran mandiri. 🙏";
+            $ai = new AiResponseService();
+            $balasan = $ai->greetingUnregistered($message);
             $provider->sendMessage($chatId, $balasan);
             return response()->json(['status' => false, 'message' => 'Unregistered user']);
         }

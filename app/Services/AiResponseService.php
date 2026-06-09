@@ -57,6 +57,20 @@ PENTING: Balas HANYA sapaan singkatnya saja, tanpa penjelasan tambahan.";
     }
 
     /**
+     * Generate sapaan dinamis saat user belum terdaftar
+     */
+    public function greetingUnregistered(string $pesan_masuk): string
+    {
+        $prompt = "Kamu adalah asisten HR bot Herbigreen. Ada orang asing (belum terdaftar) yang chat bot dengan pesan: '{$pesan_masuk}'.
+Buatkan balasan ramah layaknya CS (maksimal 2 kalimat) yang ngasih tau kalau mereka belum terdaftar dan minta mereka ngenalin diri. Arahkan mereka untuk ketik '/daftar'.
+Boleh sedikit playful atau casual (misal: 'eh halo! maaf banget nih, kayaknya kita belum kenalan. Ketik /daftar dulu yuk!').
+Gunakan bahasa Indonesia. Akhiri dengan emoji.
+PENTING: Balas HANYA sapaan singkatnya saja.";
+
+        return $this->generate($prompt, "Eh halo! Maaf banget nih, kayaknya kamu belum terdaftar di sistem. Ketik /daftar dulu yuk biar kita bisa kenalan! 😊");
+    }
+
+    /**
      * Generate sapaan dinamis saat user ketik /absen atau /izin
      */
     public function greetingAbsen(string $nama): string

@@ -1,6 +1,6 @@
 /.phpunit.cache
 /node_modules
-/public/build
+# /public/build — dibiarkan di git biar VPS nggak perlu npm
 /public/hot
 /public/storage
 /storage/*.key

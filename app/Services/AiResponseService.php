@@ -261,7 +261,7 @@ Format JSON yang diharapkan:
 
         try {
             $response = Http::timeout(10)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$this->apiKey}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$this->apiKey}",
                 [
                     'contents' => [[
                         'parts' => [['text' => $prompt]]

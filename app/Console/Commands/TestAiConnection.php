@@ -41,7 +41,7 @@ class TestAiConnection extends Command
 
         try {
             $response = Http::timeout(10)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}",
                 [
                     'contents' => [[
                         'parts' => [['text' => 'Balas pesan ini dengan "Halo! Koneksi AI Berhasil!"']]

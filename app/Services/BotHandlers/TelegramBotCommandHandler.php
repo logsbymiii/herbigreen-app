@@ -270,7 +270,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (strlen($name) < 3) {
             $this->sendMessage($chatId, "❌ Nama terlalu pendek. Minimal 3 karakter.\n\nSilakan masukkan nama lagi:");
-            return ['status' => false, 'message' => 'Invalid name'];
+            return ['status' => true, 'message' => 'Invalid name'];
         }
 
         $this->conversationState->updateTempData($chatId, ['name' => $name]);
@@ -293,7 +293,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (!$division) {
             $this->sendMessage($chatId, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar.");
-            return ['status' => false, 'message' => 'Invalid division'];
+            return ['status' => true, 'message' => 'Invalid division'];
         }
 
         $this->conversationState->updateTempData($chatId, ['division_id' => $divisionId]);
@@ -320,12 +320,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (strlen($phone) < 10 || strlen($phone) > 15) {
             $this->sendMessage($chatId, "❌ Nomor WA tidak valid. Coba lagi.");
-            return ['status' => false, 'message' => 'Invalid phone'];
+            return ['status' => true, 'message' => 'Invalid phone'];
         }
 
         if (Employee::where('phone', $phone)->exists()) {
             $this->sendMessage($chatId, "❌ Nomor WA ini sudah terdaftar. Gunakan nomor lain.");
-            return ['status' => false, 'message' => 'Phone already exists'];
+            return ['status' => true, 'message' => 'Phone already exists'];
         }
 
         $this->conversationState->updateTempData($chatId, ['phone' => $phone]);

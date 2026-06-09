@@ -230,8 +230,8 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         $name = trim($message);
 
         if (strlen($name) < 3) {
-            $this->sendMessage($phone, "❌ Nama terlalu pendek. Minimal 3 karakter.\nSilakan masukkan nama lagi:");
-            return ['status' => true];
+            $this->sendMessage($phone, "❌ Nama terlalu pendek. Minimal 3 karakter.\n\nSilakan masukkan nama lagi:");
+            return ['status' => true, 'message' => 'Invalid name'];
         }
 
         $this->conversationState->updateTempData($phone, ['name' => $name]);
@@ -254,7 +254,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         if (!$division) {
             $this->sendMessage($phone, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar.");
-            return ['status' => true];
+            return ['status' => true, 'message' => 'Invalid division'];
         }
 
         $this->conversationState->updateTempData($phone, ['division_id' => $divisionId]);

@@ -4,121 +4,136 @@
 @source '../../../../resources/views/filament/**/*';
 
 /*
- * ============================================================
- * HERBIGREEN — Custom Filament v5 Theme
- * Safe overrides - tanpa @theme (bisa break layout)
- * ============================================================
+ * HERBIGREEN — Filament v5 Custom Theme
+ * !important dipakai karena Tailwind v4 @layer utilities bisa menang
  */
 
-/* Body background */
+/* ── Body ── */
 .fi-body {
-    background-color: #dde3ea;
+    background-color: #dde3ea !important;
 }
 
-/* Sidebar */
-.fi-sidebar {
-    background-color: #f8f9ff;
+/* ── Layout wrapper ── */
+.fi-layout {
+    background-color: #dde3ea !important;
 }
 
-/* Topbar */
-.fi-topbar {
-    background-color: #f8f9ff;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: none;
-}
-
-/* Stat cards */
-.fi-wi-stats-overview-stat {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 5%);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.fi-wi-stats-overview-stat:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgb(16 185 129 / 12%);
-}
-
-/* Widget cards */
-.fi-wi {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 4%);
-}
-
-/* Section */
-.fi-section {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1rem;
-}
-
-/* Sidebar active item */
-.fi-sidebar-item-active .fi-sidebar-item-button {
-    background-color: rgb(16 185 129 / 12%);
-    border: 1.5px solid rgb(16 185 129 / 30%);
-    border-radius: 0.625rem;
-}
-
-/* Sidebar hover */
-.fi-sidebar-item-button:hover {
-    background-color: rgb(16 185 129 / 8%);
-}
-
-/* Buttons */
-.fi-btn {
-    border-radius: 0.625rem;
-    font-weight: 600;
-}
-
-/* Table header */
-.fi-ta-header-cell {
-    background-color: #f8fafc;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #94a3b8;
-}
-
-/* Badge */
-.fi-badge {
-    border-radius: 0.375rem;
-    font-weight: 700;
-}
-
-/* Dropdown */
-.fi-dropdown-panel {
-    border-radius: 0.875rem;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
-}
-
-/* Login page */
-.fi-simple-layout {
-    background: linear-gradient(135deg, #ecfdf5, #f8f9ff, #ecfdf5);
-}
-
-.fi-simple-page {
-    border-radius: 1.25rem;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 20px 60px rgb(0 108 73 / 10%);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Page fade in */
+/* ── Main content ── */
 .fi-main {
+    background-color: transparent !important;
     animation: hbFadeIn 0.35s ease-out;
 }
 
+/* ── Sidebar ── */
+.fi-sidebar {
+    background-color: #f8f9ff !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+.fi-sidebar-header {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background-color: rgb(16 185 129 / 8%) !important;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-button {
+    background-color: rgb(16 185 129 / 12%) !important;
+    border: 1.5px solid rgb(16 185 129 / 30%) !important;
+    border-radius: 0.625rem !important;
+}
+
+/* ── Topbar ── */
+.fi-topbar {
+    background-color: #f8f9ff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+}
+
+/* ── Stat Cards ── */
+.fi-wi-stats-overview-stat {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 5%) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgb(16 185 129 / 12%) !important;
+}
+
+/* ── Widget / Chart Cards ── */
+.fi-wi {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 4%) !important;
+    overflow: hidden !important;
+}
+
+/* ── Section ── */
+.fi-section {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+}
+
+/* ── Table ── */
+.fi-ta-header-cell {
+    background-color: #f8fafc !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #94a3b8 !important;
+}
+
+.fi-ta-row:hover .fi-ta-cell {
+    background-color: #f0fdf8 !important;
+}
+
+/* ── Buttons ── */
+.fi-btn {
+    border-radius: 0.625rem !important;
+    font-weight: 600 !important;
+}
+
+/* ── Dropdown ── */
+.fi-dropdown-panel {
+    background-color: #ffffff !important;
+    border-radius: 0.875rem !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 8%) !important;
+}
+
+/* ── Modal ── */
+.fi-modal-window {
+    background-color: #ffffff !important;
+    border-radius: 1rem !important;
+}
+
+/* ── Login Page ── */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #ecfdf5, #f8f9ff, #ecfdf5) !important;
+}
+
+.fi-simple-page {
+    border-radius: 1.25rem !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 20px 60px rgb(0 108 73 / 10%) !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1 !important; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8 !important; }
+
+/* ── Fade in ── */
 @keyframes hbFadeIn {
     from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }

@@ -50,16 +50,25 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
     {
         $this->conversationState->clearState($phone);
 
-        $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
-                 . "📋 *Menu tersedia:*\n\n"
-                 . "1️⃣ /lapor — Kirim laporan harian\n"
-                 . "2️⃣ /absen — Lapor izin/sakit/cuti\n"
-                 . "3️⃣ /status — Cek status laporan hari ini\n"
-                 . "4️⃣ /bantuan — Panduan penggunaan\n\n"
-                 . "Ketik salah satu perintah di atas ya! 😊";
+        $employee = Employee::where('phone', $phone)->first();
+
+        if ($employee) {
+            $welcome = "👋 *Halo {$employee->name}, selamat datang kembali di Herbigreen Bot!*\n\n"
+                     . "Sekarang aku udah lebih pintar lho! Kamu nggak perlu lagi ngapalin command-command kaku.\n\n"
+                     . "🗣️ *Tinggal ajak ngobrol aja, contohnya:*\n"
+                     . "• _\"min, aku hari ini sakit, gausah masuk ya\"_ (Otomatis absen)\n"
+                     . "• _\"nih laporan jualan hari ini, laku 10 paket\"_ (Otomatis lapor)\n"
+                     . "• _\"laporanku hari ini udah masuk blm ya?\"_ (Cek status)\n\n"
+                     . "Coba aja langsung sapa aku atau kirim laporanmu! 😊";
+        } else {
+            $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
+                     . "Untuk menggunakan bot ini, kamu harus daftar dulu ya.\n\n"
+                     . "Ketik: */daftar* untuk memulai pendaftaran.";
+        }
 
         $this->sendMessage($phone, $welcome);
-        return ['status' => true, 'message' => 'Start handled'];
+
+        return ['status' => true, 'message' => 'Start command handled'];
     }
 
     // ── /status ───────────────────────────────────────────────
@@ -187,15 +196,19 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
     // ── /bantuan ──────────────────────────────────────────────
     private function handleBantuan(string $phone): array
     {
-        $help  = "❓ *Panduan Bot Herbigreen*\n\n";
-        $help .= "📝 */lapor* — Kirim laporan harian\n";
-        $help .= "🏥 */absen* — Lapor izin/sakit/cuti\n";
-        $help .= "📊 */status* — Cek status laporan hari ini\n";
-        $help .= "👤 */daftar* — Daftar sebagai karyawan baru\n\n";
-        $help .= "Untuk bantuan lainnya, hubungi admin. 🙏";
+        $help = "❓ *Bantuan Herbigreen Bot*\n\n"
+              . "Sekarang bot ini sudah pintar pakai AI! Kamu bisa langsung chat pakai bahasa sehari-hari.\n\n"
+              . "📝 *Lapor Harian*\n"
+              . "Ketik aja misal: _\"laporan hr ini laku 5 botol\"_ atau _\"ini ss gmv ku\"_ (sambil kirim gambar)\n\n"
+              . "🏥 *Lapor Sakit/Izin*\n"
+              . "Ketik misal: _\"aku hari ini izin ya ada urusan keluarga\"_\n\n"
+              . "🔍 *Cek Status*\n"
+              . "Ketik misal: _\"aku udah lapor belum ya hari ini?\"_\n\n"
+              . "Pendaftaran tetep pakai command */daftar* ya. Sisanya bebas ngobrol!";
 
         $this->sendMessage($phone, $help);
-        return ['status' => true];
+
+        return ['status' => true, 'message' => 'Help command handled'];
     }
 
     // ── Conversation Steps ────────────────────────────────────
@@ -261,11 +274,47 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
     private function processConfirmation(string $phone, string $message): array
     {
         $answer = strtolower(trim($message));
+        
+        $positiveAnswers = ['ya', 'yes', 'y', 'iya', 'oke', 'ok', 'setuju', 'gas', 'betul', 'bener', 'hooh'];
+        $negativeAnswers = ['tidak', 'gak', 'enggak', 'no', 'n', 'batal', 'cancel'];
 
-        if (!in_array($answer, ['ya', 'yes', 'y'])) {
+        $isPositive = false;
+        $isNegative = false;
+
+        foreach ($positiveAnswers as $pos) {
+            if (str_contains($answer, $pos)) {
+                $isPositive = true;
+                break;
+            }
+        }
+
+        foreach ($negativeAnswers as $neg) {
+            if (str_contains($answer, $neg) && !$isPositive) {
+                $isNegative = true;
+                break;
+            }
+        }
+
+        if ($isNegative) {
             $this->conversationState->clearState($phone);
-            $this->sendMessage($phone, "❌ Pendaftaran dibatalkan.\n\nKetik /daftar jika ingin mencoba lagi.");
-            return ['status' => true];
+            $this->sendMessage($phone, "❌ Pendaftaran dibatalkan.\n\nKetik /daftar jika ingin mendaftar ulang.");
+            return ['status' => false, 'message' => 'Registration cancelled'];
+        }
+
+        if (!$isPositive) {
+            // Berarti dia balas hal lain (misal "halo")
+            $ai = new AiResponseService();
+            // Panggil API Gemini khusus untuk ngeles
+            $prompt = "User sedang mendaftar tapi dia malah jawab: '{$message}'. Balas ramah dan ingatkan dia untuk balas 'ya' jika setuju dengan data pendaftaran, atau 'tidak' untuk batal.";
+            
+            // Kita hack sedikit generate langsung
+            $reflection = new \ReflectionClass($ai);
+            $generateMethod = $reflection->getMethod('generate');
+            $generateMethod->setAccessible(true);
+            $balasan = $generateMethod->invoke($ai, $prompt, "Halo! Kita kan lagi proses daftar nih, datanya udah bener belum? Ketik *ya* kalau setuju, atau *tidak* buat batalin.");
+            
+            $this->sendMessage($phone, $balasan);
+            return ['status' => true, 'message' => 'Registration paused for confirmation'];
         }
 
         $tempData = $this->conversationState->getTempData($phone);
@@ -279,14 +328,11 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         $this->conversationState->clearState($phone);
 
-        $this->sendMessage($phone, "🎉 *Pendaftaran Berhasil!*\n\n"
-            . "Selamat datang, *{$employee->name}*!\n\n"
-            . "Mulai gunakan bot:\n"
-            . "/lapor — lapor harian\n"
-            . "/absen — lapor absen\n"
-            . "/status — cek status laporan");
+        $this->sendMessage($phone, "✅ *Pendaftaran Berhasil!*\n\n"
+                                 . "Selamat datang, {$employee->name}! 🎉\n\n"
+                                 . "Sekarang kamu bisa langsung ngobrol sama aku buat lapor harian atau urusan lain. Tinggal ketik aja pesannya!");
 
-        return ['status' => true];
+        return ['status' => true, 'message' => 'Registration completed'];
     }
 
     private function processReportType(string $phone, string $message, array $rawUpdate): array

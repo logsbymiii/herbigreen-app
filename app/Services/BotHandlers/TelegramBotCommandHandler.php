@@ -193,13 +193,21 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
     {
         $this->conversationState->clearState($chatId);
 
-        $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
-                 . "📋 *Pilih menu di bawah:*\n"
-                 . "/lapor - Lapor penjualan harian\n"
-                 . "/absen - Lapor absen (izin/sakit/cuti)\n"
-                 . "/daftar - Daftar sebagai employee\n"
-                 . "/bantuan - Petunjuk cara pakai\n\n"
-                 . "Ketik perintah di atas untuk memulai!";
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if ($employee) {
+            $welcome = "👋 *Halo {$employee->name}, selamat datang kembali di Herbigreen Bot!*\n\n"
+                     . "Sekarang aku udah lebih pintar lho! Kamu nggak perlu lagi ngapalin command-command kaku.\n\n"
+                     . "🗣️ *Tinggal ajak ngobrol aja, contohnya:*\n"
+                     . "• _\"min, aku hari ini sakit, gausah masuk ya\"_ (Otomatis absen)\n"
+                     . "• _\"nih laporan jualan hari ini, laku 10 paket\"_ (Otomatis lapor)\n"
+                     . "• _\"laporanku hari ini udah masuk blm ya?\"_ (Cek status)\n\n"
+                     . "Coba aja langsung sapa aku atau kirim laporanmu! 😊";
+        } else {
+            $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
+                     . "Untuk menggunakan bot ini, kamu harus daftar dulu ya.\n\n"
+                     . "Ketik: */daftar* untuk memulai pendaftaran.";
+        }
 
         $this->sendMessage($chatId, $welcome);
 
@@ -227,17 +235,15 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
     private function handleBantuan(int | string $chatId): array
     {
-        $help = "❓ *Panduan Penggunaan Bot Herbigreen*\n\n"
-              . "📊 *Lapor Penjualan*\n"
-              . "Ketik: /lapor [nominal]\n"
-              . "Contoh: /lapor 500000\n\n"
-              . "🏥 *Lapor Absen*\n"
-              . "Ketik: sakit / izin / cuti\n"
-              . "Contoh: sakit (keterangan)\n\n"
-              . "👤 *Daftar Baru*\n"
-              . "Ketik: /daftar\n"
-              . "Ikuti instruksi yang diberikan bot.\n\n"
-              . "Untuk bantuan lainnya, hubungi admin.";
+        $help = "❓ *Bantuan Herbigreen Bot*\n\n"
+              . "Sekarang bot ini sudah pintar pakai AI! Kamu bisa langsung chat pakai bahasa sehari-hari.\n\n"
+              . "📝 *Lapor Harian*\n"
+              . "Ketik aja misal: _\"laporan hr ini laku 5 botol\"_ atau _\"ini ss gmv ku\"_ (sambil kirim gambar)\n\n"
+              . "🏥 *Lapor Sakit/Izin*\n"
+              . "Ketik misal: _\"aku hari ini izin ya ada urusan keluarga\"_\n\n"
+              . "🔍 *Cek Status*\n"
+              . "Ketik misal: _\"aku udah lapor belum ya hari ini?\"_\n\n"
+              . "Pendaftaran tetep pakai command */daftar* ya. Sisanya bebas ngobrol!";
 
         $this->sendMessage($chatId, $help);
 

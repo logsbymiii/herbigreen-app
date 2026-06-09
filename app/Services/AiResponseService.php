@@ -235,13 +235,15 @@ Format JSON yang diharapkan:
         ]));
 
         // Bersihkan kalau ada sisa markdown
-        $jsonString = preg_replace('/```json|```/', '', $jsonString);
+        $jsonString = preg_replace('/```json|```/i', '', $jsonString);
         
         $decoded = json_decode(trim($jsonString), true);
         
         if (json_last_error() === JSON_ERROR_NONE && isset($decoded['intent'], $decoded['reply'])) {
             return $decoded;
         }
+
+        \Illuminate\Support\Facades\Log::warning("AI JSON Parse Failed atau Key Hilang. Raw Output: " . $jsonString);
 
         return [
             'intent' => 'general_chat',
@@ -267,7 +269,7 @@ Format JSON yang diharapkan:
                         'parts' => [['text' => $prompt]]
                     ]],
                     'generationConfig' => [
-                        'temperature' => 0.9,      // Makin tinggi = makin kreatif/random
+                        'temperature' => 0.3,      // Rendahkan supaya nurut format JSON
                         'maxOutputTokens' => 300,  // Cukup panjang untuk JSON
                         'responseMimeType' => 'application/json',
                     ]

@@ -181,6 +181,62 @@ PENTING: Balas HANYA laporannya saja.";
     }
 
     /**
+     * Menganalisis pesan user dan menghasilkan intent serta balasan natural.
+     * Mengembalikan array dengan key 'intent', 'extracted_data', dan 'reply'.
+     */
+    public function analyzeIntentAndReply(string $nama, string $divisi, string $pesan, bool $hasMedia = false): array
+    {
+        $konteksMedia = $hasMedia ? "User juga mengirimkan sebuah gambar/file media bersama pesan ini." : "Tidak ada media tambahan.";
+
+        $prompt = "Kamu adalah asisten HR dan Customer Service bot WhatsApp/Telegram yang sangat ramah, hangat, dan asyik untuk perusahaan Herbigreen.
+Nama karyawan yang chat denganmu: {$nama} (Divisi: {$divisi}).
+Pesan dari karyawan: \"{$pesan}\"
+Konteks: {$konteksMedia}
+
+Tugasmu:
+1. Pahami intensi/tujuan dari pesan karyawan tersebut.
+2. Buat balasan ('reply') layaknya CS manusia yang empati dan komunikatif. Jangan kaku. Gunakan bahasa Indonesia sehari-hari, sedikit gaul nggak masalah, sisipkan emoji. Jangan panggil dirimu 'bot'. Jangan pernah kirim menu angka 1,2,3,4.
+3. Ekstrak data jika ada informasi laporan (misalnya jumlah jualan) atau alasan absen/izin.
+4. Output HARUS dalam format JSON murni, tanpa markdown ```json.
+
+Aturan Intent:
+- 'report' jika mereka memberikan laporan hasil kerja/penjualan/kegiatan.
+- 'gmv_report' jika mereka dari divisi 'Host Live' dan bahas GMV/omset, apalagi jika ada media.
+- 'attendance' jika mereka lapor sakit, izin, cuti, atau telat.
+- 'status' jika mereka tanya apakah laporan hari ini sudah masuk/belum.
+- 'general_chat' jika mereka hanya menyapa (halo, selamat pagi) atau curhat/ngobrol biasa.
+
+Format JSON yang diharapkan:
+{
+  \"intent\": \"report|gmv_report|attendance|status|general_chat\",
+  \"extracted_data\": \"Ringkasan laporan atau alasan absen (jika ada, jika tidak kosongkan)\",
+  \"reply\": \"Balasan kamu ke karyawan tersebut\"
+}
+";
+
+        $jsonString = $this->generate($prompt, json_encode([
+            'intent' => 'general_chat',
+            'extracted_data' => '',
+            'reply' => "Halo {$nama}! Ada yang bisa dibantu hari ini? 😊"
+        ]));
+
+        // Bersihkan kalau ada sisa markdown
+        $jsonString = preg_replace('/```json|```/', '', $jsonString);
+        
+        $decoded = json_decode(trim($jsonString), true);
+        
+        if (json_last_error() === JSON_ERROR_NONE && isset($decoded['intent'], $decoded['reply'])) {
+            return $decoded;
+        }
+
+        return [
+            'intent' => 'general_chat',
+            'extracted_data' => '',
+            'reply' => "Halo {$nama}! Aku kurang nangkap nih maksudnya, mau lapor harian atau ada yang lain? 😊"
+        ];
+    }
+
+    /**
      * Core function: hit Gemini API, fallback ke static kalo gagal
      */
     private function generate(string $prompt, string $fallback): string

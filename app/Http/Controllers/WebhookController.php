@@ -15,7 +15,7 @@ use App\Services\AiResponseService;
 
 class WebhookController extends Controller
 {
-    public function receive(Request $request, MessageClassifier $classifier)
+    public function receive(Request $request)
     {
         Log::info("RAW DATA DARI FONNTE:", $request->all());
 
@@ -46,12 +46,12 @@ class WebhookController extends Controller
             return response()->json(['status' => false, 'message' => 'Unregistered number']);
         }
 
-        $this->processMessage($employee, $message, $urlFile, $sender, $classifier);
+        $this->processMessage($employee, $message, $urlFile, $sender);
 
         return response()->json(['status' => true]);
     }
 
-    public function receiveTelegram(Request $request, MessageClassifier $classifier)
+    public function receiveTelegram(Request $request)
     {
         Log::info("RAW DATA DARI TELEGRAM:", $request->all());
 
@@ -113,60 +113,62 @@ class WebhookController extends Controller
             return response()->json(['status' => false, 'message' => 'Unregistered user']);
         }
 
-        $this->processMessage($employee, $message, $urlFile, $chatId, $classifier);
+        $this->processMessage($employee, $message, $urlFile, $chatId);
 
         return response()->json(['status' => true]);
     }
 
-    private function processMessage($employee, $message, $urlFile, $sender, MessageClassifier $classifier): void
+    private function processMessage($employee, $message, $urlFile, $sender): void
     {
-        $division = $employee->division->name ?? null;
-        $type = $classifier->classify($sender, $message, !empty($urlFile), $division);
-        $cleanContent = preg_replace('/(#lapor|\/lapor)\s*/i', '', $message);
+        $division = $employee->division->name ?? 'Umum';
+        
+        Log::info("PESAN MASUK DARI {$employee->name}: $message");
 
-        Log::info("PESAN MASUK! Tipe: $type | Dari: {$employee->name} | Isi: $cleanContent");
+        $ai = new AiResponseService();
+        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile));
+        
+        $intent = $analysis['intent'] ?? 'general_chat';
+        $reply = $analysis['reply'] ?? "Halo {$employee->name}! Ada yang bisa kubantu?";
+        $extractedData = $analysis['extracted_data'] ?? $message;
+
+        Log::info("AI INTENT: $intent | DATA: $extractedData");
 
         $provider = MessageProviderFactory::create();
 
-        if ($type === 'greeting') {
-            $ai = new AiResponseService();
-            $sapaan = $ai->greetingMenu($employee->name);
-
-            $menu  = "{$sapaan}\n\n";
-            $menu .= "📌 *Menu Herbigreen Bot:*\n\n";
-            $menu .= "1️⃣ */lapor* — Kirim laporan harian\n";
-            $menu .= "2️⃣ */absen* — Lapor izin/sakit/cuti\n";
-            $menu .= "3️⃣ */status* — Cek status laporanmu hari ini\n";
-            $menu .= "4️⃣ */bantuan* — Panduan penggunaan\n\n";
-            $menu .= "Ketik salah satu perintah di atas ya! 😊";
-
-            $provider->sendMessage($sender, $menu);
-            Log::info("KASIR: Greeting terdeteksi, menu dikirim ke {$employee->name}");
-
-        } elseif ($type === 'daily_report') {
+        if ($intent === 'report') {
             $sudahLapor = Report::where('employee_id', $employee->id)
                 ->whereDate('created_at', now()->format('Y-m-d'))
                 ->exists();
 
             if ($sudahLapor) {
-                Log::warning("KASIR: Laporan {$employee->name} ditolak karena sudah lapor hari ini.");
-                $balasan = "Yth. {$employee->name}, Anda sudah mengirimkan laporan untuk hari ini. Laporan hanya perlu dikirimkan satu kali dalam sehari. Terima kasih.";
-                $provider->sendMessage($sender, $balasan);
+                // Jangan save lagi, tapi kasih tau kalau udah lapor
+                $provider->sendMessage($sender, "Eh, kayanya kamu udah lapor deh hari ini! Laporannya cukup sekali sehari aja yaa. Semangat terus! 🙌");
+                return;
             } else {
-                ProcessDailyReportJob::dispatch($employee->id, $cleanContent, $urlFile);
-                Log::info("KASIR: Nota Laporan dilempar ke dapur!");
-                $provider->sendMessage($sender, "✅ *Terima Kasih*\nLaporan harian Anda telah berhasil dicatat ke dalam sistem kami.");
+                ProcessDailyReportJob::dispatch($employee->id, $extractedData, $urlFile);
+                $provider->sendMessage($sender, $reply);
             }
 
-        } elseif ($type === 'attendance') {
-            ProcessAttendanceJob::dispatch($employee->id, $message);
-            Log::info("KASIR: Nota Absen dilempar ke dapur!");
-            $provider->sendMessage($sender, "✅ *Tercatat*\nInformasi absensi/izin Anda telah berhasil diperbarui di sistem absensi.");
+        } elseif ($intent === 'attendance') {
+            ProcessAttendanceJob::dispatch($employee->id, $extractedData);
+            $provider->sendMessage($sender, $reply);
 
-        } elseif ($type === 'gmv_report') {
+        } elseif ($intent === 'gmv_report') {
             ProcessGmvReportJob::dispatch($employee->id, $urlFile);
-            Log::info("KASIR: Nota GMV (Screenshot) dilempar ke dapur!");
-            $provider->sendMessage($sender, "✅ *Laporan GMV Diterima*\nScreenshot laporan GMV Anda sedang diproses. Terima kasih atas kerja kerasnya hari ini.");
+            $provider->sendMessage($sender, $reply);
+
+        } elseif ($intent === 'status') {
+            $sudahLapor = Report::where('employee_id', $employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->exists();
+            $statusReply = $sudahLapor 
+                ? "Laporanmu hari ini udah aman tercatat di sistem kok! Makasih yaa! ✅" 
+                : "Hmm, aku cek kamu belum kirim laporan hari ini nih. Yuk lapor sekarang! 🌿";
+            $provider->sendMessage($sender, $statusReply);
+            
+        } else {
+            // General chat, bot cuma balas obrolan biasa
+            $provider->sendMessage($sender, $reply);
         }
     }
 }

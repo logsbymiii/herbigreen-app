@@ -340,11 +340,47 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
     private function processConfirmation(int | string $chatId, string $message): array
     {
         $answer = strtolower(trim($message));
+        
+        $positiveAnswers = ['ya', 'yes', 'y', 'iya', 'oke', 'ok', 'setuju', 'gas', 'betul', 'bener', 'hooh'];
+        $negativeAnswers = ['tidak', 'gak', 'enggak', 'no', 'n', 'batal', 'cancel'];
 
-        if ($answer !== 'ya' && $answer !== 'yes') {
+        $isPositive = false;
+        $isNegative = false;
+
+        foreach ($positiveAnswers as $pos) {
+            if (str_contains($answer, $pos)) {
+                $isPositive = true;
+                break;
+            }
+        }
+
+        foreach ($negativeAnswers as $neg) {
+            if (str_contains($answer, $neg) && !$isPositive) {
+                $isNegative = true;
+                break;
+            }
+        }
+
+        if ($isNegative) {
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "❌ Pendaftaran dibatalkan.\n\nKetik /daftar jika ingin mendaftar ulang.");
             return ['status' => false, 'message' => 'Registration cancelled'];
+        }
+
+        if (!$isPositive) {
+            // Berarti dia balas hal lain (misal "halo")
+            $ai = new AiResponseService();
+            // Panggil API Gemini khusus untuk ngeles
+            $prompt = "User sedang mendaftar tapi dia malah jawab: '{$message}'. Balas ramah dan ingatkan dia untuk balas 'ya' jika setuju dengan data pendaftaran, atau 'tidak' untuk batal.";
+            
+            // Kita hack sedikit generate langsung
+            $reflection = new \ReflectionClass($ai);
+            $generateMethod = $reflection->getMethod('generate');
+            $generateMethod->setAccessible(true);
+            $balasan = $generateMethod->invoke($ai, $prompt, "Halo! Kita kan lagi proses daftar nih, datanya udah bener belum? Ketik *ya* kalau setuju, atau *tidak* buat batalin.");
+            
+            $this->sendMessage($chatId, $balasan);
+            return ['status' => true, 'message' => 'Registration paused for confirmation'];
         }
 
         $tempData = $this->conversationState->getTempData($chatId);
@@ -361,9 +397,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         $this->sendMessage($chatId, "✅ *Pendaftaran Berhasil!*\n\n"
                                    . "Selamat datang, {$employee->name}! 🎉\n\n"
-                                   . "Mulai gunakan bot dengan mengetik:\n"
-                                   . "/lapor - untuk lapor penjualan\n"
-                                   . "/absen - untuk lapor absen");
+                                   . "Sekarang kamu bisa langsung ngobrol sama aku buat lapor harian atau urusan lain. Tinggal ketik aja pesannya!");
 
         return ['status' => true, 'message' => 'Registration completed'];
     }

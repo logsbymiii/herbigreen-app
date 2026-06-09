@@ -105,6 +105,82 @@ PENTING: Balas HANYA konfirmasinya saja.";
     }
 
     /**
+     * Generate reminder personal per karyawan berdasarkan kebiasaan lapor
+     */
+    public function generateSmartReminder(string $nama, string $divisi, int $hariTerlambat = 0): string
+    {
+        $konteks = $hariTerlambat > 0
+            ? "Karyawan ini sudah {$hariTerlambat} hari berturut-turut tidak lapor."
+            : "Karyawan ini biasanya lapor, tapi belum lapor hari ini.";
+
+        $prompt = "Kamu adalah asisten HR bot Herbigreen.
+{$konteks}
+Buatkan pesan reminder singkat (2-3 kalimat) yang personal dan persuasif untuk karyawan bernama {$nama} dari divisi {$divisi} yang belum mengirim laporan hari ini.
+Jangan terlalu formal, tapi tetap profesional. Bisa sedikit playful atau empathetic tergantung konteks.
+Gunakan bahasa Indonesia casual. Akhiri dengan emoji yang relevan.
+PENTING: Balas HANYA pesannya saja, tanpa penjelasan.";
+
+        return $this->generate($prompt, "Halo *{$nama}*, jangan lupa kirim laporan hari ini ya sebelum jam 6 sore! 🌿");
+    }
+
+    /**
+     * Generate insight AI untuk rekap malam harian ke Mas Jodi
+     */
+    public function generateNightSummaryInsight(int $total, int $laporan, int $izin, int $belumLapor, array $namaBelumLapor): string
+    {
+        $listBelum = empty($namaBelumLapor) ? 'Nihil' : implode(', ', array_slice($namaBelumLapor, 0, 5));
+        $persentase = $total > 0 ? round(($laporan / $total) * 100) : 0;
+
+        $prompt = "Kamu adalah AI analis HR untuk perusahaan Herbigreen.
+Data kehadiran hari ini:
+- Total karyawan aktif: {$total}
+- Yang sudah lapor: {$laporan} ({$persentase}%)
+- Yang izin/sakit: {$izin}
+- Yang belum lapor sama sekali: {$belumLapor}
+- Nama yang belum lapor: {$listBelum}
+
+Berikan insight singkat (2-3 kalimat) dan rekomendasi tindakan buat manajer dalam bahasa Indonesia yang natural dan actionable.
+Fokus pada pola yang perlu diperhatikan. Jangan lebay.
+PENTING: Balas HANYA insight-nya saja.";
+
+        $fallback = $belumLapor === 0
+            ? "🎉 Hari yang luar biasa! Semua karyawan sudah lapor."
+            : "⚠️ Ada {$belumLapor} karyawan yang perlu di-follow up besok.";
+
+        return $this->generate($prompt, $fallback);
+    }
+
+    /**
+     * Generate laporan mingguan AI untuk Mas Jodi (setiap Senin)
+     */
+    public function generateWeeklySummary(array $stats): string
+    {
+        $divisiStats = collect($stats['per_divisi'])->map(function ($d) {
+            return "{$d['nama']}: {$d['laporan']} laporan, {$d['izin']} izin";
+        })->implode(' | ');
+
+        $prompt = "Kamu adalah AI analis HR senior untuk perusahaan Herbigreen.
+Berikut data performa tim minggu lalu:
+- Total laporan masuk: {$stats['total_laporan']}
+- Total karyawan aktif: {$stats['total_karyawan']}
+- Rata-rata laporan per hari: {$stats['rata_laporan_per_hari']}
+- Total izin/sakit: {$stats['total_izin']}
+- Tingkat kepatuhan laporan: {$stats['persentase_compliance']}%
+- Performa per divisi: {$divisiStats}
+- Karyawan paling konsisten: {$stats['top_reporter']}
+- Karyawan perlu perhatian: {$stats['needs_attention']}
+
+Buatkan laporan mingguan eksekutif (maksimal 5 kalimat) yang mencakup:
+1. Ringkasan performa keseluruhan
+2. Divisi terbaik dan yang perlu perhatian
+3. Rekomendasi konkret untuk minggu ini
+Gunakan bahasa Indonesia profesional tapi tidak kaku. Sertakan emoji yang relevan.
+PENTING: Balas HANYA laporannya saja.";
+
+        return $this->generate($prompt, "📊 Laporan minggu lalu: {$stats['total_laporan']} laporan masuk dari {$stats['total_karyawan']} karyawan aktif.");
+    }
+
+    /**
      * Core function: hit Gemini API, fallback ke static kalo gagal
      */
     private function generate(string $prompt, string $fallback): string

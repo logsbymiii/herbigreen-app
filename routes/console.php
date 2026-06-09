@@ -16,3 +16,6 @@ Schedule::command('app:send-daily-reminder')->dailyAt('16:00');
 
 // Rekap total harian dikirim tiap jam 8 malam
 Schedule::command('app:send-night-summary')->dailyAt('20:00');
+
+// Laporan mingguan AI dikirim tiap Senin pagi jam 7
+Schedule::command('app:send-weekly-summary')->weeklyOn(1, '07:00');

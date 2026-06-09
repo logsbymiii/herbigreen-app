@@ -122,7 +122,7 @@ class WebhookController extends Controller
 
     private function processMessage($employee, $message, $urlFile, $sender): void
     {
-        $division = $employee->division->name ?? 'Umum';
+        $division = $employee->division?->name ?? 'Umum';
         
         Log::info("PESAN MASUK DARI {$employee->name}: $message");
 

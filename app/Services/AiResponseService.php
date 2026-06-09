@@ -268,7 +268,7 @@ Format JSON yang diharapkan:
                     ]],
                     'generationConfig' => [
                         'temperature' => 0.9,      // Makin tinggi = makin kreatif/random
-                        'maxOutputTokens' => 100,  // Biar nggak kepanjangan
+                        'maxOutputTokens' => 300,  // Cukup panjang untuk JSON
                     ]
                 ]
             );

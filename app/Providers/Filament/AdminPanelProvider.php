@@ -47,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->font('Plus Jakarta Sans')
             ->favicon(asset('images/logo-herbigreen.png'))
+            ->stylesheet(asset('css/filament-custom.css'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

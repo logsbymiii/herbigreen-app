@@ -1,1 +1,384 @@
-/* Custom CSS removed to revert to Filament defaults */
+/* ============================================================
+   HERBIGREEN — Custom Filament Theme
+   Inspired by Google Stitch design output
+   Color: Emerald #10b981 | BG: #f8f9ff | Font: Plus Jakarta Sans
+   ============================================================ */
+
+/* ── 1. GLOBAL BACKGROUND & BODY ── */
+html, body {
+    background-color: #f0f4f8 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* Desktop: app window effect */
+@media (min-width: 1024px) {
+    body {
+        background-color: #e2e8f0 !important;
+    }
+
+    .fi-layout {
+        background: #f8f9ff !important;
+        border-radius: 24px !important;
+        margin: 14px !important;
+        min-height: calc(100vh - 28px) !important;
+        box-shadow: 0 4px 32px rgba(0,0,0,0.06) !important;
+        overflow: hidden !important;
+    }
+}
+
+/* ── 2. SIDEBAR ── */
+aside.fi-sidebar {
+    background: #f8f9ff !important;
+    border-right: 1px solid #e2e8f0 !important;
+}
+
+.fi-sidebar-header {
+    background: transparent !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 1.25rem 1rem !important;
+}
+
+/* Sidebar brand name */
+.fi-sidebar-header .fi-brand-name {
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    color: #006c49 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Nav items */
+.fi-sidebar-item-button {
+    border-radius: 12px !important;
+    transition: all 0.2s ease !important;
+    margin: 2px 8px !important;
+    padding: 0.6rem 0.875rem !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    transform: translateX(3px) !important;
+}
+
+/* Active nav item */
+.fi-sidebar-item-active > a,
+.fi-sidebar-item-active > button {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    border: 1.5px solid rgba(16, 185, 129, 0.3) !important;
+    border-radius: 12px !important;
+}
+
+.fi-sidebar-item-active span,
+.fi-sidebar-item-active svg {
+    color: #006c49 !important;
+}
+
+/* Sidebar nav group label */
+.fi-sidebar-group-label {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    padding: 0 1.2rem !important;
+    margin-top: 0.5rem !important;
+}
+
+/* ── 3. TOPBAR / HEADER ── */
+header.fi-topbar,
+header.fi-topbar > nav {
+    background: rgba(248, 249, 255, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+}
+
+/* Search bar */
+.fi-global-search-field input,
+.fi-topbar .fi-global-search-field input {
+    background-color: #eef2f7 !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* ── 4. MAIN CONTENT AREA ── */
+.fi-main {
+    background: transparent !important;
+    animation: fadeInUp 0.4s ease-out !important;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 5. STAT CARDS (StatsOverview) ── */
+.fi-wi-stats-overview-stat {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04) !important;
+    transition: all 0.25s ease !important;
+    padding: 1.25rem !important;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(0, 108, 73, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Stat value (angka besar) */
+.fi-wi-stats-overview-stat-value {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    color: #0b1c30 !important;
+}
+
+/* Stat label */
+.fi-wi-stats-overview-stat-label {
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    color: #475569 !important;
+}
+
+/* Stat description */
+.fi-wi-stats-overview-stat-description {
+    font-size: 0.75rem !important;
+    color: #94a3b8 !important;
+}
+
+/* ── 6. WIDGET CARDS (Charts & Tables) ── */
+.fi-wi {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+    transition: all 0.25s ease !important;
+    overflow: hidden !important;
+}
+
+.fi-wi:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07) !important;
+}
+
+/* Kill default ring/border dari Tailwind */
+.fi-wi > div {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Widget header */
+.fi-wi-header {
+    padding: 1.1rem 1.25rem 0.75rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.fi-wi-header-heading {
+    font-size: 0.9375rem !important;
+    font-weight: 700 !important;
+    color: #0b1c30 !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* ── 7. SECTION CARDS (fi-section) ── */
+.fi-section {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+}
+
+.fi-section-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 1rem 1.25rem !important;
+}
+
+.fi-section-header-heading {
+    font-weight: 700 !important;
+    color: #0b1c30 !important;
+    font-size: 0.9375rem !important;
+}
+
+/* ── 8. TABLES ── */
+.fi-ta-table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+.fi-ta-header-cell {
+    background: #f8fafc !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    color: #94a3b8 !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.fi-ta-row {
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: background 0.15s ease !important;
+}
+
+.fi-ta-row:hover {
+    background-color: #f8fffe !important;
+}
+
+.fi-ta-cell {
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+    color: #334155 !important;
+}
+
+/* ── 9. BADGES / STATUS ── */
+.fi-badge {
+    border-radius: 8px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    padding: 0.2rem 0.6rem !important;
+}
+
+/* ── 10. BUTTONS ── */
+.fi-btn {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.fi-btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+}
+
+.fi-btn-color-primary {
+    background: linear-gradient(135deg, #10b981, #006c49) !important;
+    border: none !important;
+}
+
+/* ── 11. FORM INPUTS ── */
+.fi-input {
+    border-radius: 10px !important;
+    border-color: #e2e8f0 !important;
+    background: #f8f9ff !important;
+    font-size: 0.875rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.fi-input:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* ── 12. PAGE HEADER ── */
+.fi-page-header {
+    padding: 1.5rem 1.5rem 0.75rem !important;
+}
+
+.fi-page-header-heading {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    color: #0b1c30 !important;
+}
+
+/* ── 13. MOBILE RESPONSIVE ── */
+@media (max-width: 1023px) {
+    .fi-layout {
+        background: #f8f9ff !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .fi-wi-stats-overview-stat {
+        border-radius: 14px !important;
+    }
+
+    .fi-wi {
+        border-radius: 14px !important;
+    }
+
+    .fi-page-header-heading {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* ── 14. SCROLLBAR ── */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ── 15. CHART COLORS (ApexCharts) ── */
+.apexcharts-tooltip {
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* ── 16. AVATAR / INITIALS ── */
+.fi-avatar {
+    border-radius: 10px !important;
+}
+
+/* ── 17. DROPDOWN MENU ── */
+.fi-dropdown-panel {
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
+}
+
+.fi-dropdown-list-item-label {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+}
+
+/* ── 18. PAGINATION ── */
+.fi-pagination {
+    padding: 1rem !important;
+}
+
+.fi-pagination-item-btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+}
+
+/* ── 19. NOTIFICATION / TOAST ── */
+.fi-fo-notifications {
+    border-radius: 14px !important;
+}
+
+/* ── 20. LOGIN PAGE ── */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #f0fdf4 0%, #f8f9ff 50%, #ecfdf5 100%) !important;
+}
+
+.fi-simple-page {
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 20px 60px rgba(0, 108, 73, 0.08) !important;
+}

@@ -1,138 +1,114 @@
 /* ============================================================
    HERBIGREEN — Custom Filament v5 Theme
-   Filament v5 + Tailwind v4 compatible
+   Menggunakan selector spesifik buat override Filament v5
    ============================================================ */
 
-/* ── Override CSS Variables Filament v5 ── */
-:root,
-.fi-body {
-    --fi-sidebar-width: 17rem;
-    --fi-collapsed-sidebar-width: 4.5rem;
-
-    /* Warna primary ke emerald */
-    --color-primary-50:  #ecfdf5;
-    --color-primary-100: #d1fae5;
-    --color-primary-200: #a7f3d0;
-    --color-primary-300: #6ee7b7;
-    --color-primary-400: #34d399;
-    --color-primary-500: #10b981;
-    --color-primary-600: #059669;
-    --color-primary-700: #047857;
-    --color-primary-800: #065f46;
-    --color-primary-900: #064e3b;
-    --color-primary-950: #022c22;
-}
-
-/* ── BACKGROUND ── */
-html {
-    background-color: #e8edf2 !important;
-}
-
-body.fi-body {
-    background-color: #e8edf2 !important;
+/* ── BACKGROUND — pakai body.fi-body biar lebih spesifik dari Filament ── */
+html,
+body.fi-body,
+body.fi-body.fi-panel-admin {
+    background-color: #dde3ea !important;
     font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* ── LAYOUT WINDOW (desktop) ── */
+/* ── LAYOUT CARD (desktop) ── */
 @media (min-width: 1024px) {
-    .fi-layout {
+    body.fi-body .fi-layout {
         background: #f8f9ff !important;
         border-radius: 20px !important;
         margin: 12px !important;
-        box-shadow: 0 4px 40px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 4px 40px rgba(0,0,0,0.09) !important;
         min-height: calc(100vh - 24px) !important;
         overflow: hidden !important;
     }
 }
 
 /* ── SIDEBAR ── */
-.fi-sidebar {
+body.fi-body aside.fi-sidebar {
     background-color: #f8f9ff !important;
     border-right: 1px solid #e2e8f0 !important;
 }
 
-.fi-sidebar-header {
+body.fi-body .fi-sidebar-header {
     background-color: transparent !important;
     border-bottom: 1px solid #e2e8f0 !important;
 }
 
-/* Nav item hover */
-.fi-sidebar-item-button {
+body.fi-body .fi-sidebar-item-button {
     border-radius: 10px !important;
     transition: all 0.18s ease !important;
 }
 
-.fi-sidebar-item-button:hover {
-    background-color: rgba(16, 185, 129, 0.08) !important;
+body.fi-body .fi-sidebar-item-button:hover {
+    background-color: rgba(16, 185, 129, 0.09) !important;
     transform: translateX(2px) !important;
 }
 
-/* Active nav item */
-.fi-sidebar-item-active .fi-sidebar-item-button {
+body.fi-body .fi-sidebar-item-active .fi-sidebar-item-button,
+body.fi-body .fi-sidebar-item-active > a,
+body.fi-body .fi-sidebar-item-active > button {
     background-color: rgba(16, 185, 129, 0.12) !important;
     border: 1.5px solid rgba(16, 185, 129, 0.3) !important;
     border-radius: 10px !important;
 }
 
 /* ── TOPBAR ── */
-.fi-topbar {
-    background-color: rgba(248, 249, 255, 0.95) !important;
+body.fi-body header.fi-topbar {
+    background-color: rgba(248, 249, 255, 0.96) !important;
     backdrop-filter: blur(10px) !important;
     border-bottom: 1px solid #e2e8f0 !important;
     box-shadow: none !important;
 }
 
-/* ── MAIN AREA ── */
-.fi-main {
+/* ── MAIN ── */
+body.fi-body .fi-main {
     background: transparent !important;
 }
 
 /* ── STAT CARDS ── */
-.fi-wi-stats-overview-stat {
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
+body.fi-body .fi-wi-stats-overview-stat {
     background-color: #ffffff !important;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.04) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.fi-wi-stats-overview-stat:hover {
+body.fi-body .fi-wi-stats-overview-stat:hover {
     transform: translateY(-3px) !important;
     box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12) !important;
 }
 
-/* Angka besar di stat card */
-.fi-wi-stats-overview-stat-value {
-    font-size: 2rem !important;
+body.fi-body .fi-wi-stats-overview-stat-value {
     font-weight: 800 !important;
+    font-size: 2rem !important;
     letter-spacing: -0.03em !important;
 }
 
-/* ── WIDGET CARDS (Chart, Table, dll) ── */
-.fi-wi {
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
+/* ── WIDGETS / CARDS ── */
+body.fi-body .fi-wi {
     background-color: #ffffff !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.03) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04) !important;
     overflow: hidden !important;
+    transition: box-shadow 0.2s ease !important;
 }
 
-/* Hapus border default dari Tailwind */
-.fi-wi > * {
-    border: none !important;
-    box-shadow: none !important;
+body.fi-body .fi-wi:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07) !important;
 }
 
 /* ── SECTION ── */
-.fi-section {
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
+body.fi-body .fi-section {
     background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
 }
 
 /* ── TABLE ── */
-.fi-ta-header-cell {
+body.fi-body .fi-ta-header-cell {
     background-color: #f8fafc !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
@@ -141,36 +117,34 @@ body.fi-body {
     color: #94a3b8 !important;
 }
 
-.fi-ta-row:hover td,
-.fi-ta-row:hover .fi-ta-cell {
+body.fi-body .fi-ta-row:hover .fi-ta-cell {
     background-color: #f0fdf8 !important;
 }
 
 /* ── BUTTONS ── */
-.fi-btn {
+body.fi-body .fi-btn {
     border-radius: 10px !important;
     font-weight: 600 !important;
     transition: all 0.2s ease !important;
 }
 
 /* ── BADGE ── */
-.fi-badge {
+body.fi-body .fi-badge {
     border-radius: 6px !important;
     font-weight: 700 !important;
     font-size: 0.7rem !important;
-    letter-spacing: 0.04em !important;
 }
 
 /* ── DROPDOWN ── */
-.fi-dropdown-panel {
+body.fi-body .fi-dropdown-panel {
     border-radius: 14px !important;
     border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.09) !important;
     overflow: hidden !important;
 }
 
 /* ── PAGE HEADING ── */
-.fi-page-header-heading {
+body.fi-body .fi-page-header-heading {
     font-weight: 800 !important;
     letter-spacing: -0.025em !important;
 }
@@ -182,34 +156,31 @@ body.fi-body {
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 /* ── LOGIN PAGE ── */
-.fi-simple-layout {
+body.fi-simple-layout {
     background: linear-gradient(135deg, #ecfdf5, #f8f9ff, #ecfdf5) !important;
 }
 
-.fi-simple-page {
+body.fi-simple-layout .fi-simple-page {
     border-radius: 20px !important;
     border: 1px solid #e2e8f0 !important;
     box-shadow: 0 20px 60px rgba(0, 108, 73, 0.1) !important;
 }
 
-/* ── FADE IN ANIMATION ── */
-.fi-main > * {
-    animation: hbFadeIn 0.35s ease-out;
+/* ── MOBILE ── */
+@media (max-width: 1023px) {
+    html,
+    body.fi-body,
+    body.fi-body.fi-panel-admin {
+        background-color: #f8f9ff !important;
+    }
+}
+
+/* ── FADE IN ── */
+body.fi-body .fi-main {
+    animation: hbFadeIn 0.3s ease-out;
 }
 
 @keyframes hbFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── MOBILE ── */
-@media (max-width: 1023px) {
-    html, body.fi-body {
-        background-color: #f8f9ff !important;
-    }
-    .fi-layout {
-        border-radius: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-    }
 }

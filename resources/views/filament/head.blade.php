@@ -1,1 +1,5 @@
-<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:red;color:white;padding:8px;text-align:center;font-weight:bold;">🔴 RENDERHOOOK JALAN</div>
+<style>
+/* Test - apakah style tag ini jalan? */
+html body { background-color: #dde3ea !important; }
+html body.fi-body { background-color: #dde3ea !important; }
+</style>

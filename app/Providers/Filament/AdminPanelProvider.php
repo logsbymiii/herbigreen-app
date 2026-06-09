@@ -49,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('images/logo-herbigreen.png'))
             ->renderHook(
                 'panels::head.end',
-                fn () => '<link rel="stylesheet" href="' . asset('css/filament-custom.css') . '">'
+                fn () => view('filament.head')
             )
             ->middleware([
                 EncryptCookies::class,

@@ -45,7 +45,9 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([])
+            ->widgets([
+                \App\Filament\Widgets\CustomDashboardWidget::class,
+            ])
             ->font('Plus Jakarta Sans')
             ->favicon(asset('images/logo-herbigreen.png'))
             ->middleware([

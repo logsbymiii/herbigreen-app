@@ -14,9 +14,8 @@ class DivisionSeeder extends Seeder
     public function run(): void
     {
         $divisions = [
-            'Host Live', 'Customer Service', 'Packing', 'Marketing', 'Gudang',
-            'Editor', 'CRM', 'Admin Toko', 'Admin Affiliate', 
-            'VideoGrapher', 'Content Creator'
+            'Editor', 'CRM', 'Packing', 'Admin Toko', 'Admin Affiliate', 
+            'Host Live', 'VideoGrapher', 'Content Creator'
         ];
 
         foreach($divisions as $div){

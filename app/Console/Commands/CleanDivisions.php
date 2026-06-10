@@ -49,5 +49,17 @@ class CleanDivisions extends Command
         }
 
         $this->info("Done! Removed $deletedCount duplicate divisions in total.");
+
+        $this->info("Removing unlisted divisions...");
+        $allowedDivisions = [
+            'Editor', 'CRM', 'Packing', 'Admin Toko', 'Admin Affiliate', 
+            'Host Live', 'VideoGrapher', 'Content Creator'
+        ];
+
+        $unlistedDeleted = DB::table('divisions')
+            ->whereNotIn('name', $allowedDivisions)
+            ->delete();
+
+        $this->info("Done! Removed $unlistedDeleted unlisted divisions.");
     }
 }

@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\CustomLogin::class)
             ->brandName('Herbigreen Reporting')
             ->brandLogo(asset('images/logo-herbigreen.png'))
             ->brandLogoHeight('3rem')

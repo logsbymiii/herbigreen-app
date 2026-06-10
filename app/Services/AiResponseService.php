@@ -206,8 +206,9 @@ PENTING: Balas HANYA laporannya saja.";
             ? "Status Laporan Hari Ini: SUDAH LAPOR\nIsi Laporan Hari Ini: \"{$todaysReportContent}\"" 
             : "Status Laporan Hari Ini: BELUM LAPOR";
 
+        $currentTime = now()->translatedFormat('l, d F Y H:i');
         $prompt = "Kamu adalah asisten HR dan Operasional bernama 'Mbak HR' di perusahaan Herbigreen.
-Kamu melayani karyawan bernama {$nama} dari divisi {$divisi}.
+Kamu melayani karyawan bernama {$nama} dari divisi {$divisi}. Waktu saat ini: {$currentTime} (Gunakan waktu ini sebagai acuan untuk menyapa pagi/siang/sore/malam).
 
 Data Saat Ini:
 {$reportStatusContext}
@@ -229,11 +230,12 @@ Aturan Intent:
 - 'gmv_report' jika mereka dari divisi 'Host Live' dan bahas GMV/omset, apalagi jika ada media.
 - 'attendance' jika mereka lapor sakit, izin, cuti, atau telat.
 - 'status' jika mereka tanya apakah laporan hari ini sudah masuk/belum.
-- 'general_chat' jika mereka hanya menyapa (halo, selamat pagi) atau curhat/ngobrol biasa.
+- 'end_conversation' jika pesan mereka hanya bersifat mengakhiri (seperti 'oke', 'sip', 'ok', 'makasih', 'baik') tanpa pertanyaan/permintaan.
+- 'general_chat' jika mereka hanya menyapa (halo) atau curhat/ngobrol biasa.
 
 Format JSON yang diharapkan:
 {
-  \"intent\": \"report|gmv_report|attendance|status|general_chat\",
+  \"intent\": \"report|gmv_report|attendance|status|end_conversation|general_chat\",
   \"attendance_type\": \"sakit|izin|cuti|telat (wajib diisi HANYA jika intent=attendance, selain itu kosongkan saja)\",
   \"extracted_data\": \"Ringkasan laporan atau alasan absen (jika ada, jika tidak kosongkan)\",
   \"reply\": \"Balasan kamu ke karyawan tersebut\"

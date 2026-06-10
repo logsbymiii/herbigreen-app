@@ -119,9 +119,8 @@
     <main class="w-full max-w-[480px] animate-in fade-in slide-in-from-bottom-4 duration-700">
         <!-- Logo Section -->
         <div class="flex flex-col items-center mb-10">
-            <div class="flex items-center gap-2 mb-2">
-                <img src="{{ asset('images/logo-herbigreen.png') }}" alt="Herbigreen Logo" class="h-12 w-auto object-contain">
-                <h1 class="font-headline-md text-headline-md text-primary tracking-tight">Herbigreen</h1>
+            <div class="flex items-center justify-center mb-2">
+                <img src="{{ asset('images/logo-herbigreen.png') }}" alt="Herbigreen Logo" class="h-20 w-auto object-contain">
             </div>
         </div>
         

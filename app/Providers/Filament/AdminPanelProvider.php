@@ -29,9 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login(\App\Filament\Pages\Auth\CustomLogin::class)
-            ->brandName('Herbigreen Reporting')
+            ->brandName('Herbigreen')
             ->brandLogo(asset('images/logo-herbigreen.png'))
-            ->brandLogoHeight('3rem')
+            ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::hex('#4EA674'), // Ocean Green (Enak di mata)
                 'danger' => Color::hex('#EF4343'),

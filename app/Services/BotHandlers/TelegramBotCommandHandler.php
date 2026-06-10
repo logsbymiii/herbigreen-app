@@ -402,12 +402,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $this->conversationState->clearState($chatId);
 
         $this->sendMessage($chatId, "✅ *Pendaftaran Berhasil!*\n\n"
-                                   . "Selamat datang, {$employee->name}! 🎉\n\n"
-                                   . "Mulai sekarang kamu bisa ngelakuin hal-hal ini di sini:\n"
-                                   . "📝 *Lapor harian* hasil kerjamu atau omset jualan\n"
-                                   . "🤒 *Izin absen*, lapor sakit, atau cuti\n"
-                                   . "❓ *Tanya status* laporan hari ini udah masuk apa belum\n\n"
-                                   . "Nggak usah kaku, tinggal ketik aja pesannya layaknya chat biasa! Yuk dicoba! 😊");
+                                   . "Sip, datamu udah kedaftar ya, {$employee->name}! 🎉\n\n"
+                                   . "Btw, nomor ini nantinya bakal dipakai buat komunikasi soal absen dan laporan kerjamu. Kalau ke depannya kamu mau:\n"
+                                   . "📝 *Lapor harian* (kerjaan atau omset jualan)\n"
+                                   . "🤒 *Izin* nggak masuk, sakit, atau cuti\n"
+                                   . "❓ Nanya soal laporanmu hari ini udah terekap atau belum\n\n"
+                                   . "Tinggal chat ke sini aja ya, nanti aku bantu proses. Semangat kerjanya! 😊");
 
         return ['status' => true, 'message' => 'Registration completed'];
     }

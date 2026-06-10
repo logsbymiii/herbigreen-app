@@ -110,20 +110,20 @@
                     <!-- Bar Chart: Laporan per Divisi -->
                     <div class="glass-card p-4 flex flex-col h-[220px]">
                         <h3 class="font-body-md text-body-md text-on-surface font-semibold mb-3">Laporan per Divisi</h3>
-                        <div class="flex-1 flex items-end justify-between gap-2 pt-2 border-b border-surface-container-high pb-2">
-                            <div class="w-1/4 flex flex-col items-center gap-1.5">
+                        <div class="flex-1 flex justify-between gap-2 pt-2 border-b border-surface-container-high pb-2">
+                            <div class="w-1/4 h-full flex flex-col items-center justify-end gap-1.5">
                                 <div class="w-full max-w-[32px] bg-primary/20 rounded-t-md h-[80%] relative"></div>
                                 <span class="text-[10px] text-on-surface-variant">Sales</span>
                             </div>
-                            <div class="w-1/4 flex flex-col items-center gap-1.5">
+                            <div class="w-1/4 h-full flex flex-col items-center justify-end gap-1.5">
                                 <div class="w-full max-w-[32px] bg-primary/60 rounded-t-md h-[95%] relative"></div>
                                 <span class="text-[10px] text-on-surface-variant">Ops</span>
                             </div>
-                            <div class="w-1/4 flex flex-col items-center gap-1.5">
+                            <div class="w-1/4 h-full flex flex-col items-center justify-end gap-1.5">
                                 <div class="w-full max-w-[32px] bg-primary/40 rounded-t-md h-[60%] relative"></div>
                                 <span class="text-[10px] text-on-surface-variant">HR</span>
                             </div>
-                            <div class="w-1/4 flex flex-col items-center gap-1.5">
+                            <div class="w-1/4 h-full flex flex-col items-center justify-end gap-1.5">
                                 <div class="w-full max-w-[32px] bg-primary rounded-t-md h-[85%] relative"></div>
                                 <span class="text-[10px] text-on-surface-variant">Tech</span>
                             </div>

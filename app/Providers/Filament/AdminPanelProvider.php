@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Auth\CustomLogin::class)
             ->brandName('Herbigreen')
             ->brandLogo(asset('images/logo-herbigreen.png'))
-            ->brandLogoHeight('4rem')
+            ->brandLogoHeight('3rem')
             ->colors([
                 'primary' => Color::hex('#4EA674'), // Ocean Green (Enak di mata)
                 'danger' => Color::hex('#EF4343'),

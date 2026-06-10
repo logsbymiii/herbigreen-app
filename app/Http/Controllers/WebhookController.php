@@ -126,8 +126,12 @@ class WebhookController extends Controller
         
         Log::info("PESAN MASUK DARI {$employee->name}: $message");
 
+        $todaysReport = Report::where('employee_id', $employee->id)
+            ->whereDate('created_at', now()->format('Y-m-d'))
+            ->first();
+
         $ai = new AiResponseService();
-        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile));
+        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile), $todaysReport?->note);
         
         $intent = $analysis['intent'] ?? 'general_chat';
         $reply = $analysis['reply'] ?? "Halo {$employee->name}! Ada yang bisa kubantu?";
@@ -165,13 +169,8 @@ class WebhookController extends Controller
             $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'status') {
-            $sudahLapor = Report::where('employee_id', $employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->exists();
-            $statusReply = $sudahLapor 
-                ? "Laporanmu hari ini udah aman tercatat di sistem kok! Makasih yaa! ✅" 
-                : "Hmm, aku cek kamu belum kirim laporan hari ini nih. Yuk lapor sekarang! 🌿";
-            $provider->sendMessage($sender, $statusReply);
+            // Karena AI sudah membalas status dengan natural, kita cukup kirim balasannya
+            $provider->sendMessage($sender, $reply);
             
         } else {
             // General chat, bot cuma balas obrolan biasa

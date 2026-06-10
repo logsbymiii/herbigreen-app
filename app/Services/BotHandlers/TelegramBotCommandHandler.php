@@ -26,6 +26,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'lapor'   => $this->handleLapor($chatId),
                 'absen'   => $this->handleAbsen($chatId),
                 'izin'    => $this->handleAbsen($chatId), // alias /absen
+                'edit_laporan' => $this->handleEditLaporan($chatId),
+                'edit_profil'  => $this->handleEditProfil($chatId),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -267,6 +269,9 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
             'awaiting_report_text'  => $this->processReportText($chatId, $message),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
+            'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
+            'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
+            'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),
             default => ['status' => false, 'message' => 'Unknown step'],
         };
     }
@@ -400,5 +405,122 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                                    . "Tinggal chat ke sini aja ya, nanti aku bantu proses. Semangat kerjanya! 😊");
 
         return ['status' => true, 'message' => 'Registration completed'];
+    }
+
+    private function handleEditLaporan(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true];
+        }
+
+        $sudahLapor = \App\Models\Report::where('employee_id', $employee->id)
+            ->whereDate('created_at', now()->format('Y-m-d'))
+            ->exists();
+
+        if (!$sudahLapor) {
+            $this->sendMessage($chatId, "⚠️ Kamu belum mengirim laporan apapun hari ini. Ketik laporan langsung atau pakai /lapor.");
+            return ['status' => true];
+        }
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_edit_report_text');
+        $this->sendMessage($chatId, "📝 Oke! Silakan ketik *seluruh teks laporan barumu* untuk hari ini. Laporan lamamu akan diganti dengan yang baru ini.");
+        return ['status' => true];
+    }
+
+    private function processEditReportText(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        $report = \App\Models\Report::where('employee_id', $employee->id)
+            ->whereDate('created_at', now()->format('Y-m-d'))
+            ->first();
+
+        if ($report) {
+            $report->update(['note' => trim($message)]);
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
+        } else {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "❌ Gagal memperbarui. Laporan tidak ditemukan.");
+        }
+        return ['status' => true];
+    }
+
+    private function handleEditProfil(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true];
+        }
+
+        $info = "👤 *Profil Kamu Saat Ini:*\n"
+              . "Nama: {$employee->name}\n"
+              . "Divisi: {$employee->division->name}\n"
+              . "No WA: {$employee->phone}\n\n"
+              . "Pilih data yang mau kamu ubah:\n"
+              . "1️⃣ Ubah Nama\n"
+              . "2️⃣ Ubah Divisi\n"
+              . "3️⃣ Ubah Nomor WA\n\n"
+              . "Balas dengan angkanya saja ya!";
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_edit_profile_choice');
+        $this->sendMessage($chatId, $info);
+        return ['status' => true];
+    }
+
+    private function processEditProfileChoice(int | string $chatId, string $message): array
+    {
+        $choice = trim($message);
+        if (!in_array($choice, ['1', '2', '3'])) {
+            $this->sendMessage($chatId, "❌ Pilihan nggak valid. Balas dengan angka 1, 2, atau 3.");
+            return ['status' => true];
+        }
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_edit_profile_value', ['edit_choice' => $choice]);
+        
+        if ($choice === '1') {
+            $this->sendMessage($chatId, "Ketik *Nama Baru* kamu:");
+        } elseif ($choice === '2') {
+            $divisions = Division::all()->map(fn($d) => "{$d->id}. {$d->name}")->implode("\n");
+            $this->sendMessage($chatId, "Pilih *Divisi Baru* kamu:\n\n{$divisions}\n\nBalas dengan nomor divisi.");
+        } else {
+            $this->sendMessage($chatId, "Ketik *Nomor WA Baru* kamu (Format: 62xxx / 08xxx):");
+        }
+        
+        return ['status' => true];
+    }
+
+    private function processEditProfileValue(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        $tempData = $this->conversationState->getTempData($chatId);
+        $choice = $tempData['edit_choice'] ?? '1';
+        $newValue = trim($message);
+
+        if ($choice === '1') {
+            $employee->update(['name' => $newValue]);
+            $this->sendMessage($chatId, "✅ Berhasil! Nama kamu sekarang jadi: *{$newValue}*");
+        } elseif ($choice === '2') {
+            $divisionId = intval($newValue);
+            $division = Division::find($divisionId);
+            if (!$division) {
+                $this->sendMessage($chatId, "❌ Divisi tidak ditemukan. Ketik ulang nomor divisi yang benar:");
+                return ['status' => true];
+            }
+            $employee->update(['division_id' => $division->id]);
+            $this->sendMessage($chatId, "✅ Berhasil! Divisi kamu sekarang jadi: *{$division->name}*");
+        } elseif ($choice === '3') {
+            $phone = preg_replace('/\D/', '', $newValue);
+            if (str_starts_with($phone, '8')) $phone = '62' . substr($phone, 1);
+            if (str_starts_with($phone, '08')) $phone = '62' . substr($phone, 1);
+            
+            $employee->update(['phone' => $phone]);
+            $this->sendMessage($chatId, "✅ Berhasil! Nomor WA kamu sekarang jadi: *{$phone}*");
+        }
+
+        $this->conversationState->clearState($chatId);
+        return ['status' => true];
     }
 }

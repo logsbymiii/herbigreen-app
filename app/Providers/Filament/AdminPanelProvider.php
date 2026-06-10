@@ -44,13 +44,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
             ])
-            ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_END,
-                fn (): string => \Illuminate\Support\Facades\Blade::render('@include("filament.custom-head")'),
-            )
-            // ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                \App\Filament\Widgets\CustomDashboardWidget::class,
             ])
             ->font('Plus Jakarta Sans')
             ->favicon(asset('images/logo-herbigreen.png'))

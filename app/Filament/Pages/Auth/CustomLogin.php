@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
-use Filament\Pages\Auth\Login as BaseLogin;
+use Filament\Auth\Pages\Login as BaseLogin;
 
 class CustomLogin extends BaseLogin
 {
@@ -10,14 +10,14 @@ class CustomLogin extends BaseLogin
     public $password = '';
     public $remember = false;
 
-    protected static string $view = 'filament.pages.auth.custom-login';
+    protected string $view = 'filament.pages.auth.custom-login';
 
     public function getLayout(): string
     {
         return 'filament.pages.auth.custom-layout';
     }
 
-    public function authenticate(): ?\Filament\Http\Responses\Auth\Contracts\LoginResponse
+    public function authenticate(): ?\Filament\Auth\Http\Responses\Contracts\LoginResponse
     {
         $this->validate([
             'email' => 'required|email',
@@ -34,6 +34,6 @@ class CustomLogin extends BaseLogin
 
         session()->regenerate();
 
-        return app(\Filament\Http\Responses\Auth\Contracts\LoginResponse::class);
+        return app(\Filament\Auth\Http\Responses\Contracts\LoginResponse::class);
     }
 }

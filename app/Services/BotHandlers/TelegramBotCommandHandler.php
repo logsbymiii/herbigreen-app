@@ -272,8 +272,38 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),
+            'waiting_gmv_confirmation' => $this->processGmvConfirmation($chatId, $message),
             default => ['status' => false, 'message' => 'Unknown step'],
         };
+    }
+
+    private function processGmvConfirmation(string $chatId, string $message): array
+    {
+        $message = strtolower(trim($message));
+        $tempData = $this->conversationState->getTempData($chatId);
+
+        if (in_array($message, ['ya', 'y', 'benar', 'bener', 'betul', 'iya'])) {
+            // Simpan ke database
+            \App\Models\GmvReport::create([
+                'employee_id'     => $tempData['employee_id'],
+                'screenshot_path' => $tempData['screenshot_path'],
+                'gmv_amount'      => $tempData['gmv_amount'],
+                'raw_ocr_text'    => $tempData['raw_ocr_text'],
+                'live_date'       => $tempData['live_date'],
+            ]);
+
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
+            \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm YA (Tele). Disimpan.");
+        } elseif (in_array($message, ['tidak', 't', 'salah', 'enggak', 'nggak', 'tdk'])) {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "❌ Oke, laporan dibatalkan.\n\nCoba kirim ulang gambarnya yang lebih tajam/terang ya biar AI gampang bacanya!");
+            \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm TIDAK (Tele). Dibatalkan.");
+        } else {
+            $this->sendMessage($chatId, "Aku kurang paham maksudmu. Tolong balas dengan *Ya* jika angkanya benar, atau *Tidak* jika salah.");
+        }
+
+        return ['status' => true, 'message' => 'GMV confirmation processed'];
     }
 
     private function processName(int | string $chatId, string $message): array

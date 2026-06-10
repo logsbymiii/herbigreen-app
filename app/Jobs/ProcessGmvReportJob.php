@@ -17,24 +17,23 @@ class ProcessGmvReportJob implements ShouldQueue
 {
     use Queueable, Dispatchable, InteractsWithQueue, SerializesModels;
 
-    public int $employeeId;
-    public ?string $urlFile;
-
-    public function __construct(int $employeeId, ?string $urlFile)
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(public int $employeeId, public string $fileUrl, public string $sender)
     {
-        $this->employeeId = $employeeId;
-        $this->urlFile = $urlFile;
+        //
     }
 
+    /**
+     * Execute the job.
+     */
     public function handle(): void
     {
-        if (!$this->urlFile) {
-            Log::warning("KOKI GMV: Karyawan ID {$this->employeeId} lapor GMV tapi lupa ngirim screenshot!");
-            return;
-        }
+        Log::info("KOKI GMV: Mulai proses download screenshot...");
 
-        // 1. Download foto dari Telegram/WA
-        $response = Http::withoutVerifying()->timeout(30)->get($this->urlFile);
+        // 1. Download file
+        $response = Http::withoutVerifying()->timeout(30)->get($this->fileUrl);
 
         if (!$response->successful()) {
             throw new \Exception("KOKI GMV GAGAL: File tidak bisa didownload. Status: " . $response->status());
@@ -87,15 +86,35 @@ class ProcessGmvReportJob implements ShouldQueue
             Log::warning("KOKI GMV: GEMINI_API_KEY belum diset, OCR dilewati.");
         }
 
-        // 4. Simpan ke database
-        GmvReport::create([
-            'employee_id'     => $this->employeeId,
-            'screenshot_path' => $filename,
-            'gmv_amount'      => $gmvAmount,
-            'raw_ocr_text'    => $rawOcrText,
-            'live_date'       => now()->format('Y-m-d'),
-        ]);
+        // 4. Minta Konfirmasi ke User via Bot
+        $provider = \App\Services\MessageProviderFactory::create();
+        
+        if ($gmvAmount !== null && $gmvAmount > 0) {
+            // Simpan data sementara ke state
+            $stateService = new \App\Services\ConversationStateService();
+            $stateService->setState($this->sender, 'waiting_gmv_confirmation', [
+                'employee_id' => $this->employeeId,
+                'screenshot_path' => $filename,
+                'gmv_amount' => $gmvAmount,
+                'raw_ocr_text' => $rawOcrText,
+                'live_date' => now()->format('Y-m-d'),
+            ]);
 
-        Log::info("KOKI GMV: Selesai! GMV={$gmvAmount}, File={$filename}");
+            $formattedGmv = number_format($gmvAmount, 0, ',', '.');
+            $msg = "📸 *Laporan GMV Diterima*\n\n"
+                 . "Aku berhasil baca screenshot kamu nih. Angka GMV yang kudapet: *Rp {$formattedGmv}*\n\n"
+                 . "Bener nggak angka segitu? 🤔\n"
+                 . "(Balas: *Ya* / *Tidak*)";
+            
+            $provider->sendMessage($this->sender, $msg);
+            Log::info("KOKI GMV: Menunggu konfirmasi user. Angka: {$gmvAmount}");
+        } else {
+            // Kalau gagal baca angka atau dapet 0
+            $msg = "📸 *Laporan GMV Diterima*\n\n"
+                 . "Aduh, aku gagal baca angka dari screenshot yang kamu kirim (atau kebaca 0). Gambarnya burem atau angkanya nggak kelihatan jelas nih 🥺\n\n"
+                 . "Coba kirim ulang gambarnya yang lebih tajam ya!";
+            $provider->sendMessage($this->sender, $msg);
+            Log::warning("KOKI GMV: Gagal baca angka, minta upload ulang. Raw: {$rawOcrText}");
+        }
     }
 }

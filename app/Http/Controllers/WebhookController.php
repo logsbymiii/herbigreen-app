@@ -165,7 +165,11 @@ class WebhookController extends Controller
             $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'gmv_report') {
-            ProcessGmvReportJob::dispatch($employee->id, $urlFile);
+            if ($urlFile) {
+                ProcessGmvReportJob::dispatch($employee->id, $urlFile, $sender);
+            } else {
+                ProcessGmvReportJob::dispatch($employee->id, '', $sender);
+            }
             $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'status') {

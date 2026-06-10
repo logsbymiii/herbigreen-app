@@ -226,8 +226,38 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             'awaiting_edit_report_text'  => $this->processEditReportText($phone, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($phone, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($phone, $message),
+            'waiting_gmv_confirmation' => $this->processGmvConfirmation($phone, $message),
             default => ['status' => false, 'message' => 'Unknown step'],
         };
+    }
+
+    private function processGmvConfirmation(string $phone, string $message): array
+    {
+        $message = strtolower(trim($message));
+        $tempData = $this->conversationState->getTempData($phone);
+
+        if (in_array($message, ['ya', 'y', 'benar', 'bener', 'betul', 'iya'])) {
+            // Simpan ke database
+            \App\Models\GmvReport::create([
+                'employee_id'     => $tempData['employee_id'],
+                'screenshot_path' => $tempData['screenshot_path'],
+                'gmv_amount'      => $tempData['gmv_amount'],
+                'raw_ocr_text'    => $tempData['raw_ocr_text'],
+                'live_date'       => $tempData['live_date'],
+            ]);
+
+            $this->conversationState->clearState($phone);
+            $this->sendMessage($phone, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
+            \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm YA. Disimpan.");
+        } elseif (in_array($message, ['tidak', 't', 'salah', 'enggak', 'nggak', 'tdk'])) {
+            $this->conversationState->clearState($phone);
+            $this->sendMessage($phone, "❌ Oke, laporan dibatalkan.\n\nCoba kirim ulang gambarnya yang lebih tajam/terang ya biar AI gampang bacanya!");
+            \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm TIDAK. Dibatalkan.");
+        } else {
+            $this->sendMessage($phone, "Aku kurang paham maksudmu. Tolong balas dengan *Ya* jika angkanya benar, atau *Tidak* jika salah.");
+        }
+
+        return ['status' => true, 'message' => 'GMV confirmation processed'];
     }
 
     private function processName(string $phone, string $message): array

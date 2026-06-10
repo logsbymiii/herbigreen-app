@@ -210,9 +210,9 @@ Konteks: {$konteksMedia}
 
 Tugasmu:
 1. Pahami intensi/tujuan dari pesan karyawan tersebut.
-2. Buat balasan ('reply') layaknya CS manusia yang empati dan komunikatif. Jangan kaku. Gunakan bahasa Indonesia sehari-hari, sedikit gaul nggak masalah, sisipkan emoji. Jangan panggil dirimu 'bot'. Jangan pernah kirim menu angka 1,2,3,4.
+2. Buat balasan ('reply') layaknya asisten atau teman kerja manusia yang penuh empati, komunikatif, dan sangat natural. Jangan terdengar seperti robot yang kaku. Gunakan bahasa Indonesia sehari-hari, sedikit gaul (seperti pakai kata 'aku', 'kamu', 'nih', 'deh', 'sih') nggak masalah. Selipkan emoji dengan wajar. JANGAN PERNAH menyebut dirimu sebagai AI atau bot. JANGAN PERNAH mengirimkan pilihan menu angka (1,2,3). Buat percakapan mengalir santai.
 3. Ekstrak data jika ada informasi laporan (misalnya jumlah jualan) atau alasan absen/izin.
-4. Output HARUS dalam format JSON murni, tanpa markdown ```json.
+4. Output HARUS dalam format JSON murni, mengikuti skema di bawah ini.
 
 Aturan Intent:
 - 'report' jika mereka memberikan laporan hasil kerja/penjualan/kegiatan.
@@ -232,8 +232,8 @@ Format JSON yang diharapkan:
         $jsonString = $this->generate($prompt, json_encode([
             'intent' => 'general_chat',
             'extracted_data' => '',
-            'reply' => "Halo {$nama}! Ada yang bisa dibantu hari ini? 😊"
-        ]));
+            'reply' => "Halo {$nama}! Ada yang bisa kubantu hari ini? 😊"
+        ]), true);
 
         // Bersihkan kalau ada sisa markdown
         $jsonString = preg_replace('/```json|```/i', '', $jsonString);
@@ -256,7 +256,7 @@ Format JSON yang diharapkan:
     /**
      * Core function: hit Groq API, fallback ke static kalo gagal
      */
-    private function generate(string $prompt, string $fallback): string
+    private function generate(string $prompt, string $fallback, bool $isJson = false): string
     {
         if (!$this->apiKey) {
             \Illuminate\Support\Facades\Log::warning('AiResponseService: GROQ_API_KEY belum diset.');
@@ -265,25 +265,30 @@ Format JSON yang diharapkan:
 
         try {
             // Groq API Endpoint (OpenAI compatible)
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', [
+            $payload = [
                 'model' => 'llama-3.3-70b-versatile',
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a helpful assistant that outputs ONLY valid JSON. Do not include any markdown blocks or conversational text outside the JSON.'
+                        'content' => $isJson ? 'You are a helpful assistant that outputs ONLY valid JSON. Do not include any markdown blocks or conversational text outside the JSON.' : 'You are a helpful, human-like HR assistant. Respond directly without any formatting wrappers.'
                     ],
                     [
                         'role' => 'user',
                         'content' => $prompt
                     ]
                 ],
-                'temperature' => 0.3,
+                'temperature' => $isJson ? 0.3 : 0.7,
                 'max_tokens' => 500,
-                'response_format' => ['type' => 'json_object']
-            ]);
+            ];
+
+            if ($isJson) {
+                $payload['response_format'] = ['type' => 'json_object'];
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', $payload);
 
             if ($response->successful()) {
                 $text = $response->json('choices.0.message.content');

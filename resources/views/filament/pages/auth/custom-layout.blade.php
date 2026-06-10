@@ -120,7 +120,7 @@
         <!-- Logo Section -->
         <div class="flex flex-col items-center mb-10">
             <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-primary text-[40px]" style="font-variation-settings: 'FILL' 1;">eco</span>
+                <img src="{{ asset('images/logo-herbigreen.png') }}" alt="Herbigreen Logo" class="h-12 w-auto object-contain">
                 <h1 class="font-headline-md text-headline-md text-primary tracking-tight">Herbigreen</h1>
             </div>
         </div>
@@ -142,22 +142,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Side Image Decoration for Desktop -->
-    <div class="hidden xl:flex fixed right-10 bottom-10 w-72 h-48 glass-card rounded-xl p-4 flex-col justify-between shadow-2xl animate-pulse">
-        <div class="flex items-center justify-between">
-            <div class="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center">
-                <span class="material-symbols-outlined text-primary text-[20px]">trending_up</span>
-            </div>
-            <span class="text-label-md font-label-md text-primary">+12.5% Growth</span>
-        </div>
-        <div class="space-y-2">
-            <div class="h-2 w-full bg-outline-variant/30 rounded-full">
-                <div class="h-2 w-3/4 bg-primary rounded-full"></div>
-            </div>
-            <p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Engagement Intelligence</p>
-        </div>
-    </div>
 
     @livewire('notifications')
     @livewireScripts

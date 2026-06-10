@@ -252,14 +252,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
     private function handleConversationStep(int | string $chatId, string $step, string $message, array $rawUpdate = []): array
     {
-        $cancelWords = ['batal', 'cancel', 'gak jadi', 'ulang', 'salah'];
         $messageLower = strtolower(trim($message));
-        foreach ($cancelWords as $word) {
-            if (str_contains($messageLower, $word) && $step !== 'confirm_registration') {
-                $this->conversationState->clearState($chatId);
-                $this->sendMessage($chatId, "❌ Proses dibatalkan/diulang.\n\nKetik /daftar jika ingin mendaftar ulang dari awal.");
-                return ['status' => false, 'message' => 'Process cancelled by user'];
-            }
+        if (preg_match('/\b(batal|cancel|gak jadi|ulang|salah)\b/i', $messageLower) && $step !== 'confirm_registration') {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "❌ Proses dibatalkan/diulang.\n\nKetik /daftar jika ingin mendaftar ulang dari awal.");
+            return ['status' => false, 'message' => 'Process cancelled by user'];
         }
 
         return match ($step) {

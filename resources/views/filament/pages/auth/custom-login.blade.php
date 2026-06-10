@@ -1,6 +1,6 @@
 <div>
     <div class="mb-8 text-center md:text-left">
-        <h2 class="font-headline-md text-headline-md text-on-surface mb-2">Selamat Datang Kembali</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-2">Selamat Datang</h2>
         <p class="font-body-md text-body-md text-on-surface-variant">Silakan masuk ke akun Anda untuk melanjutkan.</p>
     </div>
 

@@ -205,10 +205,13 @@
     z-index: 0;
 }
 
-/* Bawa main container ke depan overlay */
+/* Bawa main container ke depan overlay dan buang background putih default */
+.fi-simple-main-ctn,
 .fi-simple-main {
     position: relative;
     z-index: 1;
+    background-color: transparent !important;
+    background: transparent !important;
 }
 
 /* Glassmorphism di box login */

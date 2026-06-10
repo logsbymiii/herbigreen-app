@@ -1,7 +1,7 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
-@source '../../../../app/Filament/**/*';
-@source '../../../../resources/views/filament/**/*';
+@source "../../../../app/Filament/**/*.php";
+@source "../../../../resources/views/**/*.blade.php";
 
 @theme {
     --color-surface-dim: #cbdbf5;
@@ -60,241 +60,42 @@
     --font-headline-lg-mobile: "Plus Jakarta Sans", sans-serif;
     --font-label-md: "Plus Jakarta Sans", sans-serif;
     --font-caption: "Plus Jakarta Sans", sans-serif;
+    --font-body-sm: "Plus Jakarta Sans", sans-serif;
 
     --spacing-card-padding: 24px;
-    --spacing-container-margin: 32px;
-    --spacing-unit: 8px;
     --spacing-gutter: 24px;
-    --spacing-stack-md: 24px;
-    --spacing-stack-sm: 12px;
-    --spacing-stack-lg: 48px;
 }
 
-/*
- * ============================================================
- * HERBIGREEN — Custom Filament v5 Theme
- * Target: Fintech/SaaS aesthetic (white, clean, modern)
- * ============================================================
- */
-
-/* ── Body & Layout: WHITE background ── */
-.fi-body {
-    background-color: #f0f4f8 !important;
-}
-.fi-layout {
-    background-color: #f0f4f8 !important;
-}
-.fi-main {
-    background-color: transparent !important;
-    animation: hbFadeIn 0.3s ease-out;
+.custom-dashboard-wrapper {
+    background-color: transparent;
+    color: var(--color-on-surface);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ── Sidebar: clean white ── */
-.fi-sidebar {
-    background-color: #ffffff !important;
-    border-right: 1px solid #e8edf2 !important;
-    box-shadow: 2px 0 12px rgb(0 0 0 / 4%) !important;
-}
-.fi-sidebar-header {
-    border-bottom: 1px solid #e8edf2 !important;
-    background-color: #ffffff !important;
-    padding: 1.25rem 1rem !important;
-}
-.fi-sidebar-item-button {
-    border-radius: 0.625rem !important;
-    transition: all 0.15s ease !important;
-}
-.fi-sidebar-item-button:hover {
-    background-color: #f0fdf4 !important;
-}
-.fi-sidebar-item-active .fi-sidebar-item-button {
-    background-color: #ecfdf5 !important;
-    border: none !important;
-}
-.fi-sidebar-item-active .fi-sidebar-item-button span {
-    color: #059669 !important;
-    font-weight: 600 !important;
-}
-.fi-sidebar-item-active .fi-sidebar-item-button svg {
-    color: #059669 !important;
+.custom-dashboard-wrapper .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ── Topbar: clean white ── */
-.fi-topbar {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid #e8edf2 !important;
-    box-shadow: 0 1px 8px rgb(0 0 0 / 4%) !important;
+.custom-dashboard-wrapper .material-symbols-outlined.fill {
+    font-variation-settings: 'FILL' 1;
 }
 
-/* ── STAT CARDS — Jantung tampilan ── */
-.fi-wi-stats-overview-stat {
-    background-color: #ffffff !important;
-    border: 1px solid #e8edf2 !important;
-    border-radius: 1.25rem !important;
-    box-shadow: 0 2px 12px rgb(0 0 0 / 5%) !important;
-    padding: 1.25rem !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    overflow: hidden !important;
-    position: relative !important;
-}
-.fi-wi-stats-overview-stat:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 28px rgb(5 150 105 / 12%) !important;
-}
-/* Stat value: angka besar */
-.fi-wi-stats-overview-stat-value {
-    font-size: 2rem !important;
-    font-weight: 800 !important;
-    line-height: 1.1 !important;
-    color: #0f172a !important;
-    letter-spacing: -0.02em !important;
-}
-/* Stat label: kecil, abu-abu */
-.fi-wi-stats-overview-stat-label {
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    color: #94a3b8 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-}
-/* Stat description */
-.fi-wi-stats-overview-stat-description {
-    font-size: 0.8rem !important;
-    color: #64748b !important;
-    margin-top: 0.5rem !important;
-    font-weight: 500 !important;
-}
-/* Icon di stat card */
-.fi-wi-stats-overview-stat-description-icon {
-    width: 1rem !important;
-    height: 1rem !important;
+.custom-dashboard-wrapper .glass-card {
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid var(--color-surface-container-high);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
-/* ── Widget / Chart Cards ── */
-.fi-wi {
-    background-color: #ffffff !important;
-    border: 1px solid #e8edf2 !important;
-    border-radius: 1.25rem !important;
-    box-shadow: 0 2px 12px rgb(0 0 0 / 5%) !important;
-    overflow: hidden !important;
+.custom-dashboard-wrapper .no-scrollbar::-webkit-scrollbar {
+    display: none;
 }
-.fi-wi:hover {
-    box-shadow: 0 4px 20px rgb(0 0 0 / 8%) !important;
+.custom-dashboard-wrapper .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-/* ── Section ── */
-.fi-section {
-    background-color: #ffffff !important;
-    border: 1px solid #e8edf2 !important;
-    border-radius: 1.25rem !important;
-    box-shadow: 0 2px 12px rgb(0 0 0 / 5%) !important;
-    overflow: hidden !important;
-}
-.fi-section-header {
-    border-bottom: 1px solid #f1f5f9 !important;
-    padding: 1rem 1.25rem !important;
-}
-.fi-section-header-heading {
-    font-weight: 700 !important;
-    color: #0f172a !important;
-    font-size: 0.95rem !important;
-}
-
-/* ── Table ── */
-.fi-ta-header-cell {
-    background-color: #f8fafc !important;
-    font-size: 0.7rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
-    color: #94a3b8 !important;
-    padding: 0.75rem 1rem !important;
-}
-.fi-ta-cell {
-    font-size: 0.875rem !important;
-    color: #334155 !important;
-}
-.fi-ta-row:hover td {
-    background-color: #f8fffe !important;
-}
-
-/* ── Buttons ── */
-.fi-btn {
-    border-radius: 0.625rem !important;
-    font-weight: 600 !important;
-    font-size: 0.85rem !important;
-}
-.fi-btn-primary {
-    background-color: #059669 !important;
-    border-color: #059669 !important;
-}
-.fi-btn-primary:hover {
-    background-color: #047857 !important;
-}
-
-/* ── Badges ── */
-.fi-badge {
-    border-radius: 0.5rem !important;
-    font-weight: 700 !important;
-    font-size: 0.7rem !important;
-    letter-spacing: 0.03em !important;
-}
-
-/* ── Dropdown ── */
-.fi-dropdown-panel {
-    background-color: #ffffff !important;
-    border-radius: 1rem !important;
-    border: 1px solid #e8edf2 !important;
-    box-shadow: 0 12px 40px rgb(0 0 0 / 10%) !important;
-}
-
-/* ── Modal ── */
-.fi-modal-window {
-    background-color: #ffffff !important;
-    border-radius: 1.25rem !important;
-}
-
-/* ── Login Page ── */
-.fi-simple-layout {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0f9ff 50%, #f0fdf4 100%) !important;
-}
-.fi-simple-page {
-    background-color: #ffffff !important;
-    border-radius: 1.5rem !important;
-    border: 1px solid #e8edf2 !important;
-    box-shadow: 0 25px 60px rgb(5 150 105 / 12%) !important;
-}
-
-/* ── Page heading ── */
-.fi-page-header-heading {
-    font-size: 1.75rem !important;
-    font-weight: 800 !important;
-    color: #0f172a !important;
-    letter-spacing: -0.02em !important;
-}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* ── Animations ── */
-@keyframes hbFadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Color coding untuk stat cards berdasarkan urutan ── */
-.fi-wi-stats-overview .fi-wi-stats-overview-stat:nth-child(1) .fi-wi-stats-overview-stat-description-icon {
-    color: #059669 !important;
-}
-.fi-wi-stats-overview .fi-wi-stats-overview-stat:nth-child(2) .fi-wi-stats-overview-stat-description-icon {
-    color: #0284c7 !important;
-}
-.fi-wi-stats-overview .fi-wi-stats-overview-stat:nth-child(3) .fi-wi-stats-overview-stat-description-icon {
-    color: #d97706 !important;
-}
-.fi-wi-stats-overview .fi-wi-stats-overview-stat:nth-child(4) .fi-wi-stats-overview-stat-description-icon {
-    color: #dc2626 !important;
+.custom-dashboard-wrapper .emerald-gradient-fill {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0) 100%);
 }

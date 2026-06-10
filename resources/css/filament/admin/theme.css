@@ -189,13 +189,36 @@
 
 /* ── Login Page ── */
 .fi-simple-layout {
-    background: linear-gradient(135deg, #ecfdf5 0%, #f0f9ff 50%, #f0fdf4 100%) !important;
+    background-image: url('/images/login-bg.png') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    min-height: 100vh !important;
 }
+
+/* Overlay gelap halus biar form lebih menonjol */
+.fi-simple-layout::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4) !important;
+    z-index: 0;
+}
+
+/* Bawa main container ke depan overlay */
+.fi-simple-main {
+    position: relative;
+    z-index: 1;
+}
+
+/* Glassmorphism di box login */
 .fi-simple-page {
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
     border-radius: 1.5rem !important;
-    border: 1px solid #e8edf2 !important;
-    box-shadow: 0 25px 60px rgb(5 150 105 / 12%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* ── Page heading ── */

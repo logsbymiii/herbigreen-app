@@ -45,7 +45,7 @@
                         <span class="font-label-md text-label-md text-primary bg-primary/10 px-2 py-1 rounded-full">+12%</span>
                     </div>
                     <div>
-                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">1,248</h3>
+                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">{{ number_format($totalKaryawan) }}</h3>
                         <p class="font-body-md text-body-md text-on-surface-variant">Total Karyawan</p>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                         <span class="font-label-md text-label-md text-tertiary bg-tertiary-container/10 px-2 py-1 rounded-full">Hari Ini</span>
                     </div>
                     <div>
-                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">856</h3>
+                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">{{ number_format($laporanMasuk) }}</h3>
                         <p class="font-body-md text-body-md text-on-surface-variant">Laporan Masuk</p>
                     </div>
                 </div>
@@ -70,7 +70,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">42</h3>
+                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">{{ number_format($izinHariIni) }}</h3>
                         <p class="font-body-md text-body-md text-on-surface-variant">Izin/Sakit</p>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">350</h3>
+                        <h3 class="font-display-lg text-display-lg font-bold text-on-surface mb-1">{{ number_format($belumLapor) }}</h3>
                         <p class="font-body-md text-body-md text-on-surface-variant">Belum Lapor</p>
                     </div>
                 </div>
@@ -200,42 +200,26 @@
                             </tr>
                         </thead>
                         <tbody class="font-body-md text-body-md divide-y divide-black/5">
+                            @forelse($recentReports as $report)
                             <tr class="hover:bg-surface-container-low transition-colors">
                                 <td class="py-4 px-6 flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">AS</div>
-                                    <span class="text-on-surface">Ahmad S.</span>
+                                    @php
+                                        $initials = strtoupper(substr($report->employee->name ?? '?', 0, 2));
+                                        $colors = ['bg-primary/20 text-primary', 'bg-tertiary-container/20 text-tertiary', 'bg-secondary/20 text-secondary', 'bg-error/20 text-error'];
+                                        $color = $colors[crc32($report->employee->name ?? 'a') % 4];
+                                    @endphp
+                                    <div class="w-8 h-8 rounded-full {{ $color }} flex items-center justify-center font-bold text-sm">{{ $initials }}</div>
+                                    <span class="text-on-surface">{{ $report->employee->name ?? 'Unknown' }}</span>
                                 </td>
-                                <td class="py-4 px-6 text-on-surface-variant">Operations</td>
-                                <td class="py-4 px-6 text-on-surface-variant">08:15 AM</td>
-                                <td class="py-4 px-6"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">Selesai</span></td>
+                                <td class="py-4 px-6 text-on-surface-variant">{{ $report->employee->division->name ?? '-' }}</td>
+                                <td class="py-4 px-6 text-on-surface-variant">{{ $report->created_at->format('h:i A') }}</td>
+                                <td class="py-4 px-6"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">Masuk</span></td>
                             </tr>
-                            <tr class="hover:bg-surface-container-low transition-colors">
-                                <td class="py-4 px-6 flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-tertiary-container/20 text-tertiary flex items-center justify-center font-bold text-sm">DW</div>
-                                    <span class="text-on-surface">Dian W.</span>
-                                </td>
-                                <td class="py-4 px-6 text-on-surface-variant">Sales</td>
-                                <td class="py-4 px-6 text-on-surface-variant">08:42 AM</td>
-                                <td class="py-4 px-6"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-container/20 text-tertiary border border-tertiary-container/30">Proses</span></td>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="py-4 px-6 text-center text-on-surface-variant">Belum ada aktivitas laporan.</td>
                             </tr>
-                            <tr class="hover:bg-surface-container-low transition-colors">
-                                <td class="py-4 px-6 flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-error/20 text-error flex items-center justify-center font-bold text-sm">RK</div>
-                                    <span class="text-on-surface">Reza K.</span>
-                                </td>
-                                <td class="py-4 px-6 text-on-surface-variant">Technology</td>
-                                <td class="py-4 px-6 text-on-surface-variant">-</td>
-                                <td class="py-4 px-6"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error/10 text-error border border-error/20">Izin</span></td>
-                            </tr>
-                            <tr class="hover:bg-surface-container-low transition-colors">
-                                <td class="py-4 px-6 flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center font-bold text-sm">MN</div>
-                                    <span class="text-on-surface">Maya N.</span>
-                                </td>
-                                <td class="py-4 px-6 text-on-surface-variant">HR</td>
-                                <td class="py-4 px-6 text-on-surface-variant">09:05 AM</td>
-                                <td class="py-4 px-6"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">Selesai</span></td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

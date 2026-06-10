@@ -252,6 +252,16 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
     private function handleConversationStep(int | string $chatId, string $step, string $message, array $rawUpdate = []): array
     {
+        $cancelWords = ['batal', 'cancel', 'gak jadi', 'ulang', 'salah'];
+        $messageLower = strtolower(trim($message));
+        foreach ($cancelWords as $word) {
+            if (str_contains($messageLower, $word) && $step !== 'confirm_registration') {
+                $this->conversationState->clearState($chatId);
+                $this->sendMessage($chatId, "❌ Proses dibatalkan/diulang.\n\nKetik /daftar jika ingin mendaftar ulang dari awal.");
+                return ['status' => false, 'message' => 'Process cancelled by user'];
+            }
+        }
+
         return match ($step) {
             'awaiting_name'         => $this->processName($chatId, $message),
             'awaiting_division'     => $this->processDivision($chatId, $message),
@@ -347,25 +357,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
     {
         $answer = strtolower(trim($message));
         
-        $positiveAnswers = ['ya', 'yes', 'y', 'iya', 'oke', 'ok', 'setuju', 'gas', 'betul', 'bener', 'hooh'];
-        $negativeAnswers = ['tidak', 'gak', 'enggak', 'no', 'n', 'batal', 'cancel'];
-
-        $isPositive = false;
-        $isNegative = false;
-
-        foreach ($positiveAnswers as $pos) {
-            if (str_contains($answer, $pos)) {
-                $isPositive = true;
-                break;
-            }
-        }
-
-        foreach ($negativeAnswers as $neg) {
-            if (str_contains($answer, $neg) && !$isPositive) {
-                $isNegative = true;
-                break;
-            }
-        }
+        $isPositive = preg_match('/\b(ya|yes|y|iya|oke|ok|setuju|gas|betul|bener|benar|hooh)\b/i', $answer);
+        $isNegative = preg_match('/\b(tidak|gak|enggak|nggak|no|n|batal|cancel|salah)\b/i', $answer);
 
         if ($isNegative) {
             $this->conversationState->clearState($chatId);

@@ -406,8 +406,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                                    . "Mulai sekarang kamu bisa ngelakuin hal-hal ini di sini:\n"
                                    . "📝 *Lapor harian* hasil kerjamu atau omset jualan\n"
                                    . "🤒 *Izin absen*, lapor sakit, atau cuti\n"
-                                   . "❓ *Tanya status* laporan hari ini udah masuk apa belum\n"
-                                   . "💬 Atau cuma sekedar ngobrol santai sama aku!\n\n"
+                                   . "❓ *Tanya status* laporan hari ini udah masuk apa belum\n\n"
                                    . "Nggak usah kaku, tinggal ketik aja pesannya layaknya chat biasa! Yuk dicoba! 😊");
 
         return ['status' => true, 'message' => 'Registration completed'];

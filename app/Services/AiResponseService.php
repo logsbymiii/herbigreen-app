@@ -226,6 +226,7 @@ Aturan Intent:
 Format JSON yang diharapkan:
 {
   \"intent\": \"report|gmv_report|attendance|status|general_chat\",
+  \"attendance_type\": \"sakit|izin|cuti|telat (wajib diisi HANYA jika intent=attendance, selain itu kosongkan saja)\",
   \"extracted_data\": \"Ringkasan laporan atau alasan absen (jika ada, jika tidak kosongkan)\",
   \"reply\": \"Balasan kamu ke karyawan tersebut\"
 }
@@ -233,6 +234,7 @@ Format JSON yang diharapkan:
 
         $jsonString = $this->generate($prompt, json_encode([
             'intent' => 'general_chat',
+            'attendance_type' => '',
             'extracted_data' => '',
             'reply' => "Halo {$nama}! Ada yang bisa kubantu hari ini? 😊"
         ]), true);

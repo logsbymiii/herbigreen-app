@@ -67,7 +67,7 @@ class ProcessGmvReportJob implements ShouldQueue
                                 ]
                             ],
                             [
-                                'text' => 'Ini adalah screenshot hasil live streaming TikTok/Shopee. Temukan angka GMV (Gross Merchandise Value) atau total pendapatan/revenue. Balas HANYA dengan angka saja tanpa titik, koma, atau simbol apapun. Contoh: 5000000. Jika tidak ada angka GMV yang jelas, balas dengan: 0'
+                                'text' => 'Ini adalah gambar (bisa berupa screenshot murni atau FOTO layar laptop/HP) dari hasil live streaming TikTok/Shopee. Abaikan pantulan cahaya, layar melengkung, atau objek di luar layar. Tugasmu HANYA mencari angka Total GMV (Gross Merchandise Value) atau total pendapatan/revenue. Balas HANYA dengan angka saja tanpa titik, koma, atau simbol apapun. Contoh: 5000000. Jika tidak ada angka GMV yang jelas, balas dengan: 0'
                             ]
                         ]
                     ]]

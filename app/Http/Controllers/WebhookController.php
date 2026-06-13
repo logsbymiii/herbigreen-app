@@ -126,12 +126,25 @@ class WebhookController extends Controller
         
         Log::info("PESAN MASUK DARI {$employee->name}: $message");
 
-        $todaysReport = Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', now()->format('Y-m-d'))
-            ->first();
+        $todaysReportContent = null;
+        if (strtolower($division) === 'host live') {
+            $gmvReport = \App\Models\GmvReport::where('employee_id', $employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->first();
+            if ($gmvReport) {
+                $todaysReportContent = "Laporan GMV: Rp " . number_format($gmvReport->gmv_amount, 0, ',', '.') . " (" . $gmvReport->order_count . " pesanan)";
+            }
+        }
+
+        if (!$todaysReportContent) {
+            $todaysReport = \App\Models\Report::where('employee_id', $employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->first();
+            $todaysReportContent = $todaysReport?->note;
+        }
 
         $ai = new AiResponseService();
-        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile), $todaysReport?->note);
+        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile), $todaysReportContent);
         
         $intent = $analysis['intent'] ?? 'general_chat';
         $reply = $analysis['reply'] ?? "Halo {$employee->name}! Ada yang bisa kubantu?";

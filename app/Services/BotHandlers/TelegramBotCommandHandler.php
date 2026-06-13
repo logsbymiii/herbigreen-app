@@ -282,7 +282,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $message = strtolower(trim($message));
         $tempData = $this->conversationState->getTempData($chatId);
 
-        if (in_array($message, ['ya', 'y', 'benar', 'bener', 'betul', 'iya'])) {
+        if (preg_match('/\b(ya|y|benar|bener|betul|iya+|yes|yosh|yoi|yo|oke|ok|sip|mantap|gas)\b/i', $message)) {
             // Simpan ke database
             \App\Models\GmvReport::create([
                 'employee_id'     => $tempData['employee_id'],

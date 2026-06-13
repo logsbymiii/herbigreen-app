@@ -66,7 +66,7 @@ class ProcessGmvReportJob implements ShouldQueue
             try {
                 $base64Image = base64_encode($imageContent);
 
-                $geminiResponse = Http::withHeaders([
+                $geminiResponse = Http::timeout(30)->withHeaders([
                     'Content-Type' => 'application/json',
                 ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$geminiKey}", [
                     'contents' => [[

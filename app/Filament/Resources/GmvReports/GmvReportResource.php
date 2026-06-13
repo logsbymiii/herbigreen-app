@@ -21,6 +21,9 @@ class GmvReportResource extends Resource
 {
     protected static ?string $model = GmvReport::class;
 
+    protected static ?string $modelLabel = 'Laporan GMV';
+    protected static ?string $pluralModelLabel = 'Laporan GMV';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';
@@ -30,12 +33,18 @@ class GmvReportResource extends Resource
         return $schema
             ->schema([
                 Forms\Components\Select::make('employee_id')
+                    ->label('Karyawan')
                     ->relationship('employee', 'name')
                     ->required(),
                 Forms\Components\FileUpload::make('screenshot_path')
+                    ->label('Foto Bukti')
                     ->disk('r2')
                     ->directory('gmv-reports'),
+                Forms\Components\TextInput::make('platform')
+                    ->label('Platform')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('gmv_amount')
+                    ->label('Omset (Rp)')
                     ->numeric()
                     ->prefix('Rp'),
                 Forms\Components\TextInput::make('order_count')
@@ -67,6 +76,10 @@ class GmvReportResource extends Resource
                     ->height(100)
                     ->url(fn ($record) => Storage::disk('r2')->url($record->screenshot_path))
                     ->openUrlInNewTab(),
+                Tables\Columns\TextColumn::make('platform')
+                    ->label('Platform')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('gmv_amount')
                     ->label('Total GMV (Rp)')
                     ->money('IDR', locale: 'id')

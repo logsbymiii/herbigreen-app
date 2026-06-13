@@ -78,7 +78,7 @@ class ProcessGmvReportJob implements ShouldQueue
                                 ]
                             ],
                             [
-                                'text' => 'Ini adalah gambar/foto layar laptop/HP dari halaman statistik live (Shopee Seller Center atau TikTok Live). Ekstrak metrik berikut dari layar: 1. Total GMV (atau "Penjualan (Rp)", "Omset"). 2. Total Pesanan. 3. Produk Terjual. 4. Total Dilihat (Penonton). 5. Penonton Tertinggi. Balas HANYA dengan JSON mentah tanpa markdown, dengan format persis seperti ini: {"gmv": angka, "pesanan": angka, "produk_terjual": angka, "penonton": angka, "penonton_tertinggi": angka}. Hapus titik/koma dari angka (contoh 523.680 jadi 523680). Jika ada data yang tidak ditemukan, beri nilai 0.'
+                                'text' => 'Ini adalah gambar/foto layar laptop/HP dari halaman statistik live (Shopee Seller Center atau TikTok Live). Ekstrak metrik berikut dari layar: 1. Total GMV (atau "Penjualan (Rp)", "Omset"). 2. Total Pesanan. 3. Produk Terjual. 4. Total Dilihat (Penonton). 5. Penonton Tertinggi. 6. Nama Platform ("Shopee" atau "TikTok", tebak dari warna/teks di gambar). Balas HANYA dengan JSON mentah tanpa markdown, dengan format persis seperti ini: {"gmv": angka, "pesanan": angka, "produk_terjual": angka, "penonton": angka, "penonton_tertinggi": angka, "platform": "Shopee/TikTok/Lainnya"}. Hapus titik/koma dari angka (contoh 523.680 jadi 523680). Jika ada data yang tidak ditemukan, beri nilai 0.'
                             ]
                         ]
                     ]]
@@ -96,6 +96,7 @@ class ProcessGmvReportJob implements ShouldQueue
                         $productSold = (int) ($parsed['produk_terjual'] ?? 0);
                         $viewersCount = (int) ($parsed['penonton'] ?? 0);
                         $highestViewers = (int) ($parsed['penonton_tertinggi'] ?? 0);
+                        $platform = $parsed['platform'] ?? 'Lainnya';
                     }
                     Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText}");
                 } else {
@@ -122,13 +123,16 @@ class ProcessGmvReportJob implements ShouldQueue
                 'product_sold' => $productSold,
                 'viewers_count' => $viewersCount,
                 'highest_viewers' => $highestViewers,
+                'platform' => $platform ?? 'Lainnya',
                 'raw_ocr_text' => $rawOcrText,
                 'live_date' => now()->format('Y-m-d'),
             ]);
 
+            $platformDisplay = $platform ?? 'Lainnya';
             $formattedGmv = number_format($gmvAmount, 0, ',', '.');
             $msg = "📸 *Laporan Omset Diterima*\n\n"
                  . "Aku udah baca metrik dari foto kamu nih:\n"
+                 . "📱 Platform: *{$platformDisplay}*\n"
                  . "💰 GMV/Omset: *Rp {$formattedGmv}*\n"
                  . "📦 Pesanan: *{$orderCount}*\n"
                  . "🛍️ Produk Terjual: *{$productSold}*\n"
@@ -143,7 +147,7 @@ class ProcessGmvReportJob implements ShouldQueue
             // Kalau gagal baca angka atau dapet 0
             $msg = "📸 *Laporan GMV Diterima*\n\n"
                  . "Aduh, aku gagal baca angka dari screenshot yang kamu kirim (atau kebaca 0). Gambarnya burem atau angkanya nggak kelihatan jelas nih 🥺\n\n"
-                 . "Coba kirim ulang gambarnya yang lebih tajam ya!";
+                 . "Coba kirim ulang gambarnya yang lebih tajam ya! Atau kalau mau cepat, ketik manual aja: */gmv [angka_omset]* (contoh: */gmv 500000*)";
             $provider->sendMessage($this->sender, $msg);
             Log::warning("KOKI GMV: Gagal baca angka, minta upload ulang. Raw: {$rawOcrText}");
         }

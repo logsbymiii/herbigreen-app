@@ -28,6 +28,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'izin'    => $this->handleAbsen($chatId), // alias /absen
                 'edit_laporan' => $this->handleEditLaporan($chatId),
                 'edit_profil'  => $this->handleEditProfil($chatId),
+                'gmv'          => $this->handleGmv($chatId, $message),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -49,7 +50,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (!$employee) {
             $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
-            return ['status' => true, 'message' => 'Not registered'];
+            return ['status' => false];
         }
 
         $nama = $employee->name;
@@ -74,6 +75,60 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         $this->sendMessage($chatId, $menu);
         return ['status' => true, 'message' => 'Lapor menu shown'];
+    }
+
+    private function handleGmv(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => false];
+        }
+
+        if (strtolower($employee->division?->name) !== 'host live') {
+            $this->sendMessage($chatId, "❌ Fitur ini khusus untuk divisi Host Live ya!");
+            return ['status' => false];
+        }
+
+        // Ekstrak angka dari pesan /gmv [angka]
+        $parts = explode(' ', $message);
+        if (count($parts) < 2) {
+            $this->sendMessage($chatId, "❌ Format salah. Ketik manual dengan format: */gmv [angka_omset]* (contoh: */gmv 500000*)");
+            return ['status' => true];
+        }
+
+        $amountRaw = preg_replace('/\D/', '', $parts[1]);
+        if (empty($amountRaw)) {
+            $this->sendMessage($chatId, "❌ Angka tidak valid. Pastikan hanya mengetik angka ya.");
+            return ['status' => true];
+        }
+
+        $gmvAmount = (int) $amountRaw;
+
+        // Bikin state untuk konfirmasi manual
+        $this->conversationState->setCurrentStep($chatId, 'waiting_gmv_confirmation', [
+            'employee_id' => $employee->id,
+            'screenshot_path' => 'manual_input',
+            'gmv_amount' => $gmvAmount,
+            'order_count' => 0,
+            'product_sold' => 0,
+            'viewers_count' => 0,
+            'highest_viewers' => 0,
+            'platform' => 'Manual',
+            'raw_ocr_text' => 'Manual Input',
+            'live_date' => now()->format('Y-m-d'),
+        ]);
+
+        $formattedGmv = number_format($gmvAmount, 0, ',', '.');
+        $msg = "📝 *Laporan Omset Manual Diterima*\n\n"
+             . "💰 GMV/Omset: *Rp {$formattedGmv}*\n\n"
+             . "Udah bener belum angkanya? 🤔\n"
+             . "(Balas: *Ya* / *Tidak*)";
+        
+        $this->sendMessage($chatId, $msg);
+        
+        return ['status' => true];
     }
 
     private function handleAbsen(int | string $chatId): array
@@ -102,12 +157,14 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
     private function processReportType(int | string $chatId, string $message, array $rawUpdate): array
     {
-        $choice = trim($message);
+        $choice = strtolower(trim($message));
         $tempData = $this->conversationState->getTempData($chatId);
         $isHostLive = $tempData['is_host_live'] ?? false;
 
-        // Cek apakah ada foto yang dikirim langsung
-        $hasPhoto = isset($rawUpdate['message']['photo']) || isset($rawUpdate['message']['document']);
+        // Toleransi Typo Tingkat Dewa
+        if (in_array($choice, ['1', 'satu', 'pertama'])) $choice = '1';
+        if (in_array($choice, ['2', 'dua', 'kedua'])) $choice = '2';
+        if (in_array($choice, ['3', 'tiga', 'ketiga'])) $choice = '3';
 
         if ($choice === '1') {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');
@@ -122,7 +179,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->sendMessage($chatId, "📊 Silakan kirim *screenshot GMV* kamu sekarang!");
             return ['status' => true];
         } else {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka yang tersedia ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3 ya!");
             return ['status' => true];
         }
     }
@@ -173,10 +230,15 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         $typeMap = ['1' => 'sakit', '2' => 'izin', '3' => 'cuti'];
-        $choice = trim($message);
+        $choice = strtolower(trim($message));
+
+        // Toleransi Typo Tingkat Dewa
+        if (in_array($choice, ['1', 'satu', 'pertama', 'sakit'])) $choice = '1';
+        if (in_array($choice, ['2', 'dua', 'kedua', 'izin'])) $choice = '2';
+        if (in_array($choice, ['3', 'tiga', 'ketiga', 'cuti'])) $choice = '3';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1, 2, atau 3 ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Sakit), 2 (Izin), atau 3 (Cuti) ya!");
             return ['status' => true];
         }
 
@@ -292,6 +354,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'product_sold'    => $tempData['product_sold'] ?? 0,
                 'viewers_count'   => $tempData['viewers_count'] ?? 0,
                 'highest_viewers' => $tempData['highest_viewers'] ?? 0,
+                'platform'        => $tempData['platform'] ?? 'Lainnya',
                 'raw_ocr_text'    => $tempData['raw_ocr_text'],
                 'live_date'       => $tempData['live_date'],
             ]);

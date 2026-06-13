@@ -10,7 +10,7 @@ use App\Filament\Resources\GmvReports\Tables\GmvReportsTable; // <-- Ini wajib b
 use App\Models\GmvReport;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Forms;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -25,9 +25,9 @@ class GmvReportResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
                 Forms\Components\Select::make('employee_id')
                     ->relationship('employee', 'name')

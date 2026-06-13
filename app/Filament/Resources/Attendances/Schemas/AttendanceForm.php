@@ -22,12 +22,15 @@ class AttendanceForm
                     ->preload()
                     ->required(),
                 Select::make('type')
+                    ->label('Tipe Kehadiran')
                     ->options(['sakit' => 'Sakit', 'cuti' => 'Cuti', 'alpa' => 'Alpa'])
                     ->required(),
                 Textarea::make('note')
+                    ->label('Keterangan / Catatan')
                     ->default(null)
                     ->columnSpanFull(),
                 DatePicker::make('date')
+                    ->label('Tanggal')
                     ->required(),
                 FileUpload::make('proof_path')
                     ->label('Bukti (Surat Sakit/Izin)')

@@ -14,15 +14,19 @@ class AttendancesTable
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('employee.name')
+                    ->label('Karyawan')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('type')
+                    ->label('Tipe Kehadiran')
                     ->badge(),
                 TextColumn::make('proof_path')
+                    ->label('Bukti Kehadiran')
                     ->searchable(),
                 TextColumn::make('date')
-                    ->date()
+                    ->label('Tanggal')
+                    ->date('d M Y')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

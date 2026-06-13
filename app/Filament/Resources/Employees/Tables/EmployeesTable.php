@@ -20,10 +20,13 @@ class EmployeesTable
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('Nomor HP')
                     ->searchable(),
                 IconColumn::make('is_active')
+                    ->label('Status Aktif')
                     ->boolean(),
                 TextColumn::make('created_at')
                     ->dateTime()

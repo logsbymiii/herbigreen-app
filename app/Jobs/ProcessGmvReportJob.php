@@ -114,7 +114,7 @@ class ProcessGmvReportJob implements ShouldQueue
         if ($gmvAmount !== null && $gmvAmount > 0) {
             // Simpan data sementara ke state
             $stateService = new \App\Services\DatabaseConversationState();
-            $stateService->setState($this->sender, 'waiting_gmv_confirmation', [
+            $stateService->setCurrentStep($this->sender, 'waiting_gmv_confirmation', [
                 'employee_id' => $this->employeeId,
                 'screenshot_path' => $filename,
                 'gmv_amount' => $gmvAmount,

@@ -68,7 +68,7 @@ class ProcessGmvReportJob implements ShouldQueue
 
                 $geminiResponse = Http::timeout(30)->withHeaders([
                     'Content-Type' => 'application/json',
-                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$geminiKey}", [
+                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
                     'contents' => [[
                         'parts' => [
                             [

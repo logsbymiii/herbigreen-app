@@ -359,6 +359,16 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'live_date'       => $tempData['live_date'],
             ]);
 
+            // Tambahkan juga ke Laporan Harian sebagai history
+            $platformDisplay = $tempData['platform'] ?? 'Lainnya';
+            $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
+            \App\Models\Report::create([
+                'employee_id' => $tempData['employee_id'],
+                'type' => 'harian',
+                'content' => "Laporan GMV [{$platformDisplay}]: Rp {$gmvFormatted}\nPesanan: " . ($tempData['order_count'] ?? 0) . "\nProduk Terjual: " . ($tempData['product_sold'] ?? 0) . "\nPenonton: " . ($tempData['viewers_count'] ?? 0) . "\nPenonton Tertinggi: " . ($tempData['highest_viewers'] ?? 0),
+                'reported_at' => now(),
+            ]);
+
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
             \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm YA (Tele). Disimpan.");

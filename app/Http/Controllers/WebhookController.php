@@ -187,7 +187,7 @@ class WebhookController extends Controller
             $todaysReport = \App\Models\Report::where('employee_id', $employee->id)
                 ->whereDate('created_at', now()->format('Y-m-d'))
                 ->first();
-            $todaysReportContent = $todaysReport?->note;
+            $todaysReportContent = $todaysReport?->content;
         }
 
         $ai = new AiResponseService();

@@ -98,9 +98,11 @@ class ProcessGmvReportJob implements ShouldQueue
                         $highestViewers = (int) ($parsed['penonton_tertinggi'] ?? 0);
                     }
                     Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText}");
+                } else {
+                    Log::error("KOKI GMV: Gemini API Error! Status: " . $geminiResponse->status() . " Body: " . $geminiResponse->body());
                 }
             } catch (\Exception $e) {
-                Log::error("KOKI GMV: OCR Gemini gagal: " . $e->getMessage());
+                Log::error("KOKI GMV: OCR Gemini gagal (Exception): " . $e->getMessage());
             }
         } else {
             Log::warning("KOKI GMV: GEMINI_API_KEY belum diset, OCR dilewati.");

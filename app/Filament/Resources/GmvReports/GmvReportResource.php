@@ -10,9 +10,12 @@ use App\Filament\Resources\GmvReports\Tables\GmvReportsTable; // <-- Ini wajib b
 use App\Models\GmvReport;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
+use Filament\Forms\Form;
+use Filament\Forms;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Tables;
+use Illuminate\Support\Facades\Storage;
 
 class GmvReportResource extends Resource
 {
@@ -22,15 +25,76 @@ class GmvReportResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function form(Schema $schema): Schema
+    public static function form(Form $form): Form
     {
-        return GmvReportForm::configure($schema);
+        return $form
+            ->schema([
+                Forms\Components\Select::make('employee_id')
+                    ->relationship('employee', 'name')
+                    ->required(),
+                Forms\Components\FileUpload::make('screenshot_path')
+                    ->disk('r2')
+                    ->directory('gmv-reports'),
+                Forms\Components\TextInput::make('gmv_amount')
+                    ->numeric()
+                    ->prefix('Rp'),
+                Forms\Components\TextInput::make('order_count')
+                    ->numeric(),
+                Forms\Components\TextInput::make('product_sold')
+                    ->numeric(),
+                Forms\Components\TextInput::make('viewers_count')
+                    ->numeric(),
+                Forms\Components\TextInput::make('highest_viewers')
+                    ->numeric(),
+                Forms\Components\DatePicker::make('live_date')
+                    ->required(),
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
     {
-        // Nah, di sini kita cukup manggil file GmvReportsTable lu yang udah bener!
-        return GmvReportsTable::configure($table);
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('employee.name')
+                    ->label('Nama Karyawan')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\ImageColumn::make('screenshot_path')
+                    ->label('Foto Laporan')
+                    ->disk('r2')
+                    ->width(100)
+                    ->height(100)
+                    ->url(fn ($record) => Storage::disk('r2')->url($record->screenshot_path))
+                    ->openUrlInNewTab(),
+                Tables\Columns\TextColumn::make('gmv_amount')
+                    ->label('Total GMV (Rp)')
+                    ->money('IDR', locale: 'id')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('order_count')
+                    ->label('Pesanan')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('product_sold')
+                    ->label('Produk Terjual')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('viewers_count')
+                    ->label('Dilihat (Viewers)')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('highest_viewers')
+                    ->label('Penonton Tertinggi')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('live_date')
+                    ->label('Tanggal Live')
+                    ->date('d M Y')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
+            ]);
     }
 
     public static function getRelations(): array

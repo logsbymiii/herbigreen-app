@@ -242,6 +242,10 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
                 'employee_id'     => $tempData['employee_id'],
                 'screenshot_path' => $tempData['screenshot_path'],
                 'gmv_amount'      => $tempData['gmv_amount'],
+                'order_count'     => $tempData['order_count'] ?? 0,
+                'product_sold'    => $tempData['product_sold'] ?? 0,
+                'viewers_count'   => $tempData['viewers_count'] ?? 0,
+                'highest_viewers' => $tempData['highest_viewers'] ?? 0,
                 'raw_ocr_text'    => $tempData['raw_ocr_text'],
                 'live_date'       => $tempData['live_date'],
             ]);

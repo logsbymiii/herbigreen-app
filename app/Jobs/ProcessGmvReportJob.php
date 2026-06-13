@@ -53,8 +53,12 @@ class ProcessGmvReportJob implements ShouldQueue
         Storage::disk('r2')->put($filename, $imageContent, 'public');
         Log::info("KOKI GMV: Screenshot berhasil diupload ke R2: {$filename}");
 
-        // 3. OCR pake Gemini Vision (baca angka GMV dari screenshot)
+        // 3. OCR pake Gemini Vision (baca angka GMV dll dari screenshot)
         $gmvAmount = null;
+        $orderCount = null;
+        $productSold = null;
+        $viewersCount = null;
+        $highestViewers = null;
         $rawOcrText = null;
         $geminiKey = env('GEMINI_API_KEY');
 
@@ -74,7 +78,7 @@ class ProcessGmvReportJob implements ShouldQueue
                                 ]
                             ],
                             [
-                                'text' => 'Ini adalah gambar/foto layar laptop/HP dari halaman Shopee Seller Center atau TikTok Live. Abaikan pantulan cahaya. Tugasmu HANYA mencari angka Total GMV, Total Pendapatan, Omset, atau tulisan "Penjualan (Rp)". Berikan HANYA angka hasil akhirnya saja (biasanya angka yang paling besar di tengah layar), tanpa titik, koma, huruf, atau simbol apapun. Contoh jika tertulis 523.680, balas HANYA: 523680. Jika tidak ada angka sama sekali, balas: 0'
+                                'text' => 'Ini adalah gambar/foto layar laptop/HP dari halaman statistik live (Shopee Seller Center atau TikTok Live). Ekstrak metrik berikut dari layar: 1. Total GMV (atau "Penjualan (Rp)", "Omset"). 2. Total Pesanan. 3. Produk Terjual. 4. Total Dilihat (Penonton). 5. Penonton Tertinggi. Balas HANYA dengan JSON mentah tanpa markdown, dengan format persis seperti ini: {"gmv": angka, "pesanan": angka, "produk_terjual": angka, "penonton": angka, "penonton_tertinggi": angka}. Hapus titik/koma dari angka (contoh 523.680 jadi 523680). Jika ada data yang tidak ditemukan, beri nilai 0.'
                             ]
                         ]
                     ]]
@@ -82,9 +86,18 @@ class ProcessGmvReportJob implements ShouldQueue
 
                 if ($geminiResponse->successful()) {
                     $rawOcrText = $geminiResponse->json('candidates.0.content.parts.0.text');
-                    $cleanNumber = preg_replace('/[^0-9]/', '', trim($rawOcrText));
-                    $gmvAmount = (int) $cleanNumber ?: null;
-                    Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText} | Parsed: {$gmvAmount}");
+                    // Clean up markdown block if Gemini adds it
+                    $cleanJsonStr = str_replace(['```json', '```'], '', $rawOcrText);
+                    $parsed = json_decode(trim($cleanJsonStr), true);
+                    
+                    if (is_array($parsed)) {
+                        $gmvAmount = (int) ($parsed['gmv'] ?? 0);
+                        $orderCount = (int) ($parsed['pesanan'] ?? 0);
+                        $productSold = (int) ($parsed['produk_terjual'] ?? 0);
+                        $viewersCount = (int) ($parsed['penonton'] ?? 0);
+                        $highestViewers = (int) ($parsed['penonton_tertinggi'] ?? 0);
+                    }
+                    Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText}");
                 }
             } catch (\Exception $e) {
                 Log::error("KOKI GMV: OCR Gemini gagal: " . $e->getMessage());
@@ -103,14 +116,23 @@ class ProcessGmvReportJob implements ShouldQueue
                 'employee_id' => $this->employeeId,
                 'screenshot_path' => $filename,
                 'gmv_amount' => $gmvAmount,
+                'order_count' => $orderCount,
+                'product_sold' => $productSold,
+                'viewers_count' => $viewersCount,
+                'highest_viewers' => $highestViewers,
                 'raw_ocr_text' => $rawOcrText,
                 'live_date' => now()->format('Y-m-d'),
             ]);
 
             $formattedGmv = number_format($gmvAmount, 0, ',', '.');
-            $msg = "📸 *Laporan GMV Diterima*\n\n"
-                 . "Aku berhasil baca screenshot kamu nih. Angka GMV yang kudapet: *Rp {$formattedGmv}*\n\n"
-                 . "Bener nggak angka segitu? 🤔\n"
+            $msg = "📸 *Laporan Omset Diterima*\n\n"
+                 . "Aku udah baca metrik dari foto kamu nih:\n"
+                 . "💰 GMV/Omset: *Rp {$formattedGmv}*\n"
+                 . "📦 Pesanan: *{$orderCount}*\n"
+                 . "🛍️ Produk Terjual: *{$productSold}*\n"
+                 . "👁️ Dilihat: *{$viewersCount}*\n"
+                 . "🔥 Penonton Tertinggi: *{$highestViewers}*\n\n"
+                 . "Udah bener belum datanya? 🤔\n"
                  . "(Balas: *Ya* / *Tidak*)";
             
             $provider->sendMessage($this->sender, $msg);

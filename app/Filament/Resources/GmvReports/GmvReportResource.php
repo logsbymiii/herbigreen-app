@@ -23,6 +23,7 @@ class GmvReportResource extends Resource
 
     protected static ?string $modelLabel = 'Laporan GMV';
     protected static ?string $pluralModelLabel = 'Laporan GMV';
+    protected static ?string $navigationLabel = 'Laporan GMV';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -48,14 +49,19 @@ class GmvReportResource extends Resource
                     ->numeric()
                     ->prefix('Rp'),
                 Forms\Components\TextInput::make('order_count')
+                    ->label('Jumlah Pesanan')
                     ->numeric(),
                 Forms\Components\TextInput::make('product_sold')
+                    ->label('Produk Terjual')
                     ->numeric(),
                 Forms\Components\TextInput::make('viewers_count')
+                    ->label('Jumlah Penonton')
                     ->numeric(),
                 Forms\Components\TextInput::make('highest_viewers')
+                    ->label('Penonton Tertinggi')
                     ->numeric(),
                 Forms\Components\DatePicker::make('live_date')
+                    ->label('Tanggal Live')
                     ->required(),
             ])
             ->columns(1);

@@ -32,11 +32,18 @@ class ProcessGmvReportJob implements ShouldQueue
     {
         Log::info("KOKI GMV: Mulai proses download screenshot...");
 
+        if (empty($this->fileUrl)) {
+            Log::warning("KOKI GMV GAGAL: User tidak mengirimkan gambar.");
+            $provider = \App\Services\MessageProviderFactory::create();
+            $provider->sendMessage($this->sender, "Eh, kamu mau lapor GMV tapi lupa ngelampirin fotonya nih! 😅 Coba kirim ulang pesannya beserta foto layarnya ya.");
+            return;
+        }
+
         // 1. Download file
         $response = Http::withoutVerifying()->timeout(30)->get($this->fileUrl);
 
         if (!$response->successful()) {
-            throw new \Exception("KOKI GMV GAGAL: File tidak bisa didownload. Status: " . $response->status());
+            throw new \Exception("KOKI GMV GAGAL: File tidak bisa didownload. URL: {$this->fileUrl} Status: " . $response->status());
         }
 
         $imageContent = $response->body();

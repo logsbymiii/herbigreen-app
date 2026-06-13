@@ -92,8 +92,7 @@ class GmvReportResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('order_count')
                     ->label('Pesanan')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('product_sold')
                     ->label('Produk Terjual')
                     ->sortable()
@@ -111,9 +110,11 @@ class GmvReportResource extends Resource
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Waktu Lapor')
+                    ->dateTime('d M Y, H:i')
                     ->sortable(),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -127,6 +128,13 @@ class GmvReportResource extends Resource
             'index' => ListGmvReports::route('/'),
             'create' => CreateGmvReport::route('/create'),
             'edit' => EditGmvReport::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            Widgets\GmvStats::class,
         ];
     }
 }

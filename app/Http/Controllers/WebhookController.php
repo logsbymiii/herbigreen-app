@@ -226,11 +226,13 @@ class WebhookController extends Controller
 
         } elseif ($intent === 'gmv_report') {
             if ($urlFile) {
+                // Ada foto → langsung proses OCR via job
                 ProcessGmvReportJob::dispatch($employee->id, $urlFile, $sender);
+                $provider->sendMessage($sender, $reply);
             } else {
-                ProcessGmvReportJob::dispatch($employee->id, '', $sender);
+                // Nggak ada foto → arahkan ke guided flow
+                $provider->sendMessage($sender, "Eh, aku butuh *screenshot GMV*-nya nih buat dibaca 📸\n\nKetik /lapor terus pilih menu *Laporan GMV* biar aku tuntun step by step ya!");
             }
-            $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'status') {
             // Karena AI sudah membalas status dengan natural, kita cukup kirim balasannya

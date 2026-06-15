@@ -20,8 +20,14 @@ class ProcessGmvReportJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public int $employeeId, public string $fileUrl, public string $sender)
-    {
+    public function __construct(
+        public int $employeeId,
+        public string $fileUrl,
+        public string $sender,
+        public ?string $accountName = null,
+        public ?string $liveStart = null,
+        public ?string $liveEnd = null
+    ) {
         //
     }
 
@@ -124,6 +130,9 @@ class ProcessGmvReportJob implements ShouldQueue
                 'viewers_count' => $viewersCount,
                 'highest_viewers' => $highestViewers,
                 'platform' => $platform ?? 'Lainnya',
+                'account_name' => $this->accountName,
+                'live_start' => $this->liveStart,
+                'live_end' => $this->liveEnd,
                 'raw_ocr_text' => $rawOcrText,
                 'live_date' => now()->format('Y-m-d'),
             ]);
@@ -131,8 +140,14 @@ class ProcessGmvReportJob implements ShouldQueue
             $platformDisplay = $platform ?? 'Lainnya';
             $formattedGmv = number_format($gmvAmount, 0, ',', '.');
             $msg = "📸 *Laporan Omset Diterima*\n\n"
-                 . "Aku udah baca metrik dari foto kamu nih:\n"
-                 . "📱 Platform: *{$platformDisplay}*\n"
+                 . "Aku udah baca metrik dari foto kamu nih:\n";
+            if ($this->accountName) {
+                $msg .= "🏪 Akun: *{$this->accountName}*\n";
+            }
+            if ($this->liveStart && $this->liveEnd) {
+                $msg .= "⏰ Jam Live: *{$this->liveStart} - {$this->liveEnd}*\n";
+            }
+            $msg .= "📱 Platform: *{$platformDisplay}*\n"
                  . "💰 GMV/Omset: *Rp {$formattedGmv}*\n"
                  . "📦 Pesanan: *{$orderCount}*\n"
                  . "🛍️ Produk Terjual: *{$productSold}*\n"

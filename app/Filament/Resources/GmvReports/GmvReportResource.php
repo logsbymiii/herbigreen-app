@@ -41,9 +41,16 @@ class GmvReportResource extends Resource
                     ->label('Foto Bukti')
                     ->disk('r2')
                     ->directory('gmv-reports'),
+                Forms\Components\TextInput::make('account_name')
+                    ->label('Nama Akun')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('platform')
                     ->label('Platform')
                     ->maxLength(255),
+                Forms\Components\TimePicker::make('live_start')
+                    ->label('Jam Mulai Live'),
+                Forms\Components\TimePicker::make('live_end')
+                    ->label('Jam Selesai Live'),
                 Forms\Components\TextInput::make('gmv_amount')
                     ->label('Omset (Rp)')
                     ->numeric()
@@ -82,9 +89,17 @@ class GmvReportResource extends Resource
                     ->height(100)
                     ->url(fn ($record) => Storage::disk('r2')->url($record->screenshot_path))
                     ->openUrlInNewTab(),
+                Tables\Columns\TextColumn::make('account_name')
+                    ->label('Nama Akun')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('platform')
                     ->label('Platform')
                     ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('live_time')
+                    ->label('Jam Live')
+                    ->getStateUsing(fn ($record) => $record->live_start && $record->live_end ? "{$record->live_start} - {$record->live_end}" : '-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('gmv_amount')
                     ->label('Total GMV (Rp)')

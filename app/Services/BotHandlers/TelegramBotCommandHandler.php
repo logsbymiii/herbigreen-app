@@ -175,8 +175,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->sendMessage($chatId, "📸 Silakan kirim *foto beserta caption* laporan harianmu!");
             return ['status' => true];
         } elseif ($choice === '3' && $isHostLive) {
-            $this->conversationState->clearState($chatId);
-            $this->sendMessage($chatId, "📊 Silakan kirim *screenshot GMV* kamu sekarang!");
+            $employee = Employee::where('telegram_id', $chatId)->first();
+            $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_account', [
+                'employee_id' => $employee->id,
+            ]);
+            $this->sendMessage($chatId, "📝 Oke! Ketik *nama akun* yang kamu pakai live ya\n\n_Contoh: HERBITOK USQI_");
             return ['status' => true];
         } else {
             $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3 ya!");
@@ -260,13 +263,21 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $employee = Employee::where('telegram_id', $chatId)->first();
 
         if ($employee) {
+            $isHostLive = strtolower($employee->division?->name ?? '') === 'host live';
+            
             $welcome = "👋 *Halo {$employee->name}, selamat datang kembali di Herbigreen Bot!*\n\n"
                      . "Sekarang aku udah lebih pintar lho! Kamu nggak perlu lagi ngapalin command-command kaku.\n\n"
                      . "🗣️ *Tinggal ajak ngobrol aja, contohnya:*\n"
                      . "• _\"min, aku hari ini sakit, gausah masuk ya\"_ (Otomatis absen)\n"
                      . "• _\"nih laporan jualan hari ini, laku 10 paket\"_ (Otomatis lapor)\n"
-                     . "• _\"laporanku hari ini udah masuk blm ya?\"_ (Cek status)\n\n"
-                     . "Coba aja langsung sapa aku atau kirim laporanmu! 😊";
+                     . "• _\"laporanku hari ini udah masuk blm ya?\"_ (Cek status)\n\n";
+
+            if ($isHostLive) {
+                $welcome .= "📊 *Khusus Divisi Host Live:*\n"
+                          . "Untuk kirim Laporan GMV beserta screenshot, ketik */lapor* lalu pilih angka *3*. Aku bakal nuntun kamu step by step!\n\n";
+            }
+
+            $welcome .= "Coba aja langsung sapa aku atau kirim laporanmu! 😊";
         } else {
             $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
                      . "Untuk menggunakan bot ini, kamu harus daftar dulu ya.\n\n"
@@ -302,7 +313,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $help = "❓ *Bantuan Herbigreen Bot*\n\n"
               . "Sekarang bot ini sudah pintar pakai AI! Kamu bisa langsung chat pakai bahasa sehari-hari.\n\n"
               . "📝 *Lapor Harian*\n"
-              . "Ketik aja misal: _\"laporan hr ini laku 5 botol\"_ atau _\"ini ss gmv ku\"_ (sambil kirim gambar)\n\n"
+              . "Ketik aja misal: _\"laporan hr ini laku 5 botol\"_ atau ketik */lapor*\n\n"
+              . "📊 *Laporan GMV (Khusus Host Live)*\n"
+              . "1. Ketik */lapor*\n"
+              . "2. Pilih angka *3*\n"
+              . "3. Ikuti arahan bot (masukkan nama akun, jam, lalu kirim screenshot)\n\n"
               . "🏥 *Lapor Sakit/Izin*\n"
               . "Ketik misal: _\"aku hari ini izin ya ada urusan keluarga\"_\n\n"
               . "🔍 *Cek Status*\n"
@@ -335,8 +350,99 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),
             'waiting_gmv_confirmation' => $this->processGmvConfirmation($chatId, $message),
+            'awaiting_gmv_account' => $this->processGmvAccount($chatId, $message),
+            'awaiting_gmv_time' => $this->processGmvTime($chatId, $message),
+            'awaiting_gmv_screenshot' => $this->processGmvScreenshot($chatId, $message, $rawUpdate),
             default => ['status' => false, 'message' => 'Unknown step'],
         };
+    }
+
+    private function processGmvAccount(string $chatId, string $message): array
+    {
+        $accountName = trim($message);
+
+        if (strlen($accountName) < 2) {
+            $this->sendMessage($chatId, "❌ Nama akun terlalu pendek. Coba ketik lagi ya!\n\n_Contoh: HERBITOK USQI_");
+            return ['status' => true];
+        }
+
+        $this->conversationState->updateTempData($chatId, ['account_name' => $accountName]);
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_time');
+
+        $this->sendMessage($chatId, "⏰ Jam berapa live-nya?\n\nKetik format: *[jam mulai]-[jam selesai]*\n_Contoh: 14.00-15.00_");
+        return ['status' => true];
+    }
+
+    private function processGmvTime(string $chatId, string $message): array
+    {
+        $timeInput = trim($message);
+
+        // Parse format: 14.00-15.00 atau 14:00-15:00 atau 14.00 - 15.00
+        $timeInput = str_replace(' ', '', $timeInput);
+        if (preg_match('/(\d{1,2}[\.\:]\d{2})\s*[-–]\s*(\d{1,2}[\.\:]\d{2})/', $timeInput, $matches)) {
+            $liveStart = str_replace('.', ':', $matches[1]);
+            $liveEnd = str_replace('.', ':', $matches[2]);
+        } else {
+            $this->sendMessage($chatId, "❌ Format jam belum tepat nih.\n\nKetik format: *[jam mulai]-[jam selesai]*\n_Contoh: 14.00-15.00_");
+            return ['status' => true];
+        }
+
+        $this->conversationState->updateTempData($chatId, [
+            'live_start' => $liveStart,
+            'live_end' => $liveEnd,
+        ]);
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_screenshot');
+
+        $this->sendMessage($chatId, "📸 Mantap! Sekarang kirim *screenshot GMV*-nya ya\n\n_(satu foto aja per laporan)_");
+        return ['status' => true];
+    }
+
+    private function processGmvScreenshot(string $chatId, string $message, array $rawUpdate = []): array
+    {
+        // Cek apakah ada foto di update
+        $urlFile = null;
+        $photos = $rawUpdate['message']['photo'] ?? [];
+
+        if (!empty($photos)) {
+            // Ambil foto resolusi tertinggi (index terakhir)
+            $bestPhoto = end($photos);
+            $fileId = $bestPhoto['file_id'];
+
+            // Download file via Telegram API
+            $token = config('services.telegram.bot_token') ?? env('TELEGRAM_BOT_TOKEN');
+            $fileInfoResponse = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$token}/getFile", [
+                'file_id' => $fileId,
+            ]);
+
+            if ($fileInfoResponse->successful()) {
+                $filePath = $fileInfoResponse->json('result.file_path');
+                $urlFile = "https://api.telegram.org/file/bot{$token}/{$filePath}";
+            }
+        }
+
+        if (!$urlFile) {
+            $this->sendMessage($chatId, "❌ Aku belum terima fotonya nih. Coba kirim *screenshot GMV*-nya ya 📸\n\n_(Pastikan kirim sebagai foto, bukan file)_");
+            return ['status' => true];
+        }
+
+        // Ambil data sesi dari state
+        $tempData = $this->conversationState->getTempData($chatId);
+
+        // Dispatch job untuk OCR via Gemini
+        ProcessGmvReportJob::dispatch(
+            $tempData['employee_id'],
+            $urlFile,
+            $chatId,
+            $tempData['account_name'] ?? null,
+            $tempData['live_start'] ?? null,
+            $tempData['live_end'] ?? null
+        );
+
+        $this->sendMessage($chatId, "⏳ Oke, aku baca dulu screenshot-nya ya... tunggu bentar!");
+        // State akan di-clear setelah konfirmasi di processGmvConfirmation
+        // Tapi kita clear step supaya nggak loop
+        $this->conversationState->clearState($chatId);
+        return ['status' => true];
     }
 
     private function processGmvConfirmation(string $chatId, string $message): array
@@ -355,17 +461,25 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'viewers_count'   => $tempData['viewers_count'] ?? 0,
                 'highest_viewers' => $tempData['highest_viewers'] ?? 0,
                 'platform'        => $tempData['platform'] ?? 'Lainnya',
+                'account_name'    => $tempData['account_name'] ?? null,
+                'live_start'      => $tempData['live_start'] ?? null,
+                'live_end'        => $tempData['live_end'] ?? null,
                 'raw_ocr_text'    => $tempData['raw_ocr_text'],
                 'live_date'       => $tempData['live_date'],
             ]);
 
             // Tambahkan juga ke Laporan Harian sebagai history
             $platformDisplay = $tempData['platform'] ?? 'Lainnya';
+            $accountDisplay = $tempData['account_name'] ?? '';
+            $timeDisplay = '';
+            if (!empty($tempData['live_start']) && !empty($tempData['live_end'])) {
+                $timeDisplay = "\nJam Live: {$tempData['live_start']} - {$tempData['live_end']}";
+            }
             $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
             \App\Models\Report::create([
                 'employee_id' => $tempData['employee_id'],
                 'type' => 'harian',
-                'content' => "Laporan GMV [{$platformDisplay}]: Rp {$gmvFormatted}\nPesanan: " . ($tempData['order_count'] ?? 0) . "\nProduk Terjual: " . ($tempData['product_sold'] ?? 0) . "\nPenonton: " . ($tempData['viewers_count'] ?? 0) . "\nPenonton Tertinggi: " . ($tempData['highest_viewers'] ?? 0),
+                'content' => "Laporan GMV [{$platformDisplay}] {$accountDisplay}: Rp {$gmvFormatted}{$timeDisplay}\nPesanan: " . ($tempData['order_count'] ?? 0) . "\nProduk Terjual: " . ($tempData['product_sold'] ?? 0) . "\nPenonton: " . ($tempData['viewers_count'] ?? 0) . "\nPenonton Tertinggi: " . ($tempData['highest_viewers'] ?? 0),
                 'reported_at' => now(),
             ]);
 

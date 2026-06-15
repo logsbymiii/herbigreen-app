@@ -221,7 +221,7 @@ class WebhookController extends Controller
             $attendanceType = strtolower(trim(explode(' ', $attendanceType)[0])); 
             if (!in_array($attendanceType, ['sakit', 'izin', 'cuti', 'telat'])) $attendanceType = 'izin';
 
-            ProcessAttendanceJob::dispatch($employee->id, $extractedData, $attendanceType);
+            ProcessAttendanceJob::dispatch($employee->id, $extractedData, $attendanceType, $urlFile);
             $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'gmv_report') {

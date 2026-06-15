@@ -391,9 +391,27 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'live_start' => $liveStart,
             'live_end' => $liveEnd,
         ]);
-        $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_screenshot');
+        
+        $tempData = $this->conversationState->getTempData($chatId);
+        
+        if (!empty($tempData['url_file'])) {
+            // Langsung dispatch job karena fotonya udah dikirim duluan
+            ProcessGmvReportJob::dispatch(
+                $tempData['employee_id'],
+                $tempData['url_file'],
+                $chatId,
+                $tempData['account_name'] ?? null,
+                $tempData['live_start'] ?? null,
+                $tempData['live_end'] ?? null
+            );
 
-        $this->sendMessage($chatId, "📸 Mantap! Sekarang kirim *screenshot GMV*-nya ya\n\n_(satu foto aja per laporan)_");
+            $this->sendMessage($chatId, "⏳ Oke, datanya udah lengkap! Aku baca screenshot yang tadi ya... tunggu bentar!");
+            $this->conversationState->clearState($chatId);
+        } else {
+            $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_screenshot');
+            $this->sendMessage($chatId, "📸 Mantap! Sekarang kirim *screenshot GMV*-nya ya\n\n_(satu foto aja per laporan)_");
+        }
+
         return ['status' => true];
     }
 

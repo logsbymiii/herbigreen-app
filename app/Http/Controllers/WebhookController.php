@@ -225,13 +225,20 @@ class WebhookController extends Controller
             $provider->sendMessage($sender, $reply);
 
         } elseif ($intent === 'gmv_report') {
+            $stateService = new \App\Services\DatabaseConversationState();
             if ($urlFile) {
-                // Ada foto → langsung proses OCR via job
-                ProcessGmvReportJob::dispatch($employee->id, $urlFile, $sender);
-                $provider->sendMessage($sender, $reply);
+                // Ada foto → simpan foto ke state sementara, lalu tanya akun
+                $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
+                    'employee_id' => $employee->id,
+                    'url_file' => $urlFile,
+                ]);
+                $provider->sendMessage($sender, "📸 Screenshot GMV diterima! Biar laporannya lengkap, ketik *nama akun* yang kamu pakai live dulu yuk\n\n_Contoh: HERBITOK USQI_");
             } else {
-                // Nggak ada foto → arahkan ke guided flow
-                $provider->sendMessage($sender, "Eh, aku butuh *screenshot GMV*-nya nih buat dibaca 📸\n\nKetik /lapor terus pilih menu *Laporan GMV* biar aku tuntun step by step ya!");
+                // Nggak ada foto → tanya akun
+                $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
+                    'employee_id' => $employee->id,
+                ]);
+                $provider->sendMessage($sender, "Boleh! Laporan GMV ya? Ketik *nama akun* yang kamu pakai live dulu yuk\n\n_Contoh: HERBITOK USQI_");
             }
 
         } elseif ($intent === 'status') {

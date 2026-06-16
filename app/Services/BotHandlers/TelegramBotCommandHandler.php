@@ -50,7 +50,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (!$employee) {
             $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
-            return ['status' => false];
+            return ['status' => true, 'message' => 'Not registered'];
         }
 
         $nama = $employee->name;
@@ -83,12 +83,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if (!$employee) {
             $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
-            return ['status' => false];
+            return ['status' => true, 'message' => 'Not registered'];
         }
 
         if (strtolower($employee->division?->name) !== 'host live') {
             $this->sendMessage($chatId, "❌ Fitur ini khusus untuk divisi Host Live ya!");
-            return ['status' => false];
+            return ['status' => true, 'message' => 'Not host live'];
         }
 
         // Ekstrak angka dari pesan /gmv [angka]
@@ -295,7 +295,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($employee) {
             $this->sendMessage($chatId, "❌ Kamu sudah terdaftar sebagai: *{$employee->name}*\n\nJika ada perubahan data, hubungi admin.");
-            return ['status' => false, 'message' => 'Already registered'];
+            return ['status' => true, 'message' => 'Already registered'];
         }
 
         // AI generate sapaan pembuka yang beda-beda
@@ -603,8 +603,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($isNegative) {
             $this->conversationState->clearState($chatId);
-            $this->sendMessage($chatId, "❌ Pendaftaran dibatalkan.\n\nKetik /daftar jika ingin mendaftar ulang.");
-            return ['status' => false, 'message' => 'Registration cancelled'];
+            $this->sendMessage($chatId, "❌ Pendaftaran dibatalkan. Kamu bisa mengulangi dengan mengetik /daftar");
+            return ['status' => true, 'message' => 'Process cancelled by user'];
         }
 
         if (!$isPositive) {

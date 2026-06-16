@@ -20,7 +20,7 @@ class AiResponseService
      */
     public function greetingMenu(string $nama): string
     {
-        $prompt = "Kamu adalah asisten HR bot WhatsApp Herbigreen.
+        $prompt = "Kamu adalah asisten HR (satu orang) di WhatsApp Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan sapaan singkat yang hangat dan casual (1 kalimat saja) untuk karyawan bernama {$nama} yang baru aja chat bot.
 Variasikan gaya — bisa pagi/siang/malam yang kontekstual, fun, atau friendly.
 Gunakan bahasa Indonesia. Akhiri dengan emoji.
@@ -34,7 +34,7 @@ PENTING: Balas HANYA sapaan singkatnya saja, tanpa penjelasan.";
      */
     public function greetingLapor(string $nama): string
     {
-        $prompt = "Kamu adalah asisten HR bot WhatsApp/Telegram untuk perusahaan bernama Herbigreen. 
+        $prompt = "Kamu adalah asisten HR (satu orang) di perusahaan Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan sapaan singkat (maksimal 2 kalimat) yang hangat, semangat, dan sedikit casual untuk karyawan bernama {$nama} yang baru saja akan mengirimkan laporan harian.
 Variasikan gaya sapaan setiap saat — bisa pake analogi, quotes singkat, atau just being fun.
 Gunakan bahasa Indonesia. Jangan lebay. Akhiri dengan emoji yang relevan.
@@ -48,7 +48,7 @@ PENTING: Balas HANYA sapaan singkatnya saja, tanpa penjelasan tambahan.";
      */
     public function greetingDaftar(): string
     {
-        $prompt = "Kamu adalah asisten HR bot WhatsApp/Telegram untuk perusahaan Herbigreen.
+        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan sapaan pembuka yang hangat dan mengundang (maksimal 2 kalimat) untuk karyawan baru yang baru saja mau mendaftarkan diri ke sistem.
 Variasikan gaya sapaan — bisa friendly, fun, atau encouraging.
 Gunakan bahasa Indonesia. Jangan lebay.
@@ -62,7 +62,7 @@ PENTING: Balas HANYA sapaan singkatnya saja, tanpa penjelasan tambahan.";
      */
     public function greetingUnregistered(string $pesan_masuk): string
     {
-        $prompt = "Kamu adalah asisten HR bot Herbigreen. Ada orang asing (belum terdaftar) yang chat bot dengan pesan: '{$pesan_masuk}'.
+        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami'). Ada orang asing (belum terdaftar) yang chat kamu dengan pesan: '{$pesan_masuk}'.
 Buatkan balasan ramah layaknya CS (maksimal 2 kalimat) yang ngasih tau kalau mereka belum terdaftar dan minta mereka ngenalin diri. Arahkan mereka untuk ketik '/daftar'.
 Boleh sedikit playful atau casual (misal: 'eh halo! maaf banget nih, kayaknya kita belum kenalan. Ketik /daftar dulu yuk!').
 Gunakan bahasa Indonesia. Akhiri dengan emoji.
@@ -76,7 +76,7 @@ PENTING: Balas HANYA sapaan singkatnya saja.";
      */
     public function greetingAbsen(string $nama): string
     {
-        $prompt = "Kamu adalah asisten HR bot Herbigreen.
+        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan sapaan singkat (1-2 kalimat) yang empatik dan supportif untuk karyawan bernama {$nama} yang mau lapor absen/izin/sakit.
 Variasikan gaya — bisa caring, encouraging, atau ringan tapi tetap sopan.
 Gunakan bahasa Indonesia. Akhiri dengan emoji yang relevan.
@@ -90,7 +90,7 @@ PENTING: Balas HANYA sapaan singkatnya saja.";
      */
     public function confirmAbsen(string $nama, string $type): string
     {
-        $prompt = "Kamu adalah asisten HR bot Herbigreen.
+        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan pesan konfirmasi singkat (1-2 kalimat) yang hangat untuk karyawan bernama {$nama} yang baru saja lapor {$type}.
 Variasikan pesannya — bisa doain cepat sembuh (kalau sakit), semoga urusan lancar (kalau izin), atau nikmati istirahat (kalau cuti).
 Gunakan bahasa Indonesia. Akhiri dengan emoji.
@@ -110,7 +110,7 @@ PENTING: Balas HANYA pesannya saja.";
      */
     public function confirmLaporan(string $nama): string
     {
-        $prompt = "Kamu adalah asisten HR bot Herbigreen.
+        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan konfirmasi singkat (1-2 kalimat) yang hangat dan menyemangati untuk karyawan bernama {$nama} yang baru saja berhasil mengirim laporan harian.
 Variasikan pesannya — bisa apresiasi, motivasi, atau fun fact singkat soal produktivitas.
 Gunakan bahasa Indonesia. Akhiri dengan emoji.
@@ -207,7 +207,7 @@ PENTING: Balas HANYA laporannya saja.";
             : "Status Laporan Hari Ini: BELUM LAPOR";
 
         $currentTime = now()->translatedFormat('l, d F Y H:i');
-        $prompt = "Kamu adalah asisten HR dan Operasional bernama 'Mbak HR' di perusahaan Herbigreen.
+        $prompt = "Kamu adalah asisten HR dan Operasional (SATU ORANG) bernama 'Mbak HR' di perusahaan Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (JANGAN PERNAH gunakan kata 'kami').
 Kamu melayani karyawan bernama {$nama} dari divisi {$divisi}. Waktu saat ini: {$currentTime} (Gunakan waktu ini sebagai acuan untuk menyapa pagi/siang/sore/malam).
 
 Data Saat Ini:

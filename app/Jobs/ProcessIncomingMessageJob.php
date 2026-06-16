@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Models\Employee;
 use App\Models\Report;
 use App\Services\AiResponseService;
-use App\Services\MessageProviders\MessageProviderFactory;
+use App\Services\MessageProviderFactory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

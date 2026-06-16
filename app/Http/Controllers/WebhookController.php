@@ -146,8 +146,10 @@ class WebhookController extends Controller
                 return response()->json(['status' => false, 'message' => 'Unregistered user']);
             }
 
-            $this->processMessage($employee, $message, $urlFile, $chatId);
+            // Lemparkan pesan ke Queue Job agar proses AI tidak memblokir webhook Telegram
+            \App\Jobs\ProcessIncomingMessageJob::dispatch($employee, $message, $urlFile, $chatId);
 
+            // Langsung respons 200 OK ke Telegram dalam hitungan milidetik
             return response()->json(['status' => true]);
         } catch (\Throwable $e) {
             Log::error("WEBHOOK ERROR (Telegram): " . $e->getMessage() . "\n" . $e->getTraceAsString());
@@ -157,118 +159,6 @@ class WebhookController extends Controller
                 $provider->sendMessage($chatId, "Duh, sistem pusat lagi pusing nih (Server Error) 🤕. Sabar ya, tunggu bentar terus coba lagi nanti!");
             }
             return response()->json(['status' => false, 'message' => 'Internal server error']);
-        }
-    }
-
-    private function processMessage($employee, $message, $urlFile, $sender): void
-    {
-        $division = $employee->division?->name ?? 'Umum';
-        
-        Log::info("PESAN MASUK DARI {$employee->name}: $message");
-
-        $todaysReportContent = null;
-        if (strtolower($division) === 'host live') {
-            $gmvReports = \App\Models\GmvReport::where('employee_id', $employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->get();
-            if ($gmvReports->count() > 0) {
-                $details = [];
-                $totalGmv = 0;
-                foreach ($gmvReports as $report) {
-                    $platform = $report->platform ?? 'Lainnya';
-                    $details[] = "{$platform}: Rp " . number_format($report->gmv_amount, 0, ',', '.');
-                    $totalGmv += $report->gmv_amount;
-                }
-                $todaysReportContent = "Laporan GMV hari ini:\n- " . implode("\n- ", $details) . "\nTotal: Rp " . number_format($totalGmv, 0, ',', '.');
-            }
-        }
-
-        if (!$todaysReportContent) {
-            $todaysReport = \App\Models\Report::where('employee_id', $employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->first();
-            $todaysReportContent = $todaysReport?->content;
-        }
-
-        $ai = new AiResponseService();
-        $analysis = $ai->analyzeIntentAndReply($employee->name, $division, $message, !empty($urlFile), $todaysReportContent);
-        
-        $intent = $analysis['intent'] ?? 'general_chat';
-        $reply = $analysis['reply'] ?? "Halo {$employee->name}! Ada yang bisa kubantu?";
-        $extractedData = $analysis['extracted_data'] ?? $message;
-
-        Log::info("AI INTENT: $intent | DATA: $extractedData");
-
-        $provider = MessageProviderFactory::create();
-
-        if ($intent === 'report') {
-            $sudahLapor = Report::where('employee_id', $employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->exists();
-
-            if ($sudahLapor) {
-                // Jangan save lagi, tapi kasih tau kalau udah lapor
-                $provider->sendMessage($sender, "Eh, kayanya kamu udah lapor deh hari ini! Laporannya cukup sekali sehari aja yaa. Semangat terus! 🙌");
-                return;
-            } else {
-                ProcessDailyReportJob::dispatch($employee->id, $extractedData, $urlFile);
-                $provider->sendMessage($sender, $reply);
-            }
-
-        } elseif ($intent === 'attendance') {
-            $attendanceType = $analysis['attendance_type'] ?? 'izin';
-            // Bersihkan string attendanceType barangkali AI nulis aneh
-            $attendanceType = strtolower(trim(explode(' ', $attendanceType)[0])); 
-            if (!in_array($attendanceType, ['sakit', 'izin', 'cuti', 'telat'])) $attendanceType = 'izin';
-
-            ProcessAttendanceJob::dispatch($employee->id, $extractedData, $attendanceType, $urlFile);
-            $provider->sendMessage($sender, $reply);
-
-        } elseif ($intent === 'gmv_report') {
-            $stateService = new \App\Services\DatabaseConversationState();
-            
-            $gmvAccount = $analysis['gmv_account'] ?? null;
-            $gmvStart = $analysis['gmv_start'] ?? null;
-            $gmvEnd = $analysis['gmv_end'] ?? null;
-            
-            // Apakah data sesi komplit dari caption?
-            $isComplete = !empty($gmvAccount) && !empty($gmvStart) && !empty($gmvEnd);
-
-            if ($isComplete && $urlFile) {
-                // Semua lengkap + ada foto, langsung sikat!
-                ProcessGmvReportJob::dispatch($employee->id, $urlFile, $sender, $gmvAccount, $gmvStart, $gmvEnd);
-                $provider->sendMessage($sender, "📸 Data komplit! Aku baca screenshot-nya dulu ya... tunggu bentar!");
-            } elseif ($isComplete && !$urlFile) {
-                // Info lengkap tapi lupa foto
-                $stateService->setCurrentStep($sender, 'awaiting_gmv_screenshot', [
-                    'employee_id' => $employee->id,
-                    'account_name' => $gmvAccount,
-                    'live_start' => $gmvStart,
-                    'live_end' => $gmvEnd,
-                ]);
-                $provider->sendMessage($sender, "Sip, infonya udah kucatat! Sekarang kirim *screenshot GMV*-nya ya 📸\n\n_(Pastikan kirim Screenshot Asli dari HP ya, jangan foto layar HP pakai HP lain)_");
-            } elseif ($urlFile) {
-                // Ada foto tapi info nggak komplit → simpan foto ke state sementara, lalu tanya akun
-                $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
-                    'employee_id' => $employee->id,
-                    'url_file' => $urlFile,
-                ]);
-                $provider->sendMessage($sender, "📸 Screenshot GMV diterima! Biar laporannya lengkap, ketik *nama akun* yang kamu pakai live dulu yuk\n\n_Contoh: HERBITOK USQI_");
-            } else {
-                // Nggak ada foto & info nggak komplit → tanya akun
-                $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
-                    'employee_id' => $employee->id,
-                ]);
-                $provider->sendMessage($sender, "Boleh! Laporan GMV ya? Ketik *nama akun* yang kamu pakai live dulu yuk\n\n_Contoh: HERBITOK USQI_");
-            }
-
-        } elseif ($intent === 'status') {
-            // Karena AI sudah membalas status dengan natural, kita cukup kirim balasannya
-            $provider->sendMessage($sender, $reply);
-            
-        } else {
-            // General chat, bot cuma balas obrolan biasa
-            $provider->sendMessage($sender, $reply);
         }
     }
 }

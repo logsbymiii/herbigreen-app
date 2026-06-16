@@ -11,8 +11,8 @@ Artisan::command('inspire', function () {
 // Laporan anak mangkir dikirim tiap jam 8 pagi
 Schedule::command('app:send-morning-exception')->dailyAt('08:00');
 
-// Reminder belum absen dikirim tiap jam 4 sore
-Schedule::command('app:send-daily-reminder')->dailyAt('16:00');
+// Reminder belum absen dikirim tiap jam 3 sore
+Schedule::command('app:send-daily-reminder')->dailyAt('15:00');
 
 // Rekap total harian dikirim tiap jam 8 malam
 Schedule::command('app:send-night-summary')->dailyAt('20:00');

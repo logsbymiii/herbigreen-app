@@ -238,6 +238,9 @@ Format JSON yang diharapkan:
   \"intent\": \"report|gmv_report|attendance|status|end_conversation|general_chat\",
   \"attendance_type\": \"sakit|izin|cuti|telat (isi jika attendance, selain itu kosong)\",
   \"extracted_data\": \"Ringkasan laporan (jika ada)\",
+  \"gmv_account\": \"Nama akun live (jika intent gmv_report dan disebutkan)\",
+  \"gmv_start\": \"Jam mulai live format HH:MM (jika disebutkan)\",
+  \"gmv_end\": \"Jam selesai live format HH:MM (jika disebutkan)\",
   \"reply\": \"Balasan kamu yang sangat casual dan singkat\"
 }
 ";
@@ -246,6 +249,9 @@ Format JSON yang diharapkan:
             'intent' => 'general_chat',
             'attendance_type' => '',
             'extracted_data' => '',
+            'gmv_account' => '',
+            'gmv_start' => '',
+            'gmv_end' => '',
             'reply' => "Halo {$nama}! Ada yang bisa kubantu hari ini? 😊"
         ]), true);
 

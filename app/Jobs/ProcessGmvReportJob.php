@@ -161,8 +161,10 @@ class ProcessGmvReportJob implements ShouldQueue
         } else {
             // Kalau gagal baca angka atau dapet 0
             $msg = "📸 *Laporan GMV Diterima*\n\n"
-                 . "Aduh, aku gagal baca angka dari screenshot yang kamu kirim (atau kebaca 0). Gambarnya burem atau angkanya nggak kelihatan jelas nih 🥺\n\n"
-                 . "Coba kirim ulang gambarnya yang lebih tajam ya! Atau kalau mau cepat, ketik manual aja: */gmv [angka_omset]* (contoh: */gmv 500000*)";
+                 . "Aduh, aku gagal baca angka dari gambar yang kamu kirim (atau kebaca 0).\n\n"
+                 . "⚠️ *TIPS PENTING:*\n"
+                 . "Pastikan kamu ngirim *Screenshot Asli* dari HP (jangan foto HP pakai HP lain) biar angkanya tajam dan gampang dibaca robot.\n\n"
+                 . "Coba kirim ulang screenshot-nya ya! Atau kalau tetep gagal, ketik lapor manual aja: */gmv [angka_omset]* (contoh: */gmv 500000*)";
             $provider->sendMessage($this->sender, $msg);
             Log::warning("KOKI GMV: Gagal baca angka, minta upload ulang. Raw: {$rawOcrText}");
         }

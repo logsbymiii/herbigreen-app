@@ -226,15 +226,36 @@ class WebhookController extends Controller
 
         } elseif ($intent === 'gmv_report') {
             $stateService = new \App\Services\DatabaseConversationState();
-            if ($urlFile) {
-                // Ada foto → simpan foto ke state sementara, lalu tanya akun
+            
+            $gmvAccount = $analysis['gmv_account'] ?? null;
+            $gmvStart = $analysis['gmv_start'] ?? null;
+            $gmvEnd = $analysis['gmv_end'] ?? null;
+            
+            // Apakah data sesi komplit dari caption?
+            $isComplete = !empty($gmvAccount) && !empty($gmvStart) && !empty($gmvEnd);
+
+            if ($isComplete && $urlFile) {
+                // Semua lengkap + ada foto, langsung sikat!
+                ProcessGmvReportJob::dispatch($employee->id, $urlFile, $sender, $gmvAccount, $gmvStart, $gmvEnd);
+                $provider->sendMessage($sender, "📸 Data komplit! Aku baca screenshot-nya dulu ya... tunggu bentar!");
+            } elseif ($isComplete && !$urlFile) {
+                // Info lengkap tapi lupa foto
+                $stateService->setCurrentStep($sender, 'awaiting_gmv_screenshot', [
+                    'employee_id' => $employee->id,
+                    'account_name' => $gmvAccount,
+                    'live_start' => $gmvStart,
+                    'live_end' => $gmvEnd,
+                ]);
+                $provider->sendMessage($sender, "Sip, infonya udah kucatat! Sekarang kirim *screenshot GMV*-nya ya 📸\n\n_(Pastikan kirim Screenshot Asli dari HP ya, jangan foto layar HP pakai HP lain)_");
+            } elseif ($urlFile) {
+                // Ada foto tapi info nggak komplit → simpan foto ke state sementara, lalu tanya akun
                 $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
                     'employee_id' => $employee->id,
                     'url_file' => $urlFile,
                 ]);
                 $provider->sendMessage($sender, "📸 Screenshot GMV diterima! Biar laporannya lengkap, ketik *nama akun* yang kamu pakai live dulu yuk\n\n_Contoh: HERBITOK USQI_");
             } else {
-                // Nggak ada foto → tanya akun
+                // Nggak ada foto & info nggak komplit → tanya akun
                 $stateService->setCurrentStep($sender, 'awaiting_gmv_account', [
                     'employee_id' => $employee->id,
                 ]);

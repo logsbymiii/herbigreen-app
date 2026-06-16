@@ -409,7 +409,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->conversationState->clearState($chatId);
         } else {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_screenshot');
-            $this->sendMessage($chatId, "📸 Mantap! Sekarang kirim *screenshot GMV*-nya ya\n\n_(satu foto aja per laporan)_");
+            $this->sendMessage($chatId, "📸 Mantap! Sekarang kirim *screenshot GMV*-nya ya\n\n_(Pastikan kirim Screenshot Asli dari HP ya, jangan foto layar HP pakai HP lain biar angkanya jelas dibaca robot)_");
         }
 
         return ['status' => true];

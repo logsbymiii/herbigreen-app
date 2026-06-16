@@ -30,9 +30,18 @@ class TelegramService implements MessageProviderInterface
         try {
             $url = "{$this->baseUrl}{$this->token}/sendMessage";
 
+            // 1. Amankan karakter HTML bawaan user (biar Telegram ga crash kalau ada < atau >)
+            $safeMessage = htmlspecialchars($message, ENT_NOQUOTES, 'UTF-8');
+
+            // 2. Convert manual *teks* jadi <b>teks</b> dan _teks_ jadi <i>teks</i>
+            // Pakai regex non-greedy supaya formatnya presisi
+            $htmlMessage = preg_replace('/\*(.*?)\*/', '<b>$1</b>', $safeMessage);
+            $htmlMessage = preg_replace('/_(.*?)_/', '<i>$1</i>', $htmlMessage);
+
             $response = Http::post($url, [
                 'chat_id' => $chatId,
-                'text'    => $message,
+                'text'    => $htmlMessage,
+                'parse_mode' => 'HTML',
             ]);
 
             if ($response->successful()) {

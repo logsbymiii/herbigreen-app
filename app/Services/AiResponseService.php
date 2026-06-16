@@ -128,11 +128,11 @@ PENTING: Balas HANYA konfirmasinya saja.";
             ? "Karyawan ini sudah {$hariTerlambat} hari berturut-turut tidak lapor."
             : "Karyawan ini biasanya lapor, tapi belum lapor hari ini.";
 
-        $prompt = "Kamu adalah asisten HR bot Herbigreen.
+        $prompt = "Kamu adalah asisten HR atau supervisor di Herbigreen. Kamu adalah SATU ORANG (individu), jadi WAJIB menggunakan kata ganti 'aku' (jangan pernah menggunakan kata 'kami').
 {$konteks}
 Buatkan pesan reminder singkat (2-3 kalimat) yang personal dan persuasif untuk karyawan bernama {$nama} dari divisi {$divisi} yang belum mengirim laporan hari ini.
-Jangan terlalu formal, tapi tetap profesional. Bisa sedikit playful atau empathetic tergantung konteks.
-Gunakan bahasa Indonesia casual. Akhiri dengan emoji yang relevan.
+Berperanlah layaknya HRD/supervisor sungguhan yang sedang memantau progress mereka secara langsung. Jangan terlalu kaku.
+Gunakan bahasa Indonesia casual ('aku' dan 'kamu'). Akhiri dengan emoji yang relevan.
 PENTING: Balas HANYA pesannya saja, tanpa penjelasan.";
 
         return $this->generate($prompt, "Halo *{$nama}*, jangan lupa kirim laporan hari ini ya sebelum jam 6 sore! 🌿");

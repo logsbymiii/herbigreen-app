@@ -5,6 +5,7 @@ namespace App\Services\BotHandlers;
 use App\Models\Employee;
 use App\Models\Division;
 use App\Jobs\ProcessDailyReportJob;
+use App\Jobs\ProcessSmartDailyReportJob;
 use App\Jobs\ProcessAttendanceJob;
 use App\Jobs\ProcessGmvReportJob;
 use App\Services\AiResponseService;
@@ -213,7 +214,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
-        ProcessDailyReportJob::dispatch($employee->id, $cleanMessage, null);
+        ProcessSmartDailyReportJob::dispatch($employee->id, $cleanMessage, (string) $chatId);
         $this->conversationState->clearState($chatId);
 
         // AI generate konfirmasi yang beda tiap hari

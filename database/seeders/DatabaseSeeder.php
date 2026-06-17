@@ -30,7 +30,12 @@ class DatabaseSeeder extends Seeder
         }
 
         // 2. Create Divisions
-        $divisions = ['Editor', 'CRM', 'Packing', 'Admin Toko', 'Admin Affiliate', 'Host Live', 'VideoGrapher', 'Content Creator'];
+        $divisions = [
+            'Editor', 'Admin Affiliate', 'Admin CRM', 'Admin Sosial Media',
+            'HR & Brand Manager', 'Tim Packing', 'Editor Konten', 
+            'Head & Admin Toko', 'Admin Toko', 'Host Live', 
+            'VideoGrapher', 'Content Creator'
+        ];
         $divisionMap = [];
         foreach ($divisions as $divName) {
             $division = Division::firstOrCreate(['name' => $divName]);

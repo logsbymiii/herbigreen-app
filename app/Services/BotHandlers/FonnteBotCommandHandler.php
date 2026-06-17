@@ -7,6 +7,7 @@ use App\Models\Division;
 use App\Models\Report;
 use App\Models\Attendance;
 use App\Jobs\ProcessDailyReportJob;
+use App\Jobs\ProcessSmartDailyReportJob;
 use App\Jobs\ProcessAttendanceJob;
 use App\Jobs\ProcessGmvReportJob;
 use App\Services\AiResponseService;
@@ -544,7 +545,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
-        ProcessDailyReportJob::dispatch($employee->id, $cleanMessage, null);
+        ProcessSmartDailyReportJob::dispatch($employee->id, $cleanMessage, (string) $phone);
         $this->conversationState->clearState($phone);
 
         $ai        = new AiResponseService();

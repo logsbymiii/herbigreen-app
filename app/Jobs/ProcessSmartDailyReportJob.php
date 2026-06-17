@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Employee;
+use App\Models\SmartDailyReport;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class ProcessSmartDailyReportJob implements ShouldQueue
+{
+    use Queueable, Dispatchable, InteractsWithQueue, SerializesModels;
+
+    public function __construct(
+        public int $employeeId,
+        public string $rawReportText,
+        public string $senderId
+    ) {}
+
+    public function handle(): void
+    {
+        Log::info("KOKI SMART REPORT: Mulai memproses laporan harian dari Employee {$this->employeeId}...");
+
+        $employee = Employee::with('division')->find($this->employeeId);
+        if (!$employee || !$employee->division) {
+            Log::error("KOKI SMART REPORT GAGAL: Karyawan atau divisi tidak ditemukan.");
+            return;
+        }
+
+        $divisionName = $employee->division->name;
+        $geminiKey = env('GEMINI_API_KEY');
+
+        $extractedMetrics = [];
+        $aiInsight = "Laporan berhasil diterima.";
+
+        if ($geminiKey) {
+            try {
+                $prompt = "Kamu adalah AI analis kinerja karyawan. Karyawan ini berada di divisi: '{$divisionName}'.\n\n"
+                        . "Berikut adalah laporan harian yang mereka kirim (teks mentah):\n"
+                        . "```\n{$this->rawReportText}\n```\n\n"
+                        . "Tugasmu:\n"
+                        . "1. Ekstrak data kuantitatif yang relevan berdasarkan laporannya (misal: jumlah chat, jumlah video diedit, jumlah pesanan, total sampel, dll). Ubah jadi format key-value JSON yang ringkas.\n"
+                        . "2. Berikan 1-2 kalimat analisa singkat (ai_insight) layaknya manager memuji, mengkritisi, atau memberi saran membangun dari laporan tersebut.\n\n"
+                        . "Format balasan WAJIB berupa JSON mentah TANPA markdown (tanpa ```json dll), dengan struktur persis seperti ini:\n"
+                        . "{\n"
+                        . "  \"extracted_metrics\": {\"kunci\": \"nilai angka/teks ringkas\"},\n"
+                        . "  \"ai_insight\": \"Pesan analisamu di sini...\"\n"
+                        . "}";
+
+                $geminiResponse = Http::timeout(45)->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                    'contents' => [[
+                        'parts' => [['text' => $prompt]]
+                    ]]
+                ]);
+
+                if ($geminiResponse->successful()) {
+                    $rawText = $geminiResponse->json('candidates.0.content.parts.0.text');
+                    $cleanJsonStr = str_replace(['```json', '```'], '', $rawText);
+                    $parsed = json_decode(trim($cleanJsonStr), true);
+
+                    if (is_array($parsed)) {
+                        $extractedMetrics = $parsed['extracted_metrics'] ?? [];
+                        $aiInsight = $parsed['ai_insight'] ?? "Bagus, pertahankan kerjamu hari ini!";
+                    }
+                    Log::info("KOKI SMART REPORT: Gemini berhasil parsing.");
+                } else {
+                    Log::error("KOKI SMART REPORT: Gemini API Error! Status: " . $geminiResponse->status() . " Body: " . $geminiResponse->body());
+                    $aiInsight = "Catatan diterima (Gagal AI Parse).";
+                }
+            } catch (\Exception $e) {
+                Log::error("KOKI SMART REPORT: Gemini gagal (Exception): " . $e->getMessage());
+                $aiInsight = "Catatan diterima (AI Exception).";
+            }
+        }
+
+        // Simpan ke database
+        SmartDailyReport::create([
+            'employee_id' => $this->employeeId,
+            'raw_report' => $this->rawReportText,
+            'extracted_metrics' => $extractedMetrics,
+            'ai_insight' => $aiInsight,
+            'report_date' => now()->format('Y-m-d'),
+        ]);
+
+        // Kirim notifikasi balasan ke user via Bot
+        $provider = \App\Services\MessageProviderFactory::create();
+        $msg = "✅ *Laporan Harian Tersimpan!* (Divisi: {$divisionName})\n\n"
+             . "💡 *AI Insight:*\n_{$aiInsight}_\n\n"
+             . "Terima kasih atas laporanmu hari ini!";
+             
+        $provider->sendMessage($this->senderId, $msg);
+    }
+}

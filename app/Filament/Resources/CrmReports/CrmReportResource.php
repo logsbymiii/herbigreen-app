@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\SmartDailyReports;
+namespace App\Filament\Resources\CrmReports;
 
-use App\Filament\Resources\SmartDailyReports\Pages\CreateSmartDailyReport;
-use App\Filament\Resources\SmartDailyReports\Pages\EditSmartDailyReport;
-use App\Filament\Resources\SmartDailyReports\Pages\ListSmartDailyReports;
+use App\Filament\Resources\CrmReports\Pages\CreateCrmReport;
+use App\Filament\Resources\CrmReports\Pages\EditCrmReport;
+use App\Filament\Resources\CrmReports\Pages\ListCrmReports;
 use App\Filament\Resources\SmartDailyReports\Schemas\SmartDailyReportForm;
 use App\Filament\Resources\SmartDailyReports\Tables\SmartDailyReportsTable;
 use App\Models\SmartDailyReport;
@@ -13,20 +13,29 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SmartDailyReportResource extends Resource
+class CrmReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 
-    protected static ?string $navigationLabel = 'Semua Laporan';
+    protected static ?string $navigationLabel = 'Laporan CRM';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereHas('employee.division', function ($query) {
+            $query->where('name', 'Admin CRM');
+        });
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -38,8 +47,6 @@ class SmartDailyReportResource extends Resource
         return SmartDailyReportsTable::configure($table);
     }
 
-
-
     public static function getRelations(): array
     {
         return [
@@ -47,19 +54,13 @@ class SmartDailyReportResource extends Resource
         ];
     }
 
-    public static function getWidgets(): array
-    {
-        return [
-            \App\Filament\Widgets\SmartDailyReportOverview::class,
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => ListSmartDailyReports::route('/'),
-            'create' => CreateSmartDailyReport::route('/create'),
-            'edit' => EditSmartDailyReport::route('/{record}/edit'),
+            'index' => ListCrmReports::route('/'),
+            'create' => CreateCrmReport::route('/create'),
+            'edit' => EditCrmReport::route('/{record}/edit'),
         ];
     }
+
 }

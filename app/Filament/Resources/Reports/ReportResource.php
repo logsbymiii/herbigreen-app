@@ -22,6 +22,8 @@ class ReportResource extends Resource
     protected static ?string $modelLabel = 'Laporan Harian';
 
     protected static ?string $pluralModelLabel = 'Laporan Harian';
+    
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
 
     public static function form(Schema $schema): Schema
     {

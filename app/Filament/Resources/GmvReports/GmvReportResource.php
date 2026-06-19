@@ -25,7 +25,7 @@ class GmvReportResource extends Resource
     protected static ?string $pluralModelLabel = 'Laporan GMV';
     protected static ?string $navigationLabel = 'Laporan GMV';
 
-    protected static ?string $navigationGroup = 'Laporan AI';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

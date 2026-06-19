@@ -23,7 +23,7 @@ class ReportsTable
                     ->label('Tipe Laporan')
                     ->badge() // Bikin jadi badge warna
                     ->color(fn (string $state): string => match ($state) {
-                        'daily_report' => 'success', // Warna hijau
+                        'harian' => 'success', // Warna hijau
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state) => str($state)->headline()),

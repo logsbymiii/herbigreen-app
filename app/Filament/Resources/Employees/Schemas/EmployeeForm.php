@@ -38,6 +38,15 @@ class EmployeeForm
                     ->default(true)
                     ->inline(false)
                     ->required(),
+                    
+                Select::make('role')
+                    ->label('Role Karyawan')
+                    ->options([
+                        'user' => 'User Biasa',
+                        'admin' => 'Admin (Bebas Lapor & Tes Bot)',
+                    ])
+                    ->default('user')
+                    ->required(),
             ]);
     }
 }

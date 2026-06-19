@@ -66,9 +66,14 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $provider = MessageProviderFactory::create();
 
         if ($intent === 'report') {
-            $sudahLapor = Report::where('employee_id', $this->employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->exists();
+            $sudahLapor = false;
+            
+            // Bypass limit for admin role so they can test reports multiple times
+            if ($this->employee->role !== 'admin') {
+                $sudahLapor = Report::where('employee_id', $this->employee->id)
+                    ->whereDate('created_at', now()->format('Y-m-d'))
+                    ->exists();
+            }
 
             if ($sudahLapor) {
                 $provider->sendMessage($this->sender, "Eh, kayanya kamu udah lapor deh hari ini! Laporannya cukup sekali sehari aja yaa. Semangat terus! 🙌");

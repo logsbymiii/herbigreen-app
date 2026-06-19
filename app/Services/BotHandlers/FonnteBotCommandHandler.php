@@ -535,9 +535,12 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
-        $sudahLapor = Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', now()->format('Y-m-d'))
-            ->exists();
+        $sudahLapor = false;
+        if ($employee->role !== 'admin') {
+            $sudahLapor = Report::where('employee_id', $employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->exists();
+        }
 
         if ($sudahLapor) {
             $this->conversationState->clearState($phone);

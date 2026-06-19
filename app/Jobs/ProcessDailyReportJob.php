@@ -58,7 +58,7 @@ class ProcessDailyReportJob implements ShouldQueue
 
             Report::create([
                 'employee_id' => $this->employeeId,
-                'type'        => 'daily_report',
+                'type'        => 'Harian',
                 'content'     => $this->reportContent,
                 'media_path'  => $finalPath ?? $this->mediaPath,
                 'reported_at' => now(),

@@ -19,7 +19,7 @@ class HostLiveReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedVideoCamera;
 
     protected static ?string $navigationLabel = 'Laporan Host Live';
 

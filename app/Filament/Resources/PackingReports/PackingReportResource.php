@@ -19,7 +19,7 @@ class PackingReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
 
     protected static ?string $navigationLabel = 'Laporan Packing';
 

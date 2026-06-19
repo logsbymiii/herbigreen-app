@@ -19,7 +19,7 @@ class SosmedReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShare;
 
     protected static ?string $navigationLabel = 'Laporan Sosial Media';
 

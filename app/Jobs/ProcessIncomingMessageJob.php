@@ -80,6 +80,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 return;
             } else {
                 ProcessDailyReportJob::dispatch($this->employee->id, $extractedData, $this->urlFile);
+                ProcessSmartDailyReportJob::dispatch($this->employee->id, $extractedData, $this->sender);
                 $provider->sendMessage($this->sender, $reply);
             }
 

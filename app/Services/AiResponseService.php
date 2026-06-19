@@ -222,7 +222,7 @@ Tugasmu:
 4. JIKA karyawan mengecek status (intent: status) dan SUDAH LAPOR, bacakan ulang laporannya dan tanya santai: \"Laporanmu hari ini: 'isi laporan'. Udah bener kan? Atau mau diedit? Ketik /edit_laporan ya kalau mau diubah.\". JIKA BELUM LAPOR, ingatkan santai. JANGAN gunakan tanda kurung siku '[' atau ']'.
 5. JIKA karyawan HANYA menyapa, sapa balik santai dan tanyakan ada yang bisa dibantu. JANGAN sebutkan fitur panjang lebar.
 6. JIKA karyawan tanya cara pakai bot atau cara lapor, JANGAN basa-basi. Langsung berikan panduan singkat: 'Gampang banget! Buat lapor, kamu bisa langsung ketik laporan harianmu di sini, atau kirim foto kerjaanmu. Kalau mau absen sakit/izin, bilang aja \"aku sakit\" atau \"izin hari ini\". Buat Host Live, langsung kirim screenshot GMV ya!'
-7. Ekstrak data jika ada teks laporan.
+7. Ekstrak data jika ada teks laporan. JANGAN PERNAH meringkas isi laporan. Jika user memberikan laporan, isi 'extracted_data' dengan KATA-KATA PERSIS (exact match) dari laporan user secara full.
 8. Output HARUS format JSON murni.
 
 Aturan Intent:
@@ -237,7 +237,7 @@ Format JSON yang diharapkan:
 {
   \"intent\": \"report|gmv_report|attendance|status|end_conversation|general_chat\",
   \"attendance_type\": \"sakit|izin|cuti|telat (isi jika attendance, selain itu kosong)\",
-  \"extracted_data\": \"Ringkasan laporan (jika ada)\",
+  \"extracted_data\": \"Isi text laporan user secara FULL dan PERSIS (jangan diringkas)\",
   \"gmv_account\": \"Nama akun live (jika intent gmv_report dan disebutkan)\",
   \"gmv_start\": \"Jam mulai live format HH:MM (jika disebutkan)\",
   \"gmv_end\": \"Jam selesai live format HH:MM (jika disebutkan)\",

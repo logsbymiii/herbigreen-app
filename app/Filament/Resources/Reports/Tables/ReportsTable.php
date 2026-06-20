@@ -35,7 +35,7 @@ class ReportsTable
                     ->square()
                     ->defaultImageUrl(fn ($record) => $record->media_path ? \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->media_path, now()->addMinutes(10)) : null)
                     ->action(
-                        \Filament\Tables\Actions\Action::make('viewMedia')
+                        \Filament\Actions\Action::make('viewMedia')
                             ->label('Lihat Lampiran')
                             ->icon('heroicon-o-eye')
                             ->modalHeading('Lampiran Laporan')

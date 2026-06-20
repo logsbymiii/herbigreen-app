@@ -28,7 +28,7 @@ class AttendancesTable
                     ->square()
                     ->defaultImageUrl(fn ($record) => $record->proof_path ? \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10)) : null)
                     ->action(
-                        \Filament\Tables\Actions\Action::make('viewProof')
+                        \Filament\Actions\Action::make('viewProof')
                             ->label('Lihat Bukti')
                             ->icon('heroicon-o-eye')
                             ->modalHeading('Bukti Kehadiran')

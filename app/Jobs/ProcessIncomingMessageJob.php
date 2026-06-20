@@ -84,8 +84,8 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 $provider->sendMessage($this->sender, "Eh, kayanya kamu udah lapor deh hari ini! Laporannya cukup sekali sehari aja yaa. Semangat terus! 🙌");
                 return;
             } else {
-                ProcessDailyReportJob::dispatch($this->employee->id, $extractedData, $this->urlFile);
-                ProcessSmartDailyReportJob::dispatch($this->employee->id, $extractedData, $this->sender);
+                ProcessDailyReportJob::dispatch($this->employee->id, $this->message, $this->urlFile);
+                ProcessSmartDailyReportJob::dispatch($this->employee->id, $this->message, $this->sender);
                 $provider->sendMessage($this->sender, $reply);
             }
 
@@ -94,7 +94,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
             $attendanceType = strtolower(trim(explode(' ', $attendanceType)[0])); 
             if (!in_array($attendanceType, ['sakit', 'izin', 'cuti', 'telat'])) $attendanceType = 'izin';
 
-            ProcessAttendanceJob::dispatch($this->employee->id, $extractedData, $attendanceType, $this->urlFile);
+            ProcessAttendanceJob::dispatch($this->employee->id, $this->message, $attendanceType, $this->urlFile);
             $provider->sendMessage($this->sender, $reply);
 
         } elseif ($intent === 'gmv_report') {

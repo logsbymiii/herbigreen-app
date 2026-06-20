@@ -199,12 +199,16 @@ PENTING: Balas HANYA laporannya saja.";
      * Menganalisis pesan user dan menghasilkan intent serta balasan natural.
      * Mengembalikan array dengan key 'intent', 'extracted_data', dan 'reply'.
      */
-    public function analyzeIntentAndReply(string $nama, string $divisi, string $pesan, bool $hasFile, ?string $todaysReportContent = null): array
+    public function analyzeIntentAndReply(string $nama, string $divisi, string $pesan, bool $hasFile, ?string $todaysReportContent = null, ?string $todaysAttendanceStatus = null): array
     {
         $fileContext = $hasFile ? "(Karyawan melampirkan gambar/file)" : "(Tidak ada lampiran)";
         $reportStatusContext = $todaysReportContent 
             ? "Status Laporan Hari Ini: SUDAH LAPOR\nIsi Laporan Hari Ini: \"{$todaysReportContent}\"" 
             : "Status Laporan Hari Ini: BELUM LAPOR";
+            
+        if ($todaysAttendanceStatus) {
+            $reportStatusContext .= "\n" . $todaysAttendanceStatus;
+        }
 
         $currentTime = now()->translatedFormat('l, d F Y H:i');
         $prompt = "Kamu adalah asisten HR dan Operasional (SATU ORANG) bernama 'Mbak HR' di perusahaan Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (JANGAN PERNAH gunakan kata 'kami').
@@ -219,7 +223,7 @@ Tugasmu:
 1. Pahami intensi/tujuan dari pesan karyawan tersebut.
 2. Buat balasan ('reply') yang SANGAT SINGKAT (maksimal 1 kalimat pendek), santai, dan ramah layaknya teman kerja. Gunakan sapaan standar (Halo/Pagi/Siang/Sore/Malam). JANGAN kaku. JANGAN panjang lebar atau bertele-tele. JANGAN pakai kata-kata aneh. Beri respon yang mengalir natural dan to the point.
 3. JIKA karyawan memberikan laporan harian atau gambar kerja, balas dengan apresiasi singkat dan tegaskan bahwa laporannya sudah dicatat. Contoh: \"Sip, laporan harianmu udah aku catet ya! Makasih banyak kerja kerasnya hari ini!\" atau variasi lainnya. JANGAN gunakan tanda tanya berlebihan.
-4. JIKA karyawan mengecek status (intent: status) dan SUDAH LAPOR, bacakan ulang laporannya dan tanya santai: \"Laporanmu hari ini: 'isi laporan'. Udah bener kan? Atau mau diedit? Ketik /edit_laporan ya kalau mau diubah.\". JIKA BELUM LAPOR, ingatkan santai. JANGAN gunakan tanda kurung siku '[' atau ']'.
+4. JIKA karyawan mengecek status (intent: status) dan SUDAH LAPOR / SUDAH ABSEN SAKIT/IZIN/CUTI, sampaikan santai bahwa datanya aman. JIKA BELUM SAMA SEKALI, ingatkan santai.
 5. JIKA karyawan HANYA menyapa, sapa balik santai dan tanyakan ada yang bisa dibantu. JANGAN sebutkan fitur panjang lebar.
 6. JIKA karyawan mengakhiri percakapan (intent: end_conversation, pesan seperti 'oke', 'makasih'), balas SANGAT SINGKAT (contoh: \"Sama-sama!\", \"Sip!\", \"Selamat istirahat!\"). JANGAN mengulang bahwa laporan sudah dicatat.
 7. JIKA karyawan tanya cara pakai bot atau cara lapor, JANGAN basa-basi. Langsung berikan panduan singkat: 'Gampang banget! Buat lapor, kamu bisa langsung ketik laporan harianmu di sini, atau kirim foto kerjaanmu. Kalau mau absen sakit/izin, bilang aja \"aku sakit\" atau \"izin hari ini\". Buat Host Live, langsung kirim screenshot GMV ya!'

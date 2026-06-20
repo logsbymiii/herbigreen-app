@@ -54,8 +54,13 @@ class ProcessIncomingMessageJob implements ShouldQueue
             $todaysReportContent = $todaysReport?->content;
         }
 
+        $todaysAttendance = \App\Models\Attendance::where('employee_id', $this->employee->id)
+            ->whereDate('created_at', now()->format('Y-m-d'))
+            ->first();
+        $todaysAttendanceStatus = $todaysAttendance ? "Status Absen Hari Ini: " . strtoupper($todaysAttendance->type) . " ({$todaysAttendance->reason})" : null;
+
         $ai = new AiResponseService();
-        $analysis = $ai->analyzeIntentAndReply($this->employee->name, $division, $this->message, !empty($this->urlFile), $todaysReportContent);
+        $analysis = $ai->analyzeIntentAndReply($this->employee->name, $division, $this->message, !empty($this->urlFile), $todaysReportContent, $todaysAttendanceStatus);
         
         $intent = $analysis['intent'] ?? 'general_chat';
         $reply = $analysis['reply'] ?? "Halo {$this->employee->name}! Ada yang bisa kubantu?";

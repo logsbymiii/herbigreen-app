@@ -90,7 +90,7 @@ class GmvReportResource extends Resource
                     ->width(150)
                     ->height(100)
                     ->action(
-                        Tables\Actions\Action::make('view_image')
+                        \Filament\Actions\Action::make('view_image')
                             ->modalHeading('Screenshot GMV')
                             ->modalContent(fn ($record) => new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->url($record->screenshot_path) . '" style="width: 100%; border-radius: 8px;" />'))
                             ->modalSubmitAction(false)

@@ -3,63 +3,53 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use App\Models\Division;
+use App\Models\Employee;
 
 class CleanDivisions extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:clean-divisions';
+    protected $signature = 'clean:divisions';
+    protected $description = 'Clean up duplicate divisions and set exactly 11 final divisions';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Remove duplicate divisions from the database';
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        $this->info("Cleaning duplicate divisions...");
+        $this->info('Starting division cleanup...');
 
-        $duplicates = DB::table('divisions')
-            ->select('name', DB::raw('MIN(id) as keep_id'))
-            ->groupBy('name')
-            ->get();
+        $map = [
+            'Editor' => 'Editor Konten',
+            'CRM' => 'Admin CRM',
+            'Packing' => 'Tim Packing',
+            'Head & Admin Toko' => 'Admin Toko'
+        ];
 
-        $deletedCount = 0;
-
-        foreach ($duplicates as $dup) {
-            $deleted = DB::table('divisions')
-                ->where('name', $dup->name)
-                ->where('id', '!=', $dup->keep_id)
-                ->delete();
+        foreach ($map as $oldName => $newName) {
+            $oldDiv = Division::where('name', $oldName)->first();
+            $newDiv = Division::where('name', $newName)->first();
             
-            $deletedCount += $deleted;
-            if ($deleted > 0) {
-                $this->line("Removed $deleted duplicate(s) for division: {$dup->name}");
+            if (!$newDiv) {
+                $newDiv = new Division();
+                $newDiv->name = $newName;
+                $newDiv->save();
+            }
+
+            if ($oldDiv) {
+                Employee::where('division_id', $oldDiv->id)->update(['division_id' => $newDiv->id]);
+                $oldDiv->delete();
+                $this->info("Merged $oldName into $newName");
             }
         }
 
-        $this->info("Done! Removed $deletedCount duplicate divisions in total.");
+        // Pastikan divisi yang mungkin kehapus ada lagi
+        $required = ['HR & Brand Manager', 'Admin Sosial Media'];
+        foreach ($required as $req) {
+            if (!Division::where('name', $req)->exists()) {
+                $div = new Division();
+                $div->name = $req;
+                $div->save();
+                $this->info("Added missing division: $req");
+            }
+        }
 
-        $this->info("Removing unlisted divisions...");
-        $allowedDivisions = [
-            'Editor', 'CRM', 'Packing', 'Admin Toko', 'Admin Affiliate', 
-            'Host Live', 'VideoGrapher', 'Content Creator'
-        ];
-
-        $unlistedDeleted = DB::table('divisions')
-            ->whereNotIn('name', $allowedDivisions)
-            ->delete();
-
-        $this->info("Done! Removed $unlistedDeleted unlisted divisions.");
+        $this->info('Cleanup completed! You now have exactly 11 divisions.');
     }
 }

@@ -131,6 +131,9 @@ class ProcessIncomingMessageJob implements ShouldQueue
             }
 
         } elseif ($intent === 'status') {
+            if ($todaysReportContent) {
+                $reply .= "\n\n```text\n{$todaysReportContent}\n```";
+            }
             $provider->sendMessage($this->sender, $reply);
         } else {
             $provider->sendMessage($this->sender, $reply);

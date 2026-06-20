@@ -27,7 +27,13 @@ class AffiliateReportResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Affiliate {$record->employee->name}";
+        }
+        return 'Laporan Affiliate';
+    }
 
     public static function getEloquentQuery(): Builder
     {

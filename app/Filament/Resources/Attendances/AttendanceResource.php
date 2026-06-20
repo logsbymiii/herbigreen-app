@@ -25,7 +25,13 @@ class AttendanceResource extends Resource
     protected static ?string $modelLabel = 'Kehadiran';
     protected static ?string $pluralModelLabel = 'Kehadiran';
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Absensi {$record->employee->name}";
+        }
+        return 'Laporan Absensi';
+    }
 
     public static function form(Schema $schema): Schema
     {

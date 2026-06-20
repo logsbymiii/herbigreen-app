@@ -23,7 +23,7 @@ class EmployeeResource extends Resource
     protected static ?string $modelLabel = 'Karyawan';
     protected static ?string $pluralModelLabel = 'Karyawan';
 
-    protected static ?string $recordTitleAttribute = 'Employee';
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
     {

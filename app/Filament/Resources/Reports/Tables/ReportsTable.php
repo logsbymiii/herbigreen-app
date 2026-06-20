@@ -28,6 +28,22 @@ class ReportsTable
                     })
                     ->formatStateUsing(fn (string $state) => str($state)->headline()),
 
+                \Filament\Tables\Columns\ImageColumn::make('media_path')
+                    ->label('Lampiran')
+                    ->disk('r2')
+                    ->visibility('private')
+                    ->square()
+                    ->defaultImageUrl(fn ($record) => $record->media_path ? \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->media_path, now()->addMinutes(10)) : null)
+                    ->action(
+                        \Filament\Tables\Actions\Action::make('viewMedia')
+                            ->label('Lihat Lampiran')
+                            ->icon('heroicon-o-eye')
+                            ->modalHeading('Lampiran Laporan')
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Tutup')
+                            ->modalContent(fn ($record) => $record->media_path ? new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->media_path, now()->addMinutes(10)) . '" style="width: 100%; border-radius: 8px;" />') : new \Illuminate\Support\HtmlString('<p>Tidak ada lampiran</p>'))
+                    ),
+
                 TextColumn::make('content')
                     ->label('Isi Laporan')
                     ->limit(50) // Potong teks biar tabel nggak kepanjangan ke bawah

@@ -27,7 +27,13 @@ class AdminTokoReportResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Admin Toko {$record->employee->name}";
+        }
+        return 'Laporan Admin Toko';
+    }
 
     public static function getEloquentQuery(): Builder
     {

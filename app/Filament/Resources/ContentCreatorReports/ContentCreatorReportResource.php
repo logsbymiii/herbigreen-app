@@ -27,7 +27,13 @@ class ContentCreatorReportResource extends Resource
 
     protected static ?int $navigationSort = 7;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Content Creator {$record->employee->name}";
+        }
+        return 'Laporan Content Creator';
+    }
 
     public static function getEloquentQuery(): Builder
     {

@@ -27,7 +27,13 @@ class HostLiveReportResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Host Live {$record->employee->name}";
+        }
+        return 'Laporan Host Live';
+    }
 
     public static function getEloquentQuery(): Builder
     {

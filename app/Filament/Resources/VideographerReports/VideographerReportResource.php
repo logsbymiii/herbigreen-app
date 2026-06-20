@@ -27,7 +27,13 @@ class VideographerReportResource extends Resource
 
     protected static ?int $navigationSort = 8;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Videographer {$record->employee->name}";
+        }
+        return 'Laporan Videographer';
+    }
 
     public static function getEloquentQuery(): Builder
     {

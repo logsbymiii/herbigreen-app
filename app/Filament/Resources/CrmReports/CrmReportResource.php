@@ -28,7 +28,13 @@ class CrmReportResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "CRM {$record->employee->name}";
+        }
+        return 'Laporan CRM';
+    }
 
     public static function getEloquentQuery(): Builder
     {

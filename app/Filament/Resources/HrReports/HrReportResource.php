@@ -27,7 +27,13 @@ class HrReportResource extends Resource
 
     protected static ?int $navigationSort = 13;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "HR {$record->employee->name}";
+        }
+        return 'Laporan HR';
+    }
 
     public static function getEloquentQuery(): Builder
     {

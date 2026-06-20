@@ -27,7 +27,13 @@ class SosmedReportResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Sosmed {$record->employee->name}";
+        }
+        return 'Laporan Sosmed';
+    }
 
     public static function getEloquentQuery(): Builder
     {

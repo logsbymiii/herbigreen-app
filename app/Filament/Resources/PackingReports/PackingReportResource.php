@@ -27,7 +27,13 @@ class PackingReportResource extends Resource
 
     protected static ?int $navigationSort = 12;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Packing {$record->employee->name}";
+        }
+        return 'Laporan Packing';
+    }
 
     public static function getEloquentQuery(): Builder
     {

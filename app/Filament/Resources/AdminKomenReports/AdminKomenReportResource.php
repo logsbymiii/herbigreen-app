@@ -27,7 +27,13 @@ class AdminKomenReportResource extends Resource
 
     protected static ?int $navigationSort = 11;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Admin Komen {$record->employee->name}";
+        }
+        return 'Laporan Admin Komen';
+    }
 
     public static function getEloquentQuery(): Builder
     {

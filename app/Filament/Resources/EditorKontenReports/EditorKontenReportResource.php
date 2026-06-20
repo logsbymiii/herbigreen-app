@@ -27,7 +27,13 @@ class EditorKontenReportResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $recordTitleAttribute = 'id';
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Editor Konten {$record->employee->name}";
+        }
+        return 'Laporan Editor Konten';
+    }
 
     public static function getEloquentQuery(): Builder
     {

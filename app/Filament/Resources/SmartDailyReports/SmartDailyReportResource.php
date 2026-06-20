@@ -26,8 +26,13 @@ class SmartDailyReportResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $recordTitleAttribute = 'id';
-
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "Laporan {$record->employee->name}";
+        }
+        return 'Laporan';
+    }
     public static function form(Schema $schema): Schema
     {
         return SmartDailyReportForm::configure($schema);

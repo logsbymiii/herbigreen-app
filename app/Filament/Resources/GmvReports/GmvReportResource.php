@@ -29,8 +29,13 @@ class GmvReportResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'id';
-
+    public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
+    {
+        if ($record && $record->employee) {
+            return "GMV {$record->employee->name}";
+        }
+        return 'Laporan GMV';
+    }
     public static function form(Schema $schema): Schema
     {
         return $schema

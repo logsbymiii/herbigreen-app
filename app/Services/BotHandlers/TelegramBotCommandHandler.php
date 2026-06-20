@@ -727,8 +727,9 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($choice === '1') {
             $this->sendMessage($chatId, "Ketik *Nama Baru* kamu:");
         } elseif ($choice === '2') {
-            $divisions = Division::all()->map(fn($d) => "{$d->id}. {$d->name}")->implode("\n");
-            $this->sendMessage($chatId, "Pilih *Divisi Baru* kamu:\n\n{$divisions}\n\nBalas dengan nomor divisi.");
+            $divisions = Division::all()->values();
+            $divisionList = $divisions->map(fn($d, $index) => ($index + 1) . ". {$d->name}")->implode("\n");
+            $this->sendMessage($chatId, "Pilih *Divisi Baru* kamu:\n\n{$divisionList}\n\nBalas dengan nomor divisi.");
         } else {
             $this->sendMessage($chatId, "Ketik *Nomor WA Baru* kamu (Format: 62xxx / 08xxx):");
         }
@@ -747,8 +748,10 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $employee->update(['name' => $newValue]);
             $this->sendMessage($chatId, "✅ Berhasil! Nama kamu sekarang jadi: *{$newValue}*");
         } elseif ($choice === '2') {
-            $divisionId = intval($newValue);
-            $division = Division::find($divisionId);
+            $inputIndex = intval($newValue) - 1;
+            $divisions = Division::all()->values();
+            $division = $divisions->get($inputIndex);
+            
             if (!$division) {
                 $this->sendMessage($chatId, "❌ Divisi tidak ditemukan. Ketik ulang nomor divisi yang benar:");
                 return ['status' => true];

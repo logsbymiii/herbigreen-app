@@ -87,10 +87,15 @@ class GmvReportResource extends Resource
                 Tables\Columns\ImageColumn::make('screenshot_path')
                     ->label('Foto Laporan')
                     ->disk('r2')
-                    ->width(100)
+                    ->width(150)
                     ->height(100)
-                    ->url(fn ($record) => Storage::disk('r2')->url($record->screenshot_path))
-                    ->openUrlInNewTab(),
+                    ->action(
+                        Tables\Actions\Action::make('view_image')
+                            ->modalHeading('Screenshot GMV')
+                            ->modalContent(fn ($record) => new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->url($record->screenshot_path) . '" style="width: 100%; border-radius: 8px;" />'))
+                            ->modalSubmitAction(false)
+                            ->modalCancelAction(fn ($action) => $action->label('Tutup'))
+                    ),
                 Tables\Columns\TextColumn::make('account_name')
                     ->label('Nama Akun')
                     ->searchable()

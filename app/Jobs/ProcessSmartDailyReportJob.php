@@ -89,12 +89,9 @@ class ProcessSmartDailyReportJob implements ShouldQueue
             'report_date' => now()->format('Y-m-d'),
         ]);
 
-        // Kirim notifikasi balasan ke user via Bot
-        $provider = \App\Services\MessageProviderFactory::create();
-        $msg = "✅ *Laporan Harian Tersimpan!* (Divisi: {$divisionName})\n\n"
-             . "💡 *AI Insight:*\n_{$aiInsight}_\n\n"
-             . "Terima kasih atas laporanmu hari ini!";
-             
-        $provider->sendMessage($this->senderId, $msg);
+        // Laporan berhasil disimpan ke tabel smart_daily_reports.
+        // Sengaja TIDAK mengirim notifikasi ke user dari sini,
+        // karena user sudah dibalas secara casual oleh ProcessIncomingMessageJob.
+        Log::info("KOKI SMART REPORT: Data disimpan. Selesai tanpa membalas ulang ke user.");
     }
 }

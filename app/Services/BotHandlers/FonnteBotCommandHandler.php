@@ -277,8 +277,8 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         $this->conversationState->updateTempData($phone, ['name' => $name]);
         $this->conversationState->setCurrentStep($phone, 'awaiting_division');
 
-        $divisions    = Division::all();
-        $divisionList = $divisions->map(fn($d) => "{$d->id}. {$d->name}")->implode("\n");
+        $divisions    = Division::all()->values();
+        $divisionList = $divisions->map(fn($d, $index) => ($index + 1) . ". {$d->name}")->implode("\n");
 
         $this->sendMessage($phone, "✅ Nama tercatat: *{$name}*\n\n"
             . "🏢 Sekarang pilih divisimu:\n\n{$divisionList}\n\n"
@@ -289,15 +289,16 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
     private function processDivision(string $phone, string $message): array
     {
-        $divisionId = intval(trim($message));
-        $division   = Division::find($divisionId);
+        $inputIndex = intval(trim($message)) - 1;
+        $divisions = Division::all()->values();
+        $division = $divisions->get($inputIndex);
 
         if (!$division) {
-            $this->sendMessage($phone, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar.");
+            $this->sendMessage($phone, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar dari daftar di atas.");
             return ['status' => true, 'message' => 'Invalid division'];
         }
 
-        $this->conversationState->updateTempData($phone, ['division_id' => $divisionId]);
+        $this->conversationState->updateTempData($phone, ['division_id' => $division->id]);
         $this->conversationState->setCurrentStep($phone, 'confirm_registration');
 
         $tempData = $this->conversationState->getTempData($phone);

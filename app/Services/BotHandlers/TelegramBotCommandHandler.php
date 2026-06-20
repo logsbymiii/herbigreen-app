@@ -531,27 +531,28 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $this->conversationState->updateTempData($chatId, ['name' => $name]);
         $this->conversationState->setCurrentStep($chatId, 'awaiting_division');
 
-        $divisions = Division::all();
-        $divisionList = $divisions->map(fn($d) => "{$d->id}. {$d->name}")->implode("\n");
+        $divisions = Division::all()->values();
+        $divisionList = $divisions->map(fn($d, $index) => ($index + 1) . ". {$d->name}")->implode("\n");
 
         $this->sendMessage($chatId, "✅ Nama tercatat: *{$name}*\n\n"
                                    . "🏢 Sekarang pilih divisi kamu:\n\n{$divisionList}\n\n"
                                    . "Balas dengan nomor divisi (contoh: 1)");
 
-        return ['status' => true, 'message' => 'Name processed'];
+        return ['status' => true, 'message' => 'Name processed, waiting for division'];
     }
 
     private function processDivision(int | string $chatId, string $message): array
     {
-        $divisionId = intval(trim($message));
-        $division = Division::find($divisionId);
+        $inputIndex = intval(trim($message)) - 1;
+        $divisions = Division::all()->values();
+        $division = $divisions->get($inputIndex);
 
         if (!$division) {
-            $this->sendMessage($chatId, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar.");
+            $this->sendMessage($chatId, "❌ Divisi tidak ditemukan. Coba lagi dengan nomor yang benar dari daftar di atas.");
             return ['status' => true, 'message' => 'Invalid division'];
         }
 
-        $this->conversationState->updateTempData($chatId, ['division_id' => $divisionId]);
+        $this->conversationState->updateTempData($chatId, ['division_id' => $division->id]);
         $this->conversationState->setCurrentStep($chatId, 'awaiting_phone');
 
         $this->sendMessage($chatId, "✅ Divisi: *{$division->name}*\n\n"

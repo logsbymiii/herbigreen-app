@@ -25,7 +25,7 @@ class SosmedReportResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $recordTitleAttribute = 'id';
 

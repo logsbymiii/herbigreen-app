@@ -10,6 +10,7 @@ class Attendance extends Model
         'employee_id',
         'type',
         'note',
+        'proof_path',
         'date',
     ];
 

@@ -92,7 +92,7 @@ class GmvReportResource extends Resource
                     ->action(
                         \Filament\Actions\Action::make('view_image')
                             ->modalHeading('Screenshot GMV')
-                            ->modalContent(fn ($record) => new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->url($record->screenshot_path) . '" style="width: 100%; border-radius: 8px;" />'))
+                            ->modalContent(fn ($record) => new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->screenshot_path, now()->addMinutes(10)) . '" style="width: 100%; border-radius: 8px;" />'))
                             ->modalSubmitAction(false)
                             ->modalCancelAction(fn ($action) => $action->label('Tutup'))
                     ),

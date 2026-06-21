@@ -14,7 +14,7 @@ class AbsensiDashboard extends Page
     
     protected static string|\Illuminate\Contracts\Support\Htmlable|null $title = 'Dashboard Absensi Karyawan';
 
-    protected static string $view = 'filament.pages.absensi-dashboard';
+    protected string $view = 'filament.pages.absensi-dashboard';
 
     protected function getHeaderWidgets(): array
     {

@@ -135,6 +135,29 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 $reply .= "\n\n```text\n{$todaysReportContent}\n```";
             }
             $provider->sendMessage($this->sender, $reply);
+
+        } elseif ($intent === 'edit_report') {
+            $report = Report::where('employee_id', $this->employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->first();
+            
+            if (!$report) {
+                $provider->sendMessage($this->sender, "⚠️ Kamu belum bikin laporan hari ini, jadi nggak ada yang bisa diedit. Silakan kirim laporan barumu aja sekarang!");
+            } else {
+                $cleanExtract = trim($extractedData);
+                // Jika AI berhasil mengekstrak teks laporan baru, dan bukan sekadar mengulang chat user:
+                if (strlen($cleanExtract) > 10 && $cleanExtract !== trim($this->message)) {
+                    $report->update(['content' => $cleanExtract]);
+                    $provider->sendMessage($this->sender, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui jadi:\n\n{$cleanExtract}");
+                } else {
+                    $stateService = new \App\Services\DatabaseConversationState();
+                    $stateService->setCurrentStep($this->sender, 'awaiting_edit_report_text');
+                    $provider->sendMessage($this->sender, "📝 Oke! Silakan ketik *seluruh teks laporan barumu* untuk hari ini. Laporan lamamu akan diganti dengan yang baru ini.");
+                }
+            }
+
+        } elseif ($intent === 'end_conversation') {
+            $provider->sendMessage($this->sender, $reply);
         } else {
             $provider->sendMessage($this->sender, $reply);
         }

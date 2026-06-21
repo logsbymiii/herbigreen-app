@@ -681,7 +681,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             ->first();
 
         if ($report) {
-            $report->update(['note' => trim($message)]);
+            $report->update(['content' => trim($message)]);
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
         } else {

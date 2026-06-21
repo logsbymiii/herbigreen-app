@@ -406,7 +406,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             ->first();
 
         if ($report) {
-            $report->update(['note' => trim($message)]);
+            $report->update(['content' => trim($message)]);
             $this->conversationState->clearState($phone);
             $this->sendMessage($phone, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
         } else {

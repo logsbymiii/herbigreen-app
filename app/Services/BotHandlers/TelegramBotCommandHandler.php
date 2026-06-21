@@ -268,7 +268,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($choice === '1') {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');
-            $this->sendMessage($chatId, "📝 Silakan ketik laporan harianmu sekarang!");
+            $this->sendMessage($chatId, "📝 Silakan ketik laporan harianmu sekarang!\n\n_Biar rapi (ala ClickUp), biasakan pakai format ini ya:_\n✅ *Done*: (Selesai hari ini)\n🚧 *Blocker*: (Kendala yang dialami)\n🔜 *Next*: (Target besok)");
             return ['status' => true];
         } elseif ($choice === '2') {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');

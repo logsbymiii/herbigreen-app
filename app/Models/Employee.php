@@ -23,4 +23,9 @@ class Employee extends Model
         return $this->hasMany(Attendance::class);
     }
 
+    public function gmvReports()
+    {
+        return $this->hasMany(GmvReport::class);
+    }
+
 }

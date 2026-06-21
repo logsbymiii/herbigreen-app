@@ -8,11 +8,11 @@ use App\Filament\Widgets\TodayAttendanceWidget;
 
 class AbsensiDashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     
     protected static ?string $navigationLabel = 'Dashboard Absensi';
     
-    protected static ?string $title = 'Dashboard Absensi Karyawan';
+    protected static string|\Illuminate\Contracts\Support\Htmlable|null $title = 'Dashboard Absensi Karyawan';
 
     protected static string $view = 'filament.pages.absensi-dashboard';
 

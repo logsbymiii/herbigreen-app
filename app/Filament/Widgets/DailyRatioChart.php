@@ -10,6 +10,8 @@ use Carbon\Carbon;
 
 class DailyRatioChart extends ChartWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected ?string $heading = 'Rasio Kehadiran Hari Ini';
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 1;

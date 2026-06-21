@@ -12,6 +12,8 @@ use Carbon\Carbon;
 
 class TodayAttendanceWidget extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'full';
     protected static ?string $heading = 'Daftar Karyawan Izin/Sakit Hari Ini';

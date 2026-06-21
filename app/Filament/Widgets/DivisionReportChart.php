@@ -8,6 +8,8 @@ use Carbon\Carbon;
 
 class DivisionReportChart extends ChartWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected ?string $heading = 'Laporan per Divisi (7 Hari Terakhir)';
     protected int | string | array $columnSpan = 1;
     protected static ?int $sort = 3;

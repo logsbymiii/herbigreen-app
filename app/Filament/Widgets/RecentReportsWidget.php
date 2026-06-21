@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RecentReportsWidget extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?int $sort = 5;
     protected int | string | array $columnSpan = 'full';
     protected static ?string $heading = 'Laporan Terbaru (Live Feed)';

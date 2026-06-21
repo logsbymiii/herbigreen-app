@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class GmvPerHostChart extends ChartWidget
 {
+    protected static bool $isDiscovered = false;
+
    protected ?string $heading = 'Top 5 GMV Host (Minggu Ini)';
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 1;

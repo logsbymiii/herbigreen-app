@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class HostLiveLeaderboardWidget extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     protected static ?string $heading = '🏅 Leaderboard Host Live (Bulan Ini)';
 
     protected static ?int $sort = 1;

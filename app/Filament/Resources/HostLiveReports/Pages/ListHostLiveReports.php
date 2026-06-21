@@ -16,4 +16,12 @@ class ListHostLiveReports extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\HostLiveLeaderboardWidget::class,
+            \App\Filament\Widgets\GmvPerHostChart::class,
+        ];
+    }
 }

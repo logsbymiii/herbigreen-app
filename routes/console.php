@@ -8,14 +8,23 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-// Laporan anak mangkir dikirim tiap jam 8 pagi
-Schedule::command('app:send-morning-exception')->dailyAt('08:00');
+// 1. Reminder Absen (07:45)
+Schedule::command('app:reminder-absen-pagi')->dailyAt('07:45');
 
-// Reminder belum absen dikirim tiap jam 3 sore
-Schedule::command('app:send-daily-reminder')->dailyAt('15:00');
+// 2. Reminder Lapor Awal (15:45)
+Schedule::command('app:reminder-lapor-awal')->dailyAt('15:45');
 
-// Rekap total harian dikirim tiap jam 8 malam
-Schedule::command('app:send-night-summary')->dailyAt('20:00');
+// 3. Reminder Lapor Wajib (16:00)
+Schedule::command('app:reminder-lapor-wajib')->dailyAt('16:00');
 
-// Laporan mingguan AI dikirim tiap Senin pagi jam 7
-Schedule::command('app:send-weekly-summary')->weeklyOn(1, '07:00');
+// 4. Reminder Lapor Akhir (17:00)
+Schedule::command('app:reminder-lapor-akhir')->dailyAt('17:00');
+
+// 5. Deadline Lapor Sore (19:00)
+Schedule::command('app:deadline-lapor-sore')->dailyAt('19:00');
+
+// 6. Reminder Lapor Malam (Khusus Host Sesi Malam) (22:30)
+Schedule::command('app:reminder-lapor-malam')->dailyAt('22:30');
+
+// 7. Rekap Laporan PDF ke Mas Jodi (00:00)
+Schedule::command('app:generate-pdf-recap')->dailyAt('00:00');

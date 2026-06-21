@@ -38,6 +38,8 @@ class ProcessSmartDailyReportJob implements ShouldQueue
         $extractedMetrics = [];
         $aiInsight = "Laporan berhasil diterima.";
 
+        $kendala = null;
+
         if ($geminiKey) {
             try {
                 $prompt = "Kamu adalah AI analis kinerja karyawan. Karyawan ini berada di divisi: '{$divisionName}'.\n\n"
@@ -45,11 +47,13 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                         . "```\n{$this->rawReportText}\n```\n\n"
                         . "Tugasmu:\n"
                         . "1. Ekstrak data kuantitatif yang relevan berdasarkan laporannya (misal: jumlah chat, jumlah video diedit, jumlah pesanan, total sampel, dll). Ubah jadi format key-value JSON yang ringkas. Pastikan kunci (key) HANYA menggunakan bahasa Indonesia dengan format snake_case (contoh: video_baru, logo_dibuat, postingan_diupload).\n"
-                        . "2. Berikan 1-2 kalimat analisa singkat (ai_insight) layaknya manager memuji, mengkritisi, atau memberi saran membangun dari laporan tersebut.\n\n"
+                        . "2. Berikan 1-2 kalimat analisa singkat (ai_insight) layaknya manager memuji, mengkritisi, atau memberi saran membangun dari laporan tersebut.\n"
+                        . "3. Ekstrak kendala atau masalah yang dialami (jika ada) ke dalam key `kendala`. Jika tidak ada kendala, isi dengan null atau string kosong.\n\n"
                         . "Format balasan WAJIB berupa JSON mentah TANPA markdown (tanpa ```json dll), dengan struktur persis seperti ini:\n"
                         . "{\n"
                         . "  \"extracted_metrics\": {\"kunci\": \"nilai angka/teks ringkas\"},\n"
-                        . "  \"ai_insight\": \"Pesan analisamu di sini...\"\n"
+                        . "  \"ai_insight\": \"Pesan analisamu di sini...\",\n"
+                        . "  \"kendala\": \"Tuliskan kendalanya di sini jika ada...\"\n"
                         . "}";
 
                 $geminiResponse = Http::timeout(45)->withHeaders([
@@ -68,6 +72,7 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                     if (is_array($parsed)) {
                         $extractedMetrics = $parsed['extracted_metrics'] ?? [];
                         $aiInsight = $parsed['ai_insight'] ?? "Bagus, pertahankan kerjamu hari ini!";
+                        $kendala = $parsed['kendala'] ?? null;
                     }
                     Log::info("KOKI SMART REPORT: Gemini berhasil parsing.");
                 } else {
@@ -90,6 +95,7 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                 'raw_report' => $this->rawReportText,
                 'extracted_metrics' => $extractedMetrics,
                 'ai_insight' => $aiInsight,
+                'kendala' => $kendala,
             ]
         );
 

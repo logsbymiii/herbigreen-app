@@ -81,13 +81,17 @@ class ProcessSmartDailyReportJob implements ShouldQueue
         }
 
         // Simpan ke database
-        SmartDailyReport::create([
-            'employee_id' => $this->employeeId,
-            'raw_report' => $this->rawReportText,
-            'extracted_metrics' => $extractedMetrics,
-            'ai_insight' => $aiInsight,
-            'report_date' => now()->format('Y-m-d'),
-        ]);
+        SmartDailyReport::updateOrCreate(
+            [
+                'employee_id' => $this->employeeId,
+                'report_date' => now()->format('Y-m-d'),
+            ],
+            [
+                'raw_report' => $this->rawReportText,
+                'extracted_metrics' => $extractedMetrics,
+                'ai_insight' => $aiInsight,
+            ]
+        );
 
         // Laporan berhasil disimpan ke tabel smart_daily_reports.
         // Sengaja TIDAK mengirim notifikasi ke user dari sini,

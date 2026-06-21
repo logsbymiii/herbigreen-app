@@ -176,6 +176,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 // Jika AI berhasil mengekstrak teks laporan baru, dan bukan sekadar mengulang chat user:
                 if (strlen($cleanExtract) > 10 && $cleanExtract !== trim($this->message)) {
                     $report->update(['content' => $cleanExtract]);
+                    \App\Jobs\ProcessSmartDailyReportJob::dispatch($this->employee->id, $cleanExtract, (string)$this->sender);
                     $provider->sendMessage($this->sender, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui jadi:\n\n{$cleanExtract}");
                 } else {
                     $stateService = new \App\Services\DatabaseConversationState();

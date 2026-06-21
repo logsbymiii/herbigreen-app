@@ -682,6 +682,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($report) {
             $report->update(['content' => trim($message)]);
+            \App\Jobs\ProcessSmartDailyReportJob::dispatch($employee->id, trim($message), (string) $chatId);
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
         } else {

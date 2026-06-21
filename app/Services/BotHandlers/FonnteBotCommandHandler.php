@@ -407,6 +407,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         if ($report) {
             $report->update(['content' => trim($message)]);
+            \App\Jobs\ProcessSmartDailyReportJob::dispatch($employee->id, trim($message), $phone);
             $this->conversationState->clearState($phone);
             $this->sendMessage($phone, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
         } else {

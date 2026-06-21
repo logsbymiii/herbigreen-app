@@ -23,7 +23,7 @@ class PackingReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan Packing';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
 
     protected static ?int $navigationSort = 12;
 

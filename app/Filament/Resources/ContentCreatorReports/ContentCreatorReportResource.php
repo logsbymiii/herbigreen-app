@@ -23,7 +23,7 @@ class ContentCreatorReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan Content Creator';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
 
     protected static ?int $navigationSort = 7;
 

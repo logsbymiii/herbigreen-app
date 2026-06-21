@@ -10,7 +10,7 @@ class AbsensiDashboard extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     
-    protected static ?string $navigationGroup = 'HR & Karyawan';
+    protected static string|\UnitEnum|null $navigationGroup = 'HR & Karyawan';
     
     protected static ?string $navigationLabel = 'Dashboard Absensi';
     

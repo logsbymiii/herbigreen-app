@@ -23,7 +23,7 @@ class EditorKontenReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan Editor Konten';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan AI';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
 
     protected static ?int $navigationSort = 10;
 

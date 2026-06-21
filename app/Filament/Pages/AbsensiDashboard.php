@@ -12,7 +12,7 @@ class AbsensiDashboard extends Page
     
     protected static ?string $navigationLabel = 'Dashboard Absensi';
     
-    protected static string|\Illuminate\Contracts\Support\Htmlable|null $title = 'Dashboard Absensi Karyawan';
+    protected static ?string $title = 'Dashboard Absensi Karyawan';
 
     protected string $view = 'filament.pages.absensi-dashboard';
 

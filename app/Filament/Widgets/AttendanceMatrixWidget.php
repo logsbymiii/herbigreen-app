@@ -6,7 +6,7 @@ use Filament\Widgets\Widget;
 
 class AttendanceMatrixWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.attendance-matrix-widget';
+    protected string $view = 'filament.widgets.attendance-matrix-widget';
     
     protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 2;

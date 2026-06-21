@@ -346,7 +346,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             // Berarti dia balas hal lain (misal "halo")
             $ai = new AiResponseService();
             // Panggil API Gemini khusus untuk ngeles
-            $prompt = "User sedang mendaftar tapi dia malah jawab: '{$message}'. Balas ramah dan ingatkan dia untuk balas 'ya' jika setuju dengan data pendaftaran, atau 'tidak' untuk batal.";
+            $prompt = "User sedang mendaftar tapi dia malah jawab: '{$message}'. Balas ramah, SANGAT SINGKAT (maks 1 kalimat pendek), santai layaknya teman kerja, dan ingatkan dia untuk balas 'ya' jika setuju dengan data pendaftaran, atau 'tidak' untuk batal.";
             
             // Kita hack sedikit generate langsung
             $reflection = new \ReflectionClass($ai);

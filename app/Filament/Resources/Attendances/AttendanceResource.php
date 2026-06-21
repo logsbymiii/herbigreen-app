@@ -20,6 +20,7 @@ class AttendanceResource extends Resource
 
     // 1. Ganti icon kotak numpuk bawaan jadi jam
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+    protected static ?string $navigationGroup = 'HR & Karyawan';
 
     // 2. Tambahin label bahasa Indonesianya
     protected static ?string $modelLabel = 'Kehadiran';

@@ -15,6 +15,15 @@
 <body>
     <h2>Rekap Laporan Harian Tim Herbigreen</h2>
     <p><strong>Tanggal:</strong> {{ $date }}</p>
+    
+    @if(isset($executiveSummary))
+    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #4EA674; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; color: #333;">📊 Executive Summary (AI Analysis)</h3>
+        <div style="font-size: 13px; line-height: 1.5; color: #444;">
+            {!! $executiveSummary !!}
+        </div>
+    </div>
+    @endif
 
     @foreach($divisions as $division => $emps)
         <h3 class="division-title">Divisi: {{ $division }}</h3>

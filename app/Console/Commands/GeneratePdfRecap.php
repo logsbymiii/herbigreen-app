@@ -35,10 +35,49 @@ class GeneratePdfRecap extends Command
             return $emp->division->name ?? 'Lainnya';
         });
 
+        // Kumpulkan semua raw report untuk dikasih ke AI
+        $allReportsText = "";
+        foreach ($employees as $emp) {
+            if ($emp->report_today && !empty($emp->report_today->raw_report)) {
+                $divName = $emp->division->name ?? 'Lainnya';
+                $allReportsText .= "Karyawan: {$emp->name} | Divisi: {$divName}\nLaporan: {$emp->report_today->raw_report}\n\n";
+            }
+        }
+
+        $executiveSummary = "Tidak ada ringkasan AI karena data laporan tidak mencukupi atau terjadi error.";
+        $geminiKey = env('GEMINI_API_KEY');
+
+        if (!empty($allReportsText) && $geminiKey) {
+            try {
+                $prompt = "Kamu adalah Chief Operating Officer (COO) cerdas. Berikut adalah gabungan laporan harian dari semua karyawan hari ini:\n"
+                        . "```\n{$allReportsText}\n```\n\n"
+                        . "Buatkan 'Executive Summary' untuk CEO (Mas Jodi). Ringkasan harus mencakup:\n"
+                        . "1. Penilaian keseluruhan performa tim hari ini (Singkat).\n"
+                        . "2. Highlight divisi atau individu yang mencapai target bagus.\n"
+                        . "3. Red Flags (Masalah/Blocker) yang butuh atensi.\n\n"
+                        . "Format menggunakan Markdown yang rapi (bold, bullet points). Gunakan bahasa Indonesia profesional tapi asik dibaca.";
+
+                $geminiResponse = \Illuminate\Support\Facades\Http::timeout(60)->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                    'contents' => [[
+                        'parts' => [['text' => $prompt]]
+                    ]]
+                ]);
+
+                if ($geminiResponse->successful()) {
+                    $executiveSummary = $geminiResponse->json('candidates.0.content.parts.0.text') ?? $executiveSummary;
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Executive Summary Error: " . $e->getMessage());
+            }
+        }
+
         // Generate PDF
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.daily_recap', [
             'date' => now()->format('d M Y'),
-            'divisions' => $divisions
+            'divisions' => $divisions,
+            'executiveSummary' => \Illuminate\Support\Str::markdown($executiveSummary)
         ]);
         
         $fileName = "Rekap_Harian_Herbigreen_{$date}.pdf";

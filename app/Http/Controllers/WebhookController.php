@@ -121,7 +121,17 @@ class WebhookController extends Controller
                 }
             }
 
-            if (!$chatId || ($message === '' && !$urlFile)) {
+            // Ekstrak lokasi jika ada
+            $locationData = $message_data['location'] ?? null;
+            if ($locationData) {
+                // Konversi format agar standar
+                $locationData = [
+                    'latitude' => $locationData['latitude'],
+                    'longitude' => $locationData['longitude'],
+                ];
+            }
+
+            if (!$chatId || ($message === '' && !$urlFile && !$locationData)) {
                 Log::warning("Telegram data tidak lengkap");
                 return response()->json(['status' => false, 'message' => 'Incomplete data']);
             }
@@ -147,7 +157,7 @@ class WebhookController extends Controller
             }
 
             // Lemparkan pesan ke Queue Job agar proses AI tidak memblokir webhook Telegram
-            \App\Jobs\ProcessIncomingMessageJob::dispatch($employee, $message, $urlFile, $chatId);
+            \App\Jobs\ProcessIncomingMessageJob::dispatch($employee, $message, $urlFile, $chatId, $locationData);
 
             // Langsung respons 200 OK ke Telegram dalam hitungan milidetik
             return response()->json(['status' => true]);

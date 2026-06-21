@@ -18,10 +18,11 @@ class ProcessIncomingMessageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        protected Employee $employee,
-        protected string $message,
-        protected ?string $urlFile,
-        protected string|int $sender
+        public Employee $employee,
+        public string $message,
+        public ?string $urlFile = null,
+        public int | string $sender = 0,
+        public ?array $location = null
     ) {}
 
     public function handle(): void

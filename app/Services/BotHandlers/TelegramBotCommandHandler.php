@@ -27,11 +27,17 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'lapor'   => $this->handleLapor($chatId),
                 'absen'   => $this->handleAbsen($chatId),
                 'izin'    => $this->handleAbsen($chatId), // alias /absen
+                'wfh'     => $this->handleWfh($chatId),
                 'edit_laporan' => $this->handleEditLaporan($chatId),
                 'edit_profil'  => $this->handleEditProfil($chatId),
                 'gmv'          => $this->handleGmv($chatId, $message),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
+        }
+
+        // Cek intercept untuk approval WFH dari HR
+        if (preg_match('/^(ACC|TOLAK)\s+WFH\s+(\d+)$/i', trim($message), $matches)) {
+            return $this->handleWfhApproval($chatId, strtoupper($matches[1]), $matches[2]);
         }
 
         // Jika bukan command, cek apakah ada conversation ongoing
@@ -43,6 +49,47 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
+    }
+
+    private function handleWfhApproval(int | string $chatId, string $action, string $wfhId): array
+    {
+        // Pastikan yang nge-chat adalah HR (Simau)
+        $simauId = env('SIMAU_TELEGRAM_ID');
+        if ($chatId != $simauId) {
+            $this->sendMessage($chatId, "❌ Hanya HR yang bisa menyetujui WFH.");
+            return ['status' => true];
+        }
+
+        $wfhRequest = \App\Models\WfhRequest::find($wfhId);
+        if (!$wfhRequest) {
+            $this->sendMessage($chatId, "❌ Pengajuan WFH #{$wfhId} tidak ditemukan.");
+            return ['status' => true];
+        }
+
+        if ($wfhRequest->status !== 'pending') {
+            $this->sendMessage($chatId, "⚠️ Pengajuan WFH #{$wfhId} sudah berstatus: {$wfhRequest->status}");
+            return ['status' => true];
+        }
+
+        $wfhRequest->status = $action === 'ACC' ? 'approved' : 'rejected';
+        $wfhRequest->responded_at = now();
+        $wfhRequest->save();
+
+        $employee = $wfhRequest->employee;
+        $tanggal = \Carbon\Carbon::parse($wfhRequest->request_date)->format('d M Y');
+
+        // Balas ke HR
+        $statusText = $action === 'ACC' ? 'Disetujui ✅' : 'Ditolak ❌';
+        $this->sendMessage($chatId, "Sip! Pengajuan WFH #{$wfhId} a.n {$employee->name} untuk tanggal {$tanggal} telah *{$statusText}*.");
+
+        // Notif ke User
+        $userMsg = $action === 'ACC' 
+            ? "🎉 *PENGUMUMAN*\n\nPengajuan WFH kamu untuk tanggal {$tanggal} *DISETUJUI* oleh HR. \nJangan lupa /absen Hadir pakai Live Location ya!"
+            : "❌ *PENGUMUMAN*\n\nMaaf, pengajuan WFH kamu untuk tanggal {$tanggal} *DITOLAK* oleh HR. Harus tetap ngantor ya bos!";
+            
+        $this->sendMessage($employee->telegram_id, $userMsg);
+
+        return ['status' => true];
     }
 
     private function handleLapor(int | string $chatId): array
@@ -146,14 +193,66 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $sapaan = $ai->greetingAbsen($employee->name);
 
         $menu = "{$sapaan}\n\nMau lapor apa?\n\n";
-        $menu .= "1️⃣ Sakit\n";
-        $menu .= "2️⃣ Izin\n";
-        $menu .= "3️⃣ Cuti\n";
+        $menu .= "1️⃣ Hadir\n";
+        $menu .= "2️⃣ Sakit\n";
+        $menu .= "3️⃣ Izin\n";
+        $menu .= "4️⃣ Cuti\n";
         $menu .= "\nBalas dengan angka pilihanmu!";
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_type');
         $this->sendMessage($chatId, $menu);
         return ['status' => true, 'message' => 'Absen menu shown'];
+    }
+
+    private function handleWfh(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Kamu belum terdaftar. Ketik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true];
+        }
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_wfh_reason');
+        $this->sendMessage($chatId, "🏠 *Pengajuan WFH*\n\nSilakan ketik alasan kenapa kamu mau Work From Home hari ini:");
+        return ['status' => true];
+    }
+    
+    private function processWfhReason(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        $reason = trim($message);
+        
+        if (strlen($reason) < 5) {
+            $this->sendMessage($chatId, "❌ Alasan terlalu singkat. Coba ceritain lebih detail ya!");
+            return ['status' => true];
+        }
+
+        // Buat pengajuan WFH di database
+        $wfhRequest = \App\Models\WfhRequest::create([
+            'employee_id' => $employee->id,
+            'request_date' => now()->format('Y-m-d'),
+            'reason' => $reason,
+            'status' => 'pending'
+        ]);
+
+        $this->conversationState->clearState($chatId);
+        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HR (Simau). Tunggu persetujuannya ya!");
+
+        // Kirim Notifikasi ke HR (Simau)
+        $simauId = env('SIMAU_TELEGRAM_ID');
+        if ($simauId) {
+            $hrMessage = "🔔 *PENGAJUAN WFH BARU*\n\n"
+                       . "👤 Nama: *{$employee->name}*\n"
+                       . "📅 Tanggal: *" . now()->format('d M Y') . "*\n"
+                       . "📝 Alasan: _{$reason}_\n\n"
+                       . "Untuk memproses, balas pesan ini dengan format:\n"
+                       . "`ACC WFH {$wfhRequest->id}` atau `TOLAK WFH {$wfhRequest->id}`";
+            
+            $this->sendMessage($simauId, $hrMessage);
+        }
+
+        return ['status' => true];
     }
 
     private function processReportType(int | string $chatId, string $message, array $rawUpdate): array
@@ -236,20 +335,40 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => false];
         }
 
-        $typeMap = ['1' => 'sakit', '2' => 'izin', '3' => 'cuti'];
+        $typeMap = ['1' => 'hadir', '2' => 'sakit', '3' => 'izin', '4' => 'cuti'];
         $choice = strtolower(trim($message));
 
         // Toleransi Typo Tingkat Dewa
-        if (in_array($choice, ['1', 'satu', 'pertama', 'sakit'])) $choice = '1';
-        if (in_array($choice, ['2', 'dua', 'kedua', 'izin'])) $choice = '2';
-        if (in_array($choice, ['3', 'tiga', 'ketiga', 'cuti'])) $choice = '3';
+        if (in_array($choice, ['1', 'satu', 'pertama', 'hadir'])) $choice = '1';
+        if (in_array($choice, ['2', 'dua', 'kedua', 'sakit'])) $choice = '2';
+        if (in_array($choice, ['3', 'tiga', 'ketiga', 'izin'])) $choice = '3';
+        if (in_array($choice, ['4', 'empat', 'keempat', 'cuti'])) $choice = '4';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Sakit), 2 (Izin), atau 3 (Cuti) ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Hadir), 2 (Sakit), 3 (Izin), atau 4 (Cuti) ya!");
             return ['status' => true];
         }
 
         $type = $typeMap[$choice];
+        
+        if ($type === 'hadir') {
+            // Cek apakah hari ini sudah absen hadir
+            $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
+                ->whereDate('date', now()->format('Y-m-d'))
+                ->where('type', 'hadir')
+                ->exists();
+                
+            if ($sudahAbsen) {
+                $this->conversationState->clearState($chatId);
+                $this->sendMessage($chatId, "⚠️ Kamu sudah absen masuk hari ini!");
+                return ['status' => true];
+            }
+            
+            $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_location');
+            $this->sendMessage($chatId, "📍 *Share Location* kamu sekarang buat absen masuk ya!\n\n_(Klik tombol klip kertas -> Location -> Send My Current Location)_");
+            return ['status' => true];
+        }
+
         ProcessAttendanceJob::dispatch($employee->id, $type);
         $this->conversationState->clearState($chatId);
 
@@ -257,6 +376,99 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $ai = new AiResponseService();
         $konfirmasi = $ai->confirmAbsen($employee->name, $type);
         $this->sendMessage($chatId, $konfirmasi);
+        return ['status' => true];
+    }
+    
+    private function processAbsenLocation(int | string $chatId, array $rawUpdate): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        $location = $rawUpdate['message']['location'] ?? null;
+        
+        if (!$location) {
+            $this->sendMessage($chatId, "❌ Itu bukan lokasi bos! Coba klik tombol *Klip Kertas* -> *Location* -> *Send My Current Location* ya.");
+            return ['status' => true];
+        }
+
+        $lat = $location['latitude'];
+        $lng = $location['longitude'];
+        
+        $officeLat = env('OFFICE_LATITUDE');
+        $officeLng = env('OFFICE_LONGITUDE');
+        $officeRadius = env('OFFICE_RADIUS', 50);
+
+        // Rumus Haversine buat hitung jarak
+        $earthRadius = 6371000; // Meter
+        $latDelta = deg2rad($lat - $officeLat);
+        $lngDelta = deg2rad($lng - $officeLng);
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+            cos(deg2rad($officeLat)) * cos(deg2rad($lat)) *
+            sin($lngDelta / 2) * sin($lngDelta / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c;
+
+        $isWfh = \App\Models\WfhRequest::where('employee_id', $employee->id)
+            ->whereDate('request_date', now()->format('Y-m-d'))
+            ->where('status', 'approved')
+            ->exists();
+
+        if ($distance > $officeRadius && !$isWfh) {
+            $this->conversationState->clearState($chatId);
+            $jarak = round($distance);
+            $this->sendMessage($chatId, "❌ *ABSEN DITOLAK!*\n\nKamu terdeteksi berada di luar area kantor (jarakmu {$jarak} meter dari titik kantor, maksimal {$officeRadius} meter).\n\nKalau kamu WFH atau tugas luar, pastikan minta izin ke HR dulu!");
+            return ['status' => true];
+        }
+
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_photo', [
+            'lat' => $lat,
+            'lng' => $lng,
+            'is_wfh' => $isWfh
+        ]);
+        
+        $msg = $isWfh ? "✅ Lokasi aman! (Mode WFH Aktif)." : "✅ Lokasi aman! (Jarak: ".round($distance)." meter).";
+        $this->sendMessage($chatId, "{$msg}\n\n📸 Sekarang *kirim foto selfie* kamu biar sah absennya!");
+        return ['status' => true];
+    }
+    
+    private function processAbsenPhoto(int | string $chatId, array $rawUpdate): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        
+        $photoId = null;
+        if (isset($rawUpdate['message']['photo']) && is_array($rawUpdate['message']['photo'])) {
+            $photoId = end($rawUpdate['message']['photo'])['file_id'];
+        }
+
+        if (!$photoId) {
+            $this->sendMessage($chatId, "❌ Itu bukan foto selfie bos! Tolong kirim foto dari kamera kamu sekarang ya.");
+            return ['status' => true];
+        }
+
+        // Dapatkan URL photo
+        $botToken = env('TELEGRAM_BOT_TOKEN');
+        $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", ['file_id' => $photoId]);
+        $urlFile = null;
+        if ($response->successful() && $filePath = $response->json('result.file_path')) {
+            $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+        }
+        
+        $tempData = $this->conversationState->getTempData($chatId);
+        
+        // Simpan langsung karena kita udah dapat foto
+        $attendanceType = ($tempData['is_wfh'] ?? false) ? 'wfh' : 'hadir';
+        \App\Models\Attendance::create([
+            'employee_id' => $employee->id,
+            'type' => $attendanceType,
+            'latitude' => $tempData['lat'] ?? null,
+            'longitude' => $tempData['lng'] ?? null,
+            'proof_path' => $urlFile,
+            'date' => now()->format('Y-m-d'),
+            'clocked_in_at' => now(),
+        ]);
+
+        $this->conversationState->clearState($chatId);
+        
+        $msg = $attendanceType === 'wfh' ? "✅ Sip, absen masuk *WFH* kamu berhasil dicatat! Selamat bekerja dari rumah! 🏡🔥" : "✅ Sip, absen masuk *Hadir* kamu berhasil dicatat! Selamat bekerja! 🔥";
+        $this->sendMessage($chatId, $msg);
         return ['status' => true];
     }
 
@@ -347,9 +559,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'awaiting_division'     => $this->processDivision($chatId, $message),
             'awaiting_phone'        => $this->processPhone($chatId, $message),
             'confirm_registration'  => $this->processConfirmation($chatId, $message),
+            'awaiting_wfh_reason'   => $this->processWfhReason($chatId, $message),
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
             'awaiting_report_text'  => $this->processReportText($chatId, $message),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
+            'awaiting_absen_location' => $this->processAbsenLocation($chatId, $rawUpdate ?? []),
+            'awaiting_absen_photo'  => $this->processAbsenPhoto($chatId, $rawUpdate ?? []),
             'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),

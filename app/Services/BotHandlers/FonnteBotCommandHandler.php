@@ -237,7 +237,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         $message = strtolower(trim($message));
         $tempData = $this->conversationState->getTempData($phone);
 
-        if (in_array($message, ['ya', 'y', 'benar', 'bener', 'betul', 'iya'])) {
+        if (preg_match('/\b(ya+|yes+|y+|iya+|oke+|ok+|setuju|gas|betul|bener|benar|hooh|sip|mantap)\b/i', $message)) {
             // Simpan ke database
             \App\Models\GmvReport::create([
                 'employee_id'     => $tempData['employee_id'],

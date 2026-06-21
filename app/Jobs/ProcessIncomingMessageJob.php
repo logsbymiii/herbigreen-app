@@ -137,6 +137,34 @@ class ProcessIncomingMessageJob implements ShouldQueue
             $provider->sendMessage($this->sender, $reply);
 
         } elseif ($intent === 'edit_report') {
+            $isHostLive = strtolower($this->employee->division?->name ?? '') === 'host live';
+            $isGmvEdit = $isHostLive && (str_contains(strtolower($this->message), 'gmv') || str_contains(strtolower($this->message), 'omset'));
+
+            if ($isGmvEdit) {
+                // Ekstrak angka saja
+                $newAmountStr = preg_replace('/\D/', '', $extractedData);
+                if (!$newAmountStr) {
+                    $newAmountStr = preg_replace('/\D/', '', $this->message);
+                }
+
+                if ($newAmountStr) {
+                    $gmvReport = \App\Models\GmvReport::where('employee_id', $this->employee->id)
+                        ->whereDate('created_at', now()->format('Y-m-d'))
+                        ->orderBy('id', 'desc')
+                        ->first();
+                        
+                    if ($gmvReport) {
+                        $gmvReport->update(['gmv_amount' => $newAmountStr]);
+                        $formatted = number_format((float)$newAmountStr, 0, ',', '.');
+                        $provider->sendMessage($this->sender, "✅ Sip! Omset GMV kamu hari ini udah berhasil diperbarui jadi *Rp {$formatted}*.");
+                        return;
+                    } else {
+                        $provider->sendMessage($this->sender, "⚠️ Kamu belum ngirim laporan GMV hari ini, jadi belum ada yang bisa diedit.");
+                        return;
+                    }
+                }
+            }
+
             $report = Report::where('employee_id', $this->employee->id)
                 ->whereDate('created_at', now()->format('Y-m-d'))
                 ->first();

@@ -522,14 +522,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             
             $welcome = "👋 *Halo {$employee->name}, selamat datang di Herbigreen Bot!*\n\n"
                      . "Gunakan menu di bawah ini untuk beraktivitas:\n\n"
-                     . "📋 */absen* - Untuk absen harian\n"
-                     . "📝 */lapor* - Untuk kirim laporan harian\n"
-                     . "👤 */edit_profil* - Untuk ubah data diri\n\n";
-
-            if ($isHostLive) {
-                $welcome .= "📊 *Khusus Divisi Host Live:*\n"
-                          . "Pilih menu */lapor* lalu ketik *3* untuk laporan omset harian.\n\n";
-            }
+                     . "📋 */absen* - Lapor absensi (Hadir/Sakit/Izin/Cuti)\n"
+                     . "📝 */lapor* - Kirim laporan harian atau foto\n"
+                     . "💰 */gmv* - Lapor omset GMV (Khusus Host Live)\n"
+                     . "✏️ */edit_laporan* - Ubah laporan hari ini\n"
+                     . "👤 */edit_profil* - Ubah data profil kamu\n"
+                     . "❓ */bantuan* - Panduan lengkap cara pakai bot\n\n";
 
             $welcome .= "_Ketik salah satu command di atas (pakai garis miring /) buat mulai._";
         } else {

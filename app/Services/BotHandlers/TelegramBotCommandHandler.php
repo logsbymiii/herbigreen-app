@@ -363,10 +363,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         
         if ($type === 'hadir' || $type === 'wfh') {
             // Cek apakah hari ini sudah absen hadir
-            $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
-                ->whereDate('date', now()->format('Y-m-d'))
-                ->where('type', 'hadir')
-                ->exists();
+            $sudahAbsen = false;
+            if (strtolower($employee->role ?? '') !== 'admin') {
+                $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
+                    ->whereDate('date', now()->format('Y-m-d'))
+                    ->whereIn('type', ['hadir', 'wfh'])
+                    ->exists();
+            }
                 
             if ($sudahAbsen) {
                 $this->conversationState->clearState($chatId);

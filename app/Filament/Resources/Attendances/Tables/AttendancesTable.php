@@ -40,6 +40,10 @@ class AttendancesTable
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
+                TextColumn::make('clocked_in_at')
+                    ->label('Jam')
+                    ->time('H:i')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

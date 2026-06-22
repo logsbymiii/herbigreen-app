@@ -109,11 +109,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $sapaan = $ai->greetingLapor($nama);
 
         $menu = "{$sapaan}\n\n";
-        $menu .= "Mau laporan apa hari ini?\n\n";
-        $menu .= "1️⃣ Laporan Harian (teks)\n";
-        $menu .= "2️⃣ Laporan Harian + Foto\n";
+        $menu .= "Mau lapor apa?\n\n";
+        $menu .= "1. Laporan Harian (teks)\n";
+        $menu .= "2. Laporan Foto\n";
+
         if ($isHostLive) {
-            $menu .= "3️⃣ Laporan GMV (Screenshot)\n";
+            $menu .= "3. Laporan GMV & Screenshot Omset\n";
         }
         $menu .= "\nBalas dengan angka pilihanmu!";
 
@@ -192,13 +193,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $ai = new AiResponseService();
         $sapaan = $ai->greetingAbsen($employee->name);
 
-        $menu = "{$sapaan}\n\nMau lapor apa?\n\n";
-        $menu .= "1️⃣ Hadir (Di Kantor)\n";
-        $menu .= "2️⃣ Hadir (Pengajuan WFH / Sedang WFH)\n";
-        $menu .= "3️⃣ Sakit\n";
-        $menu .= "4️⃣ Izin\n";
-        $menu .= "5️⃣ Cuti\n";
-        $menu .= "\nBalas dengan angka pilihanmu!";
+        $menu = "Mau lapor apa?\n\n";
+        $menu .= "1. Hadir (Di Kantor)\n";
+        $menu .= "2. Hadir (Pengajuan WFH / Sedang WFH)\n";
+        $menu .= "3. Sakit\n";
+        $menu .= "4. Izin\n";
+        $menu .= "5. Cuti\n\n";
+        $menu .= "Balas dengan angka pilihanmu!";
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_type');
         $this->sendMessage($chatId, $menu);
@@ -950,9 +951,9 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
               . "Divisi: {$employee->division->name}\n"
               . "No WA: {$employee->phone}\n\n"
               . "Pilih data yang mau kamu ubah:\n"
-              . "1️⃣ Ubah Nama\n"
-              . "2️⃣ Ubah Divisi\n"
-              . "3️⃣ Ubah Nomor WA\n\n"
+              . "1. Ubah Nama\n"
+              . "2. Ubah Divisi\n"
+              . "3. Ubah Nomor WA\n\n"
               . "Balas dengan angkanya saja ya!";
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_edit_profile_choice');

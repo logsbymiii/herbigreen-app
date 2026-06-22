@@ -84,11 +84,16 @@ class AbsenWebAppController extends Controller
         }
 
         // --- SIMPAN ABSEN ---
+        $attendanceType = ($type == 'wfh') ? 'wfh' : 'hadir';
+        
         Attendance::create([
             'employee_id' => $employee->id,
-            'type'        => 'hadir',
+            'type'        => $attendanceType,
             'note'        => ($type == 'wfh') ? 'Hadir (WFH) via WebApp' : 'Hadir via WebApp',
+            'latitude'    => $lat,
+            'longitude'   => $lng,
             'date'        => now()->format('Y-m-d'),
+            'clocked_in_at' => now(),
             'proof_path'  => $filename,
         ]);
 
@@ -98,7 +103,7 @@ class AbsenWebAppController extends Controller
             $lokasiText = ($isWfh) ? "Hadir (WFH)" : "Hadir (Jarak: " . number_format($distance, 0) . "m)";
             if ($isFreelance && $distance > $officeRadius) $lokasiText .= " [Remote/Freelance]";
 
-            $provider->sendMessage($telegramId, "✅ *Absen Masuk Berhasil!*\n\nStatus: {$lokasiText}\nJam: " . now()->format('H:i') . "\n\nSemangat kerjanya hari ini bosku! 🔥");
+            $provider->sendMessage($telegramId, "✅ *Absen Masuk Berhasil*\n\nStatus: {$lokasiText}\nJam: " . now()->format('H:i') . "\n\nData kehadiran telah tercatat di sistem.");
         } catch (\Exception $e) {
             // Abaikan jika error kirim pesan Telegram
         }

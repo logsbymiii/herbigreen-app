@@ -92,8 +92,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         // Notif ke User
         $userMsg = $action === 'ACC' 
-            ? "🎉 *PENGUMUMAN*\n\nPengajuan WFH kamu untuk tanggal {$tanggal} *DISETUJUI* oleh HR. \nJangan lupa /absen Hadir pakai Live Location ya!"
-            : "❌ *PENGUMUMAN*\n\nMaaf, pengajuan WFH kamu untuk tanggal {$tanggal} *DITOLAK* oleh HR. Harus tetap ngantor ya bos!";
+            ? "🎉 *PENGUMUMAN*\n\nPengajuan WFH kamu untuk tanggal {$tanggal} *DISETUJUI* oleh HR. \nJangan lupa /absen Hadir pakai opsi WFH ya!"
+            : "❌ *PENGUMUMAN*\n\nMaaf, pengajuan WFH kamu untuk tanggal {$tanggal} *DITOLAK* oleh HR. Harap tetap bekerja dari kantor.";
             
         $this->sendMessage($employee->telegram_id, $userMsg);
 
@@ -139,7 +139,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         if (strtolower($employee->division?->name) !== 'host live') {
-            $this->sendMessage($chatId, "❌ Fitur ini khusus untuk divisi Host Live ya!");
+            $this->sendMessage($chatId, "❌ Fitur ini khusus untuk divisi Host Live!");
             return ['status' => true, 'message' => 'Not host live'];
         }
 
@@ -152,7 +152,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         $amountRaw = preg_replace('/\D/', '', $parts[1]);
         if (empty($amountRaw)) {
-            $this->sendMessage($chatId, "❌ Angka tidak valid. Pastikan hanya mengetik angka ya.");
+            $this->sendMessage($chatId, "❌ Angka tidak valid. Pastikan hanya mengetik angka.");
             return ['status' => true];
         }
 
@@ -175,7 +175,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $formattedGmv = number_format($gmvAmount, 0, ',', '.');
         $msg = "📝 *Laporan Omset Manual Diterima*\n\n"
              . "💰 GMV/Omset: *Rp {$formattedGmv}*\n\n"
-             . "Udah bener belum angkanya? 🤔\n"
+             . "Apakah angka tersebut sudah benar?\n"
              . "(Balas: *Ya* / *Tidak*)";
         
         $this->sendMessage($chatId, $msg);
@@ -225,7 +225,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $reason = trim($message);
         
         if (strlen($reason) < 5) {
-            $this->sendMessage($chatId, "❌ Alasan terlalu singkat. Coba ceritain lebih detail ya!");
+            $this->sendMessage($chatId, "❌ Alasan terlalu singkat. Harap memberikan keterangan yang lebih detail.");
             return ['status' => true];
         }
 
@@ -238,7 +238,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         ]);
 
         $this->conversationState->clearState($chatId);
-        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HRD. Tunggu persetujuannya ya!");
+        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HRD. Harap menunggu persetujuan.");
 
         // Kirim Notifikasi ke HR
         $simauId = env('SIMAU_TELEGRAM_ID');
@@ -291,7 +291,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->sendMessage($chatId, "📝 Oke! Ketik *nama akun* yang kamu pakai live ya\n\n_Contoh: HERBITOK USQI_");
             return ['status' => true];
         } else {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3 ya!\n_(Atau ketik *batal* kalau gak jadi lapor)_");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3!\n_(Atau ketik *batal* jika ingin membatalkan)_");
             return ['status' => true];
         }
     }
@@ -321,7 +321,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         if ($sudahLapor) {
             $this->conversationState->clearState($chatId);
-            $this->sendMessage($chatId, "⚠️ Kamu sudah lapor hari ini, *{$employee->name}*. Laporan hanya bisa dikirim sekali sehari ya!");
+            $this->sendMessage($chatId, "⚠️ Kamu sudah lapor hari ini, *{$employee->name}*. Laporan hanya bisa dikirim sekali sehari.");
             return ['status' => true];
         }
 
@@ -355,7 +355,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if (in_array($choice, ['5', 'lima', 'kelima', 'cuti'])) $choice = '5';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1, 2, 3, 4, atau 5 ya!\n_(Atau ketik *batal* kalau gak jadi absen)_");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1, 2, 3, 4, atau 5!\n_(Atau ketik *batal* jika ingin membatalkan)_");
             return ['status' => true];
         }
 
@@ -383,7 +383,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 if (!$isWfhApproved) {
                     // Kalau belum disetujui, arahkan ke form pengajuan WFH
                     $this->conversationState->setCurrentStep($chatId, 'awaiting_wfh_reason');
-                    $this->sendMessage($chatId, "🏠 *Pengajuan WFH*\n\nKamu belum punya izin WFH hari ini yang disetujui HR. Silakan ketik alasan kenapa kamu mau Work From Home hari ini buat diajuin ke HR:");
+                    $this->sendMessage($chatId, "🏠 *Pengajuan WFH*\n\nKamu belum memiliki izin WFH hari ini yang disetujui HR. Silakan ketik alasan kenapa kamu mau Work From Home hari ini buat diajuin ke HR:");
                     return ['status' => true];
                 }
             }
@@ -424,7 +424,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $location = $rawUpdate['message']['location'] ?? null;
         
         if (!$location) {
-            $this->sendMessage($chatId, "❌ Itu bukan lokasi bos! Coba klik tombol *Klip Kertas* -> *Location* -> *Send My Current Location* ya.");
+            $this->sendMessage($chatId, "❌ Mohon kirimkan lokasi Anda menggunakan fitur lampiran Location Telegram.");
             return ['status' => true];
         }
 
@@ -453,7 +453,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($distance > $officeRadius && !$isWfh) {
             $this->conversationState->clearState($chatId);
             $jarak = round($distance);
-            $this->sendMessage($chatId, "❌ *ABSEN DITOLAK!*\n\nKamu terdeteksi berada di luar area kantor (jarakmu {$jarak} meter dari titik kantor, maksimal {$officeRadius} meter).\n\nKalau kamu WFH atau tugas luar, pastikan minta izin ke HR dulu!");
+            $this->sendMessage($chatId, "❌ *ABSEN DITOLAK!*\n\nKamu terdeteksi berada di luar area kantor (jarakmu {$jarak} meter dari titik kantor, maksimal {$officeRadius} meter).\n\nJika kamu WFH atau tugas luar, pastikan sudah mendapatkan izin dari HR.");
             return ['status' => true];
         }
 
@@ -478,7 +478,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         if (!$photoId) {
-            $this->sendMessage($chatId, "❌ Itu bukan foto selfie bos! Tolong kirim foto dari kamera kamu sekarang ya.");
+            $this->sendMessage($chatId, "❌ Mohon kirimkan foto selfie Anda langsung dari kamera Telegram.");
             return ['status' => true];
         }
 

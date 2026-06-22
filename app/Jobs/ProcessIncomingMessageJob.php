@@ -72,11 +72,11 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $provider = MessageProviderFactory::create();
 
         if ($intent === 'report') {
-            $provider->sendMessage($this->sender, "Oh, kamu mau ngirim laporan ya? Sip, biar rapi dan gampang direkap atasan, ikutin proses ini ya 👇");
+            $provider->sendMessage($this->sender, "Proses pelaporan. Mohon ikuti langkah-langkah di bawah ini 👇");
             $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
             $handler->handle($this->sender, '/lapor', []);
         } elseif ($intent === 'attendance') {
-            $provider->sendMessage($this->sender, "Oh, kamu mau absen ya? Oke, silakan pilih jenis absenmu di bawah ini 👇");
+            $provider->sendMessage($this->sender, "Proses absensi. Silakan pilih jenis absensi Anda di bawah ini 👇");
             $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
             $handler->handle($this->sender, '/absen', []);
 
@@ -91,15 +91,15 @@ class ProcessIncomingMessageJob implements ShouldQueue
 
             if ($isComplete && $this->urlFile) {
                 ProcessGmvReportJob::dispatch($this->employee->id, $this->urlFile, $this->sender, $gmvAccount, $gmvStart, $gmvEnd);
-                $provider->sendMessage($this->sender, "📸 Data komplit! Aku baca screenshot-nya dulu ya... tunggu bentar!");
+                $provider->sendMessage($this->sender, "📸 Data lengkap. Sistem sedang memproses tangkapan layar Anda, mohon tunggu sebentar.");
             } elseif ($isComplete && !$this->urlFile) {
                 $stateService->setCurrentStep($this->sender, 'awaiting_gmv_screenshot', [
                     'employee_id' => $this->employee->id,
                     'account_name' => $gmvAccount,
                     'live_start' => $gmvStart,
-                    'live_end' => $gmvEnd,
+                    'platform' => $analysis['gmv_platform'] ?? null
                 ]);
-                $provider->sendMessage($this->sender, "Sip, infonya udah kucatat! Sekarang kirim *screenshot GMV*-nya ya 📸\n\n_(Pastikan kirim Screenshot Asli dari HP ya, jangan foto layar HP pakai HP lain)_");
+                $provider->sendMessage($this->sender, "📸 Silakan kirimkan *screenshot GMV* Anda.\n\n_(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)_");
             } elseif ($this->urlFile) {
                 $stateService->setCurrentStep($this->sender, 'awaiting_gmv_account', [
                     'employee_id' => $this->employee->id,
@@ -153,23 +153,23 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 ->first();
             
             if (!$report) {
-                $provider->sendMessage($this->sender, "⚠️ Kamu belum bikin laporan hari ini, jadi nggak ada yang bisa diedit. Silakan kirim laporan barumu aja sekarang!");
+                $provider->sendMessage($this->sender, "⚠️ Anda belum memiliki laporan hari ini yang dapat diubah. Silakan kirim laporan baru Anda secara langsung.");
             } else {
                 $cleanExtract = trim($extractedData);
                 // Jika AI berhasil mengekstrak teks laporan baru, dan bukan sekadar mengulang chat user:
                 if (strlen($cleanExtract) > 10 && $cleanExtract !== trim($this->message)) {
                     $report->update(['content' => $cleanExtract]);
                     \App\Jobs\ProcessSmartDailyReportJob::dispatch($this->employee->id, $cleanExtract, (string)$this->sender);
-                    $provider->sendMessage($this->sender, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui jadi:\n\n{$cleanExtract}");
+                    $provider->sendMessage($this->sender, "✅ Pembaruan berhasil! Laporan Anda hari ini telah diperbarui menjadi:\n\n{$cleanExtract}");
                 } else {
                     $stateService = new \App\Services\DatabaseConversationState();
                     $stateService->setCurrentStep($this->sender, 'awaiting_edit_report_text');
-                    $provider->sendMessage($this->sender, "📝 Oke! Silakan ketik *seluruh teks laporan barumu* untuk hari ini. Laporan lamamu akan diganti dengan yang baru ini.");
+                    $provider->sendMessage($this->sender, "📝 Silakan ketik *teks laporan revisi* Anda secara lengkap. Laporan lama Anda akan digantikan dengan data baru ini.");
                 }
             }
 
         } elseif ($intent === 'end_conversation' || $intent === 'general_chat') {
-            $menuHint = "\n\n_Biar cepat dan rapi, yuk pakai menu ini:_\n📋 */absen* | 📝 */lapor* | 👤 */edit_profil*";
+            $menuHint = "\n\n_Untuk akses cepat, gunakan menu:_ 📋 */absen* | 📝 */lapor* | 👤 */edit_profil*";
             $provider->sendMessage($this->sender, $reply . $menuHint);
         } else {
             $provider->sendMessage($this->sender, $reply);

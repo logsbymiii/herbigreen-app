@@ -24,7 +24,7 @@ class CrmReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan CRM';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
     protected static ?int $navigationSort = 5;
 

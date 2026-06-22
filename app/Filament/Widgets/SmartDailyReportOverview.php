@@ -26,7 +26,7 @@ class SmartDailyReportOverview extends StatsOverviewWidget
             })->count();
 
         return [
-            Stat::make('Smart Reports Hari Ini', $totalReports . ' Laporan')
+            Stat::make('Analisis AI Selesai', $totalReports . ' Laporan')
                 ->description('Total laporan harian diproses AI')
                 ->descriptionIcon('heroicon-m-sparkles')
                 ->color('primary'),

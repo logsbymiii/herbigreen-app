@@ -22,7 +22,7 @@ class SmartDailyReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Semua Laporan';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'AI & Analitik';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
     protected static ?int $navigationSort = 1;
 

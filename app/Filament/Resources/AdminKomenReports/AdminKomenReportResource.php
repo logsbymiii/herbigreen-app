@@ -23,7 +23,7 @@ class AdminKomenReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan Admin Komen';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
     protected static ?int $navigationSort = 11;
 

@@ -23,7 +23,7 @@ class SosmedReportResource extends Resource
 
     protected static ?string $navigationLabel = 'Laporan Sosial Media';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Harian Divisi';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
     protected static ?int $navigationSort = 6;
 

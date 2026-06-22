@@ -53,10 +53,11 @@ class AbsenWebAppController extends Controller
             ->where('status', 'approved')
             ->exists();
 
-        // Keringanan untuk Content Creator / Admin Komen
+        // Keringanan untuk Content Creator / Admin Komen, dan Bebas untuk role Admin
         $isFreelance = in_array(strtolower($employee->division?->name ?? ''), ['content creator', 'admin komen']);
+        $isAdmin = strtolower($employee->role ?? '') === 'admin';
 
-        if ($distance > $officeRadius && !$isWfh && !$isFreelance) {
+        if ($distance > $officeRadius && !$isWfh && !$isFreelance && !$isAdmin) {
             $distFormat = number_format($distance, 0, ',', '.');
             return response()->json([
                 'status' => false, 

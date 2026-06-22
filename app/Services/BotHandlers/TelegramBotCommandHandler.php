@@ -196,8 +196,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $menu .= "1. Hadir (Di Kantor)\n";
         $menu .= "2. Hadir (Pengajuan WFH / Sedang WFH)\n";
         $menu .= "3. Sakit\n";
-        $menu .= "4. Izin\n";
-        $menu .= "5. Cuti\n\n";
+        $menu .= "4. Izin\n\n";
         $menu .= "Balas dengan angka pilihan Anda.";
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_type');
@@ -347,7 +346,7 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => false];
         }
 
-        $typeMap = ['1' => 'hadir', '2' => 'wfh', '3' => 'sakit', '4' => 'izin', '5' => 'cuti'];
+        $typeMap = ['1' => 'hadir', '2' => 'wfh', '3' => 'sakit', '4' => 'izin'];
         $choice = strtolower(trim($message));
 
         // Toleransi Typo Tingkat Dewa
@@ -355,11 +354,9 @@ _(Ketik *batal* untuk membatalkan)_");
         if (in_array($choice, ['2', 'dua', 'kedua', 'wfh', 'rumah'])) $choice = '2';
         if (in_array($choice, ['3', 'tiga', 'ketiga', 'sakit'])) $choice = '3';
         if (in_array($choice, ['4', 'empat', 'keempat', 'izin'])) $choice = '4';
-        if (in_array($choice, ['5', 'lima', 'kelima', 'cuti'])) $choice = '5';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1, 2, 3, 4, atau 5.
-_(Ketik *batal* untuk membatalkan)_");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1, 2, 3, atau 4.\n_(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
 
@@ -529,7 +526,7 @@ _(Ketik *batal* untuk membatalkan)_");
             
             $welcome = "👋 *Halo {$employee->name}, selamat datang di Layanan Herbigreen Bot.*\n\n"
                      . "Silakan gunakan menu di bawah ini untuk kebutuhan operasional Anda:\n\n"
-                     . "📋 */absen* - Lapor absensi (Hadir/Sakit/Izin/Cuti)\n"
+                     . "📋 */absen* - Lapor absensi (Hadir/Sakit/Izin)\n"
                      . "📝 */lapor* - Kirim laporan harian atau foto\n"
                      . "💰 */gmv* - Lapor omset GMV (Khusus Host Live)\n"
                      . "✏️ */edit_laporan* - Ubah laporan hari ini\n"
@@ -905,7 +902,7 @@ Silakan kirim ulang gambar dengan kualitas yang lebih tajam/jelas untuk diproses
                                    . "Sip, datamu udah kedaftar ya, {$employee->name}! 🎉\n\n"
                                    . "Btw, nomor ini nantinya bakal dipakai buat komunikasi soal absen dan laporan kerjamu. Kalau ke depannya kamu mau:\n"
                                    . "📝 *Lapor harian* (kerjaan atau omset jualan)\n"
-                                   . "🤒 *Izin* nggak masuk, sakit, atau cuti\n"
+                                   . "🤒 *Absensi* (hadir, sakit, atau izin)\n"
                                    . "❓ Nanya soal laporanmu hari ini udah terekap atau belum\n\n"
                                    . "Tinggal chat ke sini aja ya, nanti aku bantu proses. Semangat kerjanya! 😊");
 

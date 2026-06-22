@@ -40,6 +40,14 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return $this->handleWfhApproval($chatId, strtoupper($matches[1]), $matches[2]);
         }
 
+        // Cek apakah user mau batalin proses
+        $msgLower = strtolower(trim($message));
+        if (in_array($msgLower, ['batal', 'cancel', 'gak jadi', 'stop']) || str_contains($msgLower, 'gak jadi') || str_contains($msgLower, 'batal')) {
+            $this->conversationState->clearState($chatId);
+            $this->sendMessage($chatId, "Oke, proses dibatalkan ya! Ketik /start kalau butuh bantuan lagi.");
+            return ['status' => true];
+        }
+
         // Jika bukan command, cek apakah ada conversation ongoing
         $currentStep = $this->conversationState->getCurrentStep($chatId);
 
@@ -283,7 +291,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $this->sendMessage($chatId, "📝 Oke! Ketik *nama akun* yang kamu pakai live ya\n\n_Contoh: HERBITOK USQI_");
             return ['status' => true];
         } else {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3 ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan angka 1, 2, atau 3 ya!\n_(Atau ketik *batal* kalau gak jadi lapor)_");
             return ['status' => true];
         }
     }
@@ -347,7 +355,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if (in_array($choice, ['5', 'lima', 'kelima', 'cuti'])) $choice = '5';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Hadir Kantor), 2 (WFH), 3 (Sakit), 4 (Izin), atau 5 (Cuti) ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1, 2, 3, 4, atau 5 ya!\n_(Atau ketik *batal* kalau gak jadi absen)_");
             return ['status' => true];
         }
 

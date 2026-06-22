@@ -23,7 +23,7 @@ class AttendanceForm
                     ->required(),
                 Select::make('type')
                     ->label('Tipe Kehadiran')
-                    ->options(['sakit' => 'Sakit', 'izin' => 'Izin', 'cuti' => 'Cuti', 'telat' => 'Terlambat', 'alpa' => 'Alpa'])
+                    ->options(['hadir' => 'Hadir', 'wfh' => 'WFH', 'sakit' => 'Sakit', 'izin' => 'Izin', 'cuti' => 'Cuti', 'telat' => 'Terlambat', 'alpa' => 'Alpa'])
                     ->required(),
                 Textarea::make('note')
                     ->label('Keterangan / Catatan')

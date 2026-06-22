@@ -39,6 +39,11 @@ class AttendanceResource extends Resource
         return AttendanceForm::configure($schema);
     }
 
+    public static function table(Table $table): Table
+    {
+        return AttendancesTable::table($table);
+    }
+
     public static function getRelations(): array
     {
         return [

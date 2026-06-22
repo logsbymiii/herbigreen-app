@@ -274,7 +274,6 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                     . "🎯 *Fokus Utama:* \n(Gol utama hari ini)\n\n"
                     . "✅ *Tugas Selesai:*\n- \n- \n\n"
                     . "🚧 *Kendala / Butuh Bantuan:*\n(Kosongi kalau aman)\n\n"
-                    . "📈 *Target Besok:*\n- \n\n"
                     . "_Tinggal copy-paste tulisan di atas dan isi ya!_ ✨";
             
             $this->sendMessage($chatId, $prompt);

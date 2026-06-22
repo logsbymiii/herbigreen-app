@@ -524,7 +524,6 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                      . "Gunakan menu di bawah ini untuk beraktivitas:\n\n"
                      . "📋 */absen* - Untuk absen harian\n"
                      . "📝 */lapor* - Untuk kirim laporan harian\n"
-                     . "🏠 */wfh* - Untuk pengajuan WFH\n"
                      . "👤 */edit_profil* - Untuk ubah data diri\n\n";
 
             if ($isHostLive) {

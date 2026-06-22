@@ -169,7 +169,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
             }
 
         } elseif ($intent === 'end_conversation' || $intent === 'general_chat') {
-            $menuHint = "\n\n_Biar cepat dan rapi, yuk pakai menu ini:_\n📋 */absen* | 📝 */lapor* | 🏠 */wfh* | 👤 */edit_profil*";
+            $menuHint = "\n\n_Biar cepat dan rapi, yuk pakai menu ini:_\n📋 */absen* | 📝 */lapor* | 👤 */edit_profil*";
             $provider->sendMessage($this->sender, $reply . $menuHint);
         } else {
             $provider->sendMessage($this->sender, $reply);

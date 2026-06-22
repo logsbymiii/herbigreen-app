@@ -7,7 +7,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SmartDailyReportOverview extends StatsOverviewWidget
 {
-    protected static ?int $sort = 1; // Put it at the top of the dashboard
+    protected static ?int $sort = 2;
 
     protected function getStats(): array
     {

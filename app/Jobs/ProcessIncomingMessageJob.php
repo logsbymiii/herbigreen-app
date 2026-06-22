@@ -72,7 +72,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $provider = MessageProviderFactory::create();
 
         if ($intent === 'report') {
-            $provider->sendMessage($this->sender, "Oh, kamu mau ngirim laporan ya? Sip, biar rapi dan gampang direkap Mas Jodi, ikutin proses ini ya 👇");
+            $provider->sendMessage($this->sender, "Oh, kamu mau ngirim laporan ya? Sip, biar rapi dan gampang direkap atasan, ikutin proses ini ya 👇");
             $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
             $handler->handle($this->sender, '/lapor', []);
         } elseif ($intent === 'attendance') {

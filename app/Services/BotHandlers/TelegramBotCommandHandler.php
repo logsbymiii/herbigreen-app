@@ -238,9 +238,9 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         ]);
 
         $this->conversationState->clearState($chatId);
-        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HR (Simau). Tunggu persetujuannya ya!");
+        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HRD. Tunggu persetujuannya ya!");
 
-        // Kirim Notifikasi ke HR (Simau)
+        // Kirim Notifikasi ke HR
         $simauId = env('SIMAU_TELEGRAM_ID');
         if ($simauId) {
             $hrMessage = "🔔 *PENGAJUAN WFH BARU*\n\n"
@@ -270,8 +270,9 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($choice === '1') {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_report_text');
             $prompt = "📝 *LAPORAN HARIAN HERBIGREEN* 🌿\n\n"
-                    . "Silakan ketik laporan aktivitasmu hari ini. Biar rapi dan gampang direkap Mas Jodi, yuk pakai format standar ini:\n\n"
-                    . "🎯 *Fokus Utama:* \n(Gol utama hari ini)\n\n"
+                    . "Silakan ketik laporan aktivitasmu hari ini. Biar rapi dan gampang direkap oleh atasan, yuk pakai format standar ini:\n\n"
+                    . "🎯 *Fokus Utama:* \n"
+                    . "*(Gol utama hari ini)*\n\n"
                     . "✅ *Tugas Selesai:*\n- \n- \n\n"
                     . "🚧 *Kendala / Butuh Bantuan:*\n(Kosongi kalau aman)\n\n"
                     . "_Tinggal copy-paste tulisan di atas dan isi ya!_ ✨";

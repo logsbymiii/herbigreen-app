@@ -104,12 +104,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $nama = $employee->name;
         $isHostLive = strtolower($employee->division->name ?? '') === 'host live';
 
-        // AI generate sapaan yang beda tiap hari
-        $ai = new AiResponseService();
-        $sapaan = $ai->greetingLapor($nama);
-
-        $menu = "{$sapaan}\n\n";
-        $menu .= "Mau lapor apa?\n\n";
+        $menu = "👋 Halo {$nama},\n\nMau lapor apa?\n\n";
         $menu .= "1. Laporan Harian (teks)\n";
         $menu .= "2. Laporan Foto\n";
 
@@ -189,11 +184,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true, 'message' => 'Not registered'];
         }
 
-        // AI generate sapaan yang empatik
-        $ai = new AiResponseService();
-        $sapaan = $ai->greetingAbsen($employee->name);
-
-        $menu = "Mau lapor apa?\n\n";
+        $menu = "👋 Halo {$employee->name},\n\nMau absen apa?\n\n";
         $menu .= "1. Hadir (Di Kantor)\n";
         $menu .= "2. Hadir (Pengajuan WFH / Sedang WFH)\n";
         $menu .= "3. Sakit\n";

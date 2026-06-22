@@ -387,8 +387,23 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 }
             }
             
-            $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_location');
-            $this->sendMessage($chatId, "📍 *Share Location* kamu sekarang buat absen masuk ya!\n\n_(Klik tombol klip kertas -> Location -> Send My Current Location)_");
+            $this->conversationState->clearState($chatId);
+            $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}");
+            $keyboard = [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '📸 Buka Kamera Absen', 'web_app' => ['url' => $appUrl]]
+                    ]
+                ]
+            ];
+            
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => "📍 *Absen 1-Klik Aktif!*\n\nKlik tombol di bawah untuk membuka kamera absen. Lokasi dan foto akan dikirim otomatis! 🚀",
+                'parse_mode' => 'Markdown',
+                'reply_markup' => json_encode($keyboard)
+            ]);
             return ['status' => true];
         }
 
@@ -586,8 +601,6 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
             'awaiting_report_text'  => $this->processReportText($chatId, $message),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
-            'awaiting_absen_location' => $this->processAbsenLocation($chatId, $rawUpdate ?? []),
-            'awaiting_absen_photo'  => $this->processAbsenPhoto($chatId, $rawUpdate ?? []),
             'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),

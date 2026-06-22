@@ -193,10 +193,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $sapaan = $ai->greetingAbsen($employee->name);
 
         $menu = "{$sapaan}\n\nMau lapor apa?\n\n";
-        $menu .= "1️⃣ Hadir\n";
-        $menu .= "2️⃣ Sakit\n";
-        $menu .= "3️⃣ Izin\n";
-        $menu .= "4️⃣ Cuti\n";
+        $menu .= "1️⃣ Hadir (Di Kantor)\n";
+        $menu .= "2️⃣ Hadir (Pengajuan WFH / Sedang WFH)\n";
+        $menu .= "3️⃣ Sakit\n";
+        $menu .= "4️⃣ Izin\n";
+        $menu .= "5️⃣ Cuti\n";
         $menu .= "\nBalas dengan angka pilihanmu!";
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_type');
@@ -335,23 +336,24 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => false];
         }
 
-        $typeMap = ['1' => 'hadir', '2' => 'sakit', '3' => 'izin', '4' => 'cuti'];
+        $typeMap = ['1' => 'hadir', '2' => 'wfh', '3' => 'sakit', '4' => 'izin', '5' => 'cuti'];
         $choice = strtolower(trim($message));
 
         // Toleransi Typo Tingkat Dewa
-        if (in_array($choice, ['1', 'satu', 'pertama', 'hadir'])) $choice = '1';
-        if (in_array($choice, ['2', 'dua', 'kedua', 'sakit'])) $choice = '2';
-        if (in_array($choice, ['3', 'tiga', 'ketiga', 'izin'])) $choice = '3';
-        if (in_array($choice, ['4', 'empat', 'keempat', 'cuti'])) $choice = '4';
+        if (in_array($choice, ['1', 'satu', 'pertama', 'hadir', 'kantor'])) $choice = '1';
+        if (in_array($choice, ['2', 'dua', 'kedua', 'wfh', 'rumah'])) $choice = '2';
+        if (in_array($choice, ['3', 'tiga', 'ketiga', 'sakit'])) $choice = '3';
+        if (in_array($choice, ['4', 'empat', 'keempat', 'izin'])) $choice = '4';
+        if (in_array($choice, ['5', 'lima', 'kelima', 'cuti'])) $choice = '5';
 
         if (!isset($typeMap[$choice])) {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Hadir), 2 (Sakit), 3 (Izin), atau 4 (Cuti) ya!");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Balas dengan 1 (Hadir Kantor), 2 (WFH), 3 (Sakit), 4 (Izin), atau 5 (Cuti) ya!");
             return ['status' => true];
         }
 
         $type = $typeMap[$choice];
         
-        if ($type === 'hadir') {
+        if ($type === 'hadir' || $type === 'wfh') {
             // Cek apakah hari ini sudah absen hadir
             $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
                 ->whereDate('date', now()->format('Y-m-d'))
@@ -362,6 +364,20 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 $this->conversationState->clearState($chatId);
                 $this->sendMessage($chatId, "⚠️ Kamu sudah absen masuk hari ini!");
                 return ['status' => true];
+            }
+
+            if ($type === 'wfh') {
+                $isWfhApproved = \App\Models\WfhRequest::where('employee_id', $employee->id)
+                    ->whereDate('request_date', now()->format('Y-m-d'))
+                    ->where('status', 'approved')
+                    ->exists();
+                
+                if (!$isWfhApproved) {
+                    // Kalau belum disetujui, arahkan ke form pengajuan WFH
+                    $this->conversationState->setCurrentStep($chatId, 'awaiting_wfh_reason');
+                    $this->sendMessage($chatId, "🏠 *Pengajuan WFH*\n\nKamu belum punya izin WFH hari ini yang disetujui HR. Silakan ketik alasan kenapa kamu mau Work From Home hari ini buat diajuin ke HR:");
+                    return ['status' => true];
+                }
             }
             
             $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_location');

@@ -13,7 +13,6 @@ class TodaySummaryWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 'full';
-    protected int | string | array $columns = 4;
 
     protected function getColumns(): int
     {

@@ -72,31 +72,13 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $provider = MessageProviderFactory::create();
 
         if ($intent === 'report') {
-            $sudahLapor = false;
-            
-            // Bypass limit for admin role so they can test reports multiple times
-            if ($this->employee->role !== 'admin') {
-                $sudahLapor = Report::where('employee_id', $this->employee->id)
-                    ->whereDate('created_at', now()->format('Y-m-d'))
-                    ->exists();
-            }
-
-            if ($sudahLapor) {
-                $provider->sendMessage($this->sender, "Eh, kayanya kamu udah lapor deh hari ini! Laporannya cukup sekali sehari aja yaa. Semangat terus! 🙌");
-                return;
-            } else {
-                ProcessDailyReportJob::dispatch($this->employee->id, $this->message, $this->urlFile);
-                ProcessSmartDailyReportJob::dispatch($this->employee->id, $this->message, $this->sender);
-                $provider->sendMessage($this->sender, $reply);
-            }
-
+            $provider->sendMessage($this->sender, "Oh, kamu mau ngirim laporan ya? Sip, biar rapi dan gampang direkap Mas Jodi, ikutin proses ini ya 👇");
+            $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
+            $handler->handle($this->sender, '/lapor', []);
         } elseif ($intent === 'attendance') {
-            $attendanceType = $analysis['attendance_type'] ?? 'izin';
-            $attendanceType = strtolower(trim(explode(' ', $attendanceType)[0])); 
-            if (!in_array($attendanceType, ['sakit', 'izin', 'cuti', 'telat'])) $attendanceType = 'izin';
-
-            ProcessAttendanceJob::dispatch($this->employee->id, $this->message, $attendanceType, $this->urlFile);
-            $provider->sendMessage($this->sender, $reply);
+            $provider->sendMessage($this->sender, "Oh, kamu mau absen ya? Oke, silakan pilih jenis absenmu di bawah ini 👇");
+            $handler = \App\Services\BotHandlers\BotHandlerFactory::create('telegram');
+            $handler->handle($this->sender, '/absen', []);
 
         } elseif ($intent === 'gmv_report') {
             $stateService = new \App\Services\DatabaseConversationState();
@@ -186,8 +168,9 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 }
             }
 
-        } elseif ($intent === 'end_conversation') {
-            $provider->sendMessage($this->sender, $reply);
+        } elseif ($intent === 'end_conversation' || $intent === 'general_chat') {
+            $menuHint = "\n\n_Biar cepat dan rapi, yuk pakai menu ini:_\n📋 */absen* | 📝 */lapor* | 🏠 */wfh* | 👤 */edit_profil*";
+            $provider->sendMessage($this->sender, $reply . $menuHint);
         } else {
             $provider->sendMessage($this->sender, $reply);
         }

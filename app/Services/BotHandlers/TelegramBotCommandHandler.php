@@ -48,18 +48,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return $this->handleConversationStep($chatId, $currentStep, $message, $rawUpdate);
         }
 
-        // --- FALLBACK MENU STRICT ---
-        // Karena user meminta untuk menonaktifkan "Free Chat AI" dan memaksa user memakai command
-        $fallbackMenu = "⚠️ *Pesan tidak dikenali.*\n\n"
-                      . "Biar rapi dan terstruktur, yuk biasakan pakai menu command di bawah ini ya:\n\n"
-                      . "📋 */absen* - Untuk absen masuk/izin\n"
-                      . "📝 */lapor* - Untuk kirim laporan\n"
-                      . "🏠 */wfh* - Untuk pengajuan WFH\n"
-                      . "👤 */edit_profil* - Untuk ubah data diri\n"
-                      . "❓ */bantuan* - Jika butuh bantuan teknis";
-        
-        $this->sendMessage($chatId, $fallbackMenu);
-        return ['status' => true];
+        return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
     }
 
     private function handleWfhApproval(int | string $chatId, string $action, string $wfhId): array

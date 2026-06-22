@@ -48,7 +48,18 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return $this->handleConversationStep($chatId, $currentStep, $message, $rawUpdate);
         }
 
-        return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
+        // --- FALLBACK MENU STRICT ---
+        // Karena user meminta untuk menonaktifkan "Free Chat AI" dan memaksa user memakai command
+        $fallbackMenu = "⚠️ *Pesan tidak dikenali.*\n\n"
+                      . "Biar rapi dan terstruktur, yuk biasakan pakai menu command di bawah ini ya:\n\n"
+                      . "📋 */absen* - Untuk absen masuk/izin\n"
+                      . "📝 */lapor* - Untuk kirim laporan\n"
+                      . "🏠 */wfh* - Untuk pengajuan WFH\n"
+                      . "👤 */edit_profil* - Untuk ubah data diri\n"
+                      . "❓ */bantuan* - Jika butuh bantuan teknis";
+        
+        $this->sendMessage($chatId, $fallbackMenu);
+        return ['status' => true];
     }
 
     private function handleWfhApproval(int | string $chatId, string $action, string $wfhId): array
@@ -519,19 +530,19 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($employee) {
             $isHostLive = strtolower($employee->division?->name ?? '') === 'host live';
             
-            $welcome = "👋 *Halo {$employee->name}, selamat datang kembali di Herbigreen Bot!*\n\n"
-                     . "Sekarang aku udah lebih pintar lho! Kamu nggak perlu lagi ngapalin command-command kaku.\n\n"
-                     . "🗣️ *Tinggal ajak ngobrol aja, contohnya:*\n"
-                     . "• _\"min, aku hari ini sakit, gausah masuk ya\"_ (Otomatis absen)\n"
-                     . "• _\"nih laporan jualan hari ini, laku 10 paket\"_ (Otomatis lapor)\n"
-                     . "• _\"laporanku hari ini udah masuk blm ya?\"_ (Cek status)\n\n";
+            $welcome = "👋 *Halo {$employee->name}, selamat datang di Herbigreen Bot!*\n\n"
+                     . "Gunakan menu di bawah ini untuk beraktivitas:\n\n"
+                     . "📋 */absen* - Untuk absen harian\n"
+                     . "📝 */lapor* - Untuk kirim laporan harian\n"
+                     . "🏠 */wfh* - Untuk pengajuan WFH\n"
+                     . "👤 */edit_profil* - Untuk ubah data diri\n\n";
 
             if ($isHostLive) {
                 $welcome .= "📊 *Khusus Divisi Host Live:*\n"
-                          . "Untuk kirim Laporan GMV beserta screenshot, ketik */lapor* lalu pilih angka *3*. Aku bakal nuntun kamu step by step!\n\n";
+                          . "Pilih menu */lapor* lalu ketik *3* untuk laporan omset harian.\n\n";
             }
 
-            $welcome .= "Coba aja langsung sapa aku atau kirim laporanmu! 😊";
+            $welcome .= "_Ketik salah satu command di atas (pakai garis miring /) buat mulai._";
         } else {
             $welcome = "👋 *Selamat Datang di Herbigreen Bot!*\n\n"
                      . "Untuk menggunakan bot ini, kamu harus daftar dulu ya.\n\n"
@@ -552,12 +563,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true, 'message' => 'Already registered'];
         }
 
-        // AI generate sapaan pembuka yang beda-beda
-        $ai = new AiResponseService();
-        $sapaan = $ai->greetingDaftar();
-
         $this->conversationState->setCurrentStep($chatId, 'awaiting_name');
-        $this->sendMessage($chatId, "{$sapaan}\n\nYuk mulai daftar! Silakan masukkan *nama lengkapmu*:");
+        $this->sendMessage($chatId, "Yuk mulai daftar! Silakan ketik *nama lengkapmu* sekarang:");
 
         return ['status' => true, 'message' => 'Daftar conversation started'];
     }

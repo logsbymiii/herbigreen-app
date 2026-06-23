@@ -5,7 +5,7 @@ namespace App\Filament\Resources\DivisionReports\Pages;
 use App\Filament\Resources\DivisionReports\DivisionReportResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Components\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Division;
 

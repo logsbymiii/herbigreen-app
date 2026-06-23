@@ -47,8 +47,8 @@
                 @endforeach
             </div>
 
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 0.75rem; justify-content: space-between; align-items: center;">
-                <div style="display: flex; gap: 1rem;">
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 0.75rem; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 8px;"></div> Lengkap</div>
                     <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b; margin-right: 8px;"></div> Ada izin/sakit</div>
                 </div>

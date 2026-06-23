@@ -51,7 +51,7 @@ class AttendancesTable
                                 default => 'gray',
                             })
                             ->formatStateUsing(fn ($state) => ucfirst($state)),
-                    ])->from('md')->extraAttributes(['class' => 'items-center']),
+                    ])->extraAttributes(['class' => 'items-center']),
 
                     \Filament\Tables\Columns\ImageColumn::make('proof_path')
                         ->disk('r2')
@@ -144,9 +144,7 @@ class AttendancesTable
                             );
                     })
             ])
-            ->recordActions([
-                \Filament\Actions\EditAction::make(),
-            ])
+            ->recordUrl(fn ($record) => \App\Filament\Resources\Attendances\AttendanceResource::getUrl('edit', ['record' => $record]))
             ->toolbarActions([
                 \Filament\Actions\BulkActionGroup::make([
                     \Filament\Actions\DeleteBulkAction::make(),

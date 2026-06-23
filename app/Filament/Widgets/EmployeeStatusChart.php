@@ -13,7 +13,11 @@ class EmployeeStatusChart extends ChartWidget
     protected static ?int $sort = 1;
     protected ?string $heading = 'Status Karyawan Hari Ini';
     protected ?string $maxHeight = '250px';
-    protected int | string | array $columnSpan = 1; // You can adjust this to 'full' or '1' depending on layout needs
+    protected int | string | array $columnSpan = [
+        'sm' => 'full',
+        'md' => 1,
+        'xl' => 1,
+    ];
 
     protected function getData(): array
     {

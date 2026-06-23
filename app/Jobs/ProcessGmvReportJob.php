@@ -45,128 +45,132 @@ class ProcessGmvReportJob implements ShouldQueue
             return;
         }
 
-        // 1. Download file
-        $response = Http::withoutVerifying()->timeout(30)->get($this->fileUrl);
+        $provider = \App\Services\MessageProviderFactory::create();
 
-        if (!$response->successful()) {
-            throw new \Exception("KOKI GMV GAGAL: File tidak bisa didownload. URL: {$this->fileUrl} Status: " . $response->status());
-        }
+        try {
+            // 1. Download file
+            $response = Http::withoutVerifying()->timeout(30)->get($this->fileUrl);
 
-        $imageContent = $response->body();
+            if (!$response->successful()) {
+                throw new \Exception("KOKI GMV GAGAL: File tidak bisa didownload. URL: {$this->fileUrl} Status: " . $response->status());
+            }
 
-        // 2. Upload ke Cloudflare R2
-        $filename = 'gmv/' . $this->employeeId . '_' . now()->format('Ymd_His') . '_' . Str::random(5) . '.jpg';
-        Storage::disk('r2')->put($filename, $imageContent, 'public');
-        Log::info("KOKI GMV: Screenshot berhasil diupload ke R2: {$filename}");
+            $imageContent = $response->body();
 
-        // 3. OCR pake Gemini Vision (baca angka GMV dll dari screenshot)
-        $gmvAmount = null;
-        $orderCount = null;
-        $productSold = null;
-        $viewersCount = null;
-        $highestViewers = null;
-        $rawOcrText = null;
-        $geminiKey = env('GEMINI_API_KEY');
+            // 2. Upload ke Cloudflare R2
+            $filename = 'gmv/' . $this->employeeId . '_' . now()->format('Ymd_His') . '_' . Str::random(5) . '.jpg';
+            Storage::disk('r2')->put($filename, $imageContent, 'public');
+            Log::info("KOKI GMV: Screenshot berhasil diupload ke R2: {$filename}");
 
-        if ($geminiKey) {
-            try {
-                $base64Image = base64_encode($imageContent);
+            // 3. OCR pake Gemini Vision (baca angka GMV dll dari screenshot)
+            $gmvAmount = null;
+            $orderCount = null;
+            $productSold = null;
+            $viewersCount = null;
+            $highestViewers = null;
+            $rawOcrText = null;
+            $geminiKey = env('GEMINI_API_KEY');
 
-                $geminiResponse = Http::timeout(30)->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
-                    'contents' => [[
-                        'parts' => [
-                            [
-                                'inline_data' => [
-                                    'mime_type' => 'image/jpeg',
-                                    'data' => $base64Image,
+            if ($geminiKey) {
+                try {
+                    $base64Image = base64_encode($imageContent);
+
+                    $geminiResponse = Http::timeout(30)->withHeaders([
+                        'Content-Type' => 'application/json',
+                    ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                        'contents' => [[
+                            'parts' => [
+                                [
+                                    'inline_data' => [
+                                        'mime_type' => 'image/jpeg',
+                                        'data' => $base64Image,
+                                    ]
+                                ],
+                                [
+                                    'text' => "Ini adalah gambar/foto layar laptop/HP dari halaman statistik live (Shopee Seller Center atau TikTok Live). Nama akun live ini: '{$this->accountName}'. Ekstrak metrik berikut: 1. Total GMV (atau 'Penjualan (Rp)', 'Omset', 'Pendapatan'). 2. Total Pesanan. 3. Produk Terjual. 4. Total Dilihat (Penonton/Penonton Kumulatif). 5. Penonton Tertinggi. 6. Nama Platform ('Shopee' atau 'TikTok'). Clue platform: Jika nama akun mengandung 'tok', kemungkinan besar TikTok. UI TikTok biasanya dominan pink/hitam dengan teks 'Pendapatan' / 'Penonton Kumulatif'. UI Shopee dominan oranye dengan teks 'Shopee Seller Centre' / 'Pesanan'. Balas HANYA JSON mentah tanpa markdown: {\"gmv\": angka, \"pesanan\": angka, \"produk_terjual\": angka, \"penonton\": angka, \"penonton_tertinggi\": angka, \"platform\": \"Shopee/TikTok/Lainnya\"}. Hapus titik/koma dari angka (misal 523.680 jadi 523680). Jika data tak ditemukan, isi 0."
                                 ]
-                            ],
-                            [
-                                'text' => "Ini adalah gambar/foto layar laptop/HP dari halaman statistik live (Shopee Seller Center atau TikTok Live). Nama akun live ini: '{$this->accountName}'. Ekstrak metrik berikut: 1. Total GMV (atau 'Penjualan (Rp)', 'Omset', 'Pendapatan'). 2. Total Pesanan. 3. Produk Terjual. 4. Total Dilihat (Penonton/Penonton Kumulatif). 5. Penonton Tertinggi. 6. Nama Platform ('Shopee' atau 'TikTok'). Clue platform: Jika nama akun mengandung 'tok', kemungkinan besar TikTok. UI TikTok biasanya dominan pink/hitam dengan teks 'Pendapatan' / 'Penonton Kumulatif'. UI Shopee dominan oranye dengan teks 'Shopee Seller Centre' / 'Pesanan'. Balas HANYA JSON mentah tanpa markdown: {\"gmv\": angka, \"pesanan\": angka, \"produk_terjual\": angka, \"penonton\": angka, \"penonton_tertinggi\": angka, \"platform\": \"Shopee/TikTok/Lainnya\"}. Hapus titik/koma dari angka (misal 523.680 jadi 523680). Jika data tak ditemukan, isi 0."
                             ]
-                        ]
-                    ]]
+                        ]]
+                    ]);
+
+                    if ($geminiResponse->successful()) {
+                        $rawOcrText = $geminiResponse->json('candidates.0.content.parts.0.text');
+                        $cleanJsonStr = str_replace(['```json', '```'], '', $rawOcrText);
+                        $parsed = json_decode(trim($cleanJsonStr), true);
+                        
+                        if (is_array($parsed)) {
+                            $gmvAmount = (int) ($parsed['gmv'] ?? 0);
+                            $orderCount = (int) ($parsed['pesanan'] ?? 0);
+                            $productSold = (int) ($parsed['produk_terjual'] ?? 0);
+                            $viewersCount = (int) ($parsed['penonton'] ?? 0);
+                            $highestViewers = (int) ($parsed['penonton_tertinggi'] ?? 0);
+                            $platform = $parsed['platform'] ?? 'Lainnya';
+                        }
+                        Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText}");
+                    } else {
+                        Log::error("KOKI GMV: Gemini API Error! Status: " . $geminiResponse->status() . " Body: " . $geminiResponse->body());
+                    }
+                } catch (\Exception $e) {
+                    Log::error("KOKI GMV: OCR Gemini gagal (Exception): " . $e->getMessage());
+                }
+            } else {
+                Log::warning("KOKI GMV: GEMINI_API_KEY belum diset, OCR dilewati.");
+            }
+
+            // 4. Minta Konfirmasi ke User via Bot
+            if ($gmvAmount !== null && $gmvAmount > 0) {
+                // Simpan data sementara ke state
+                $stateService = new \App\Services\DatabaseConversationState();
+                $stateService->setCurrentStep($this->sender, 'waiting_gmv_confirmation', [
+                    'employee_id' => $this->employeeId,
+                    'screenshot_path' => $filename,
+                    'gmv_amount' => $gmvAmount,
+                    'order_count' => $orderCount,
+                    'product_sold' => $productSold,
+                    'viewers_count' => $viewersCount,
+                    'highest_viewers' => $highestViewers,
+                    'platform' => $platform ?? 'Lainnya',
+                    'account_name' => $this->accountName,
+                    'live_start' => $this->liveStart,
+                    'live_end' => $this->liveEnd,
+                    'raw_ocr_text' => $rawOcrText,
+                    'live_date' => now()->format('Y-m-d'),
                 ]);
 
-                if ($geminiResponse->successful()) {
-                    $rawOcrText = $geminiResponse->json('candidates.0.content.parts.0.text');
-                    // Clean up markdown block if Gemini adds it
-                    $cleanJsonStr = str_replace(['```json', '```'], '', $rawOcrText);
-                    $parsed = json_decode(trim($cleanJsonStr), true);
-                    
-                    if (is_array($parsed)) {
-                        $gmvAmount = (int) ($parsed['gmv'] ?? 0);
-                        $orderCount = (int) ($parsed['pesanan'] ?? 0);
-                        $productSold = (int) ($parsed['produk_terjual'] ?? 0);
-                        $viewersCount = (int) ($parsed['penonton'] ?? 0);
-                        $highestViewers = (int) ($parsed['penonton_tertinggi'] ?? 0);
-                        $platform = $parsed['platform'] ?? 'Lainnya';
-                    }
-                    Log::info("KOKI GMV: OCR Gemini berhasil. Raw: {$rawOcrText}");
-                } else {
-                    Log::error("KOKI GMV: Gemini API Error! Status: " . $geminiResponse->status() . " Body: " . $geminiResponse->body());
+                $platformDisplay = $platform ?? 'Lainnya';
+                $formattedGmv = number_format($gmvAmount, 0, ',', '.');
+                $msg = "📸 *Laporan Omset Diterima*\n\n"
+                     . "Aku udah baca metrik dari foto kamu nih:\n";
+                if ($this->accountName) {
+                    $msg .= "🏪 Akun: *{$this->accountName}*\n";
                 }
-            } catch (\Exception $e) {
-                Log::error("KOKI GMV: OCR Gemini gagal (Exception): " . $e->getMessage());
+                if ($this->liveStart && $this->liveEnd) {
+                    $msg .= "⏰ Jam Live: *{$this->liveStart} - {$this->liveEnd}*\n";
+                }
+                $msg .= "📱 Platform: *{$platformDisplay}*\n"
+                     . "💰 GMV/Omset: *Rp {$formattedGmv}*\n"
+                     . "📦 Pesanan: *{$orderCount}*\n"
+                     . "🛍️ Produk Terjual: *{$productSold}*\n"
+                     . "👁️ Dilihat: *{$viewersCount}*\n"
+                     . "🔥 Penonton Tertinggi: *{$highestViewers}*\n\n"
+                     . "Udah bener belum datanya? 🤔\n"
+                     . "(Balas: *Ya* / *Tidak*)";
+                
+                $provider->sendMessage($this->sender, $msg);
+                Log::info("KOKI GMV: Menunggu konfirmasi user. Angka: {$gmvAmount}");
+            } else {
+                $msg = "📸 *Laporan GMV Diterima*\n\n"
+                     . "Aduh, aku gagal baca angka dari gambar yang kamu kirim (atau kebaca 0).\n\n"
+                     . "⚠️ *TIPS PENTING:*\n"
+                     . "Pastikan kamu ngirim *Screenshot Asli* dari HP (jangan foto HP pakai HP lain) biar angkanya tajam dan gampang dibaca robot.\n\n"
+                     . "Coba kirim ulang screenshot-nya ya! Atau kalau tetep gagal, ketik lapor manual aja: */gmv [angka_omset]* (contoh: */gmv 500000*)";
+                $provider->sendMessage($this->sender, $msg);
+                Log::warning("KOKI GMV: Gagal baca angka, minta upload ulang. Raw: {$rawOcrText}");
             }
-        } else {
-            Log::warning("KOKI GMV: GEMINI_API_KEY belum diset, OCR dilewati.");
-        }
 
-        // 4. Minta Konfirmasi ke User via Bot
-        $provider = \App\Services\MessageProviderFactory::create();
-        
-        if ($gmvAmount !== null && $gmvAmount > 0) {
-            // Simpan data sementara ke state
-            $stateService = new \App\Services\DatabaseConversationState();
-            $stateService->setCurrentStep($this->sender, 'waiting_gmv_confirmation', [
-                'employee_id' => $this->employeeId,
-                'screenshot_path' => $filename,
-                'gmv_amount' => $gmvAmount,
-                'order_count' => $orderCount,
-                'product_sold' => $productSold,
-                'viewers_count' => $viewersCount,
-                'highest_viewers' => $highestViewers,
-                'platform' => $platform ?? 'Lainnya',
-                'account_name' => $this->accountName,
-                'live_start' => $this->liveStart,
-                'live_end' => $this->liveEnd,
-                'raw_ocr_text' => $rawOcrText,
-                'live_date' => now()->format('Y-m-d'),
-            ]);
-
-            $platformDisplay = $platform ?? 'Lainnya';
-            $formattedGmv = number_format($gmvAmount, 0, ',', '.');
-            $msg = "📸 *Laporan Omset Diterima*\n\n"
-                 . "Aku udah baca metrik dari foto kamu nih:\n";
-            if ($this->accountName) {
-                $msg .= "🏪 Akun: *{$this->accountName}*\n";
-            }
-            if ($this->liveStart && $this->liveEnd) {
-                $msg .= "⏰ Jam Live: *{$this->liveStart} - {$this->liveEnd}*\n";
-            }
-            $msg .= "📱 Platform: *{$platformDisplay}*\n"
-                 . "💰 GMV/Omset: *Rp {$formattedGmv}*\n"
-                 . "📦 Pesanan: *{$orderCount}*\n"
-                 . "🛍️ Produk Terjual: *{$productSold}*\n"
-                 . "👁️ Dilihat: *{$viewersCount}*\n"
-                 . "🔥 Penonton Tertinggi: *{$highestViewers}*\n\n"
-                 . "Udah bener belum datanya? 🤔\n"
-                 . "(Balas: *Ya* / *Tidak*)";
-            
-            $provider->sendMessage($this->sender, $msg);
-            Log::info("KOKI GMV: Menunggu konfirmasi user. Angka: {$gmvAmount}");
-        } else {
-            // Kalau gagal baca angka atau dapet 0
-            $msg = "📸 *Laporan GMV Diterima*\n\n"
-                 . "Aduh, aku gagal baca angka dari gambar yang kamu kirim (atau kebaca 0).\n\n"
-                 . "⚠️ *TIPS PENTING:*\n"
-                 . "Pastikan kamu ngirim *Screenshot Asli* dari HP (jangan foto HP pakai HP lain) biar angkanya tajam dan gampang dibaca robot.\n\n"
-                 . "Coba kirim ulang screenshot-nya ya! Atau kalau tetep gagal, ketik lapor manual aja: */gmv [angka_omset]* (contoh: */gmv 500000*)";
-            $provider->sendMessage($this->sender, $msg);
-            Log::warning("KOKI GMV: Gagal baca angka, minta upload ulang. Raw: {$rawOcrText}");
+        } catch (\Throwable $e) {
+            Log::error("KOKI GMV FATAL ERROR: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+            $provider->sendMessage($this->sender, "❌ Aduh, maaf banget! Ada masalah internal saat memproses gambarmu.\n\nPesan Error: " . $e->getMessage() . "\n\nPastikan konfigurasi R2 dan Gemini di server sudah benar. Silakan coba lagi nanti ya!");
         }
     }
 }

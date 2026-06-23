@@ -719,8 +719,8 @@ _(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)
         // Ambil data sesi dari state
         $tempData = $this->conversationState->getTempData($chatId);
 
-        // Dispatch job untuk OCR via Gemini
-        ProcessGmvReportJob::dispatch(
+        // Dispatch job secara sinkron biar user gak nunggu queue worker
+        ProcessGmvReportJob::dispatchSync(
             $tempData['employee_id'],
             $urlFile,
             $chatId,

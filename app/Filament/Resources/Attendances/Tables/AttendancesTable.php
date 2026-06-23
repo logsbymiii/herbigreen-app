@@ -107,10 +107,33 @@ class AttendancesTable
                         'telat' => 'Telat',
                     ])
                     ->label('Filter Status'),
+                \Filament\Tables\Filters\Filter::make('bulan_tahun')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('month')
+                            ->label('Bulan')
+                            ->options([
+                                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
+                                '04' => 'April', '05' => 'Mei', '06' => 'Juni',
+                                '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
+                                '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+                            ]),
+                        \Filament\Forms\Components\Select::make('year')
+                            ->label('Tahun')
+                            ->options(array_combine(range(2023, now()->year), range(2023, now()->year))),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when($data['month'], fn ($q, $month) => $q->whereMonth('date', $month))
+                            ->when($data['year'], fn ($q, $year) => $q->whereYear('date', $year));
+                    }),
                 \Filament\Tables\Filters\Filter::make('date')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('date_from')->label('Dari Tanggal'),
-                        \Filament\Forms\Components\DatePicker::make('date_until')->label('Sampai Tanggal'),
+                        \Filament\Forms\Components\DatePicker::make('date_from')
+                            ->label('Dari Tanggal')
+                            ->maxDate(now()),
+                        \Filament\Forms\Components\DatePicker::make('date_until')
+                            ->label('Sampai Tanggal')
+                            ->maxDate(now()),
                     ])
                     ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
                         return $query

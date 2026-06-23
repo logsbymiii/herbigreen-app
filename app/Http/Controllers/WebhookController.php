@@ -48,7 +48,7 @@ class WebhookController extends Controller
                 return response()->json(['status' => false, 'message' => 'Unregistered number']);
             }
 
-            $this->processMessage($employee, $message, $urlFile, $sender);
+            \App\Jobs\ProcessIncomingMessageJob::dispatchSync($employee, $message, $urlFile, $sender, null);
 
             return response()->json(['status' => true]);
         } catch (\Throwable $e) {
@@ -157,7 +157,8 @@ class WebhookController extends Controller
             }
 
             // Lemparkan pesan ke Queue Job agar proses AI tidak memblokir webhook Telegram
-            \App\Jobs\ProcessIncomingMessageJob::dispatch($employee, $message, $urlFile, $chatId, $locationData);
+            // KARENA SERVER VPS KEMUNGKINAN BELUM JALAN QUEUE WORKER-NYA, KITA PAKSA SYNC DULU
+            \App\Jobs\ProcessIncomingMessageJob::dispatchSync($employee, $message, $urlFile, $chatId, $locationData);
 
             // Langsung respons 200 OK ke Telegram dalam hitungan milidetik
             return response()->json(['status' => true]);

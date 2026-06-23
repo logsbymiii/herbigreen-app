@@ -41,6 +41,8 @@ class EmployeeStatusChart extends ChartWidget
                         '#F59E0B', // Warning (Yellow) for Izin/Sakit
                         '#EF4444', // Danger (Red) for Belum Lapor
                     ],
+                    'borderColor' => 'transparent',
+                    'borderWidth' => 0,
                     'hoverOffset' => 4
                 ],
             ],

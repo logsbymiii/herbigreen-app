@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class AttendanceCalendarWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.attendance-calendar-widget';
+    protected string $view = 'filament.widgets.attendance-calendar-widget';
 
     protected int | string | array $columnSpan = 'full';
 

@@ -110,17 +110,15 @@ class AttendancesTable
                             );
                     })
             ])
-            ->actions([
-                \Filament\Tables\Actions\EditAction::make(),
+            ->recordActions([
+                \Filament\Actions\EditAction::make(),
             ])
-            ->headerActions([
-                \Filament\Tables\Actions\ExportAction::make()
+            ->toolbarActions([
+                \Filament\Actions\ExportAction::make()
                     ->exporter(\App\Filament\Exports\AttendanceExporter::class)
-                    ->color('primary')
-            ])
-            ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    ->color('primary'),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -27,16 +27,16 @@ class ListAttendances extends ListRecords
     public function getTabs(): array
     {
         return [
-            'semua' => \Filament\Resources\Components\Tab::make('Semua'),
-            'hadir' => \Filament\Resources\Components\Tab::make('Hadir')
+            'semua' => \Filament\Schemas\Components\Tabs\Tab::make('Semua'),
+            'hadir' => \Filament\Schemas\Components\Tabs\Tab::make('Hadir')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'hadir')),
-            'wfh' => \Filament\Resources\Components\Tab::make('WFH')
+            'wfh' => \Filament\Schemas\Components\Tabs\Tab::make('WFH')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'wfh')),
-            'sakit' => \Filament\Resources\Components\Tab::make('Sakit')
+            'sakit' => \Filament\Schemas\Components\Tabs\Tab::make('Sakit')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'sakit')),
-            'izin' => \Filament\Resources\Components\Tab::make('Izin')
+            'izin' => \Filament\Schemas\Components\Tabs\Tab::make('Izin')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'izin')),
-            'cuti' => \Filament\Resources\Components\Tab::make('Cuti')
+            'cuti' => \Filament\Schemas\Components\Tabs\Tab::make('Cuti')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'cuti')),
         ];
     }

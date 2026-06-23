@@ -17,10 +17,5 @@ class ListSmartDailyReports extends ListRecords
         ];
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            \App\Filament\Widgets\SmartDailyReportOverview::class,
-        ];
-    }
+
 }

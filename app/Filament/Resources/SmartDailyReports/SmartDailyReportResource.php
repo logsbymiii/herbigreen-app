@@ -52,12 +52,7 @@ class SmartDailyReportResource extends Resource
         ];
     }
 
-    public static function getWidgets(): array
-    {
-        return [
-            \App\Filament\Widgets\SmartDailyReportOverview::class,
-        ];
-    }
+
 
     public static function getPages(): array
     {

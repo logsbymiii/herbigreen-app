@@ -10,50 +10,36 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class EmployeesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('division.name')
-                    ->label('Divisi')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('name')
-                    ->label('Nama')
-                    ->searchable(),
-                TextColumn::make('phone')
-                    ->label('Nomor HP')
-                    ->searchable()
-                    ->formatStateUsing(function (string $state) {
-                        if (preg_match('/^62(\d{3})(\d{3,4})(\d{3,4})$/', $state, $matches)) {
-                            return '+62 ' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
-                        }
-                        return '+' . substr($state, 0, 2) . ' ' . substr($state, 2);
+                TextColumn::make('card')
+                    ->label('')
+                    ->view('filament.tables.columns.employee-card')
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
                     }),
-                ToggleColumn::make('is_active')
-                    ->label('Status Aktif'),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->groups([
                 Group::make('division.name')
                     ->label('Divisi')
+                    ->titlePrefixedWithLabel(false)
                     ->collapsible(),
             ])
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
+            ->recordUrl(fn ($record) => \App\Filament\Resources\Employees\EmployeeResource::getUrl('edit', ['record' => $record]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

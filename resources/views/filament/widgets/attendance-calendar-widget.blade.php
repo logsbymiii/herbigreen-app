@@ -17,13 +17,13 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs sm:text-sm mb-2">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.5rem; text-align: center; margin-bottom: 0.5rem;" class="text-xs sm:text-sm">
             @foreach($days as $day)
                 <div class="text-gray-400 font-medium">{{ $day }}</div>
             @endforeach
         </div>
 
-        <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-sm">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.5rem; text-align: center;" class="text-sm">
             @php
                 $firstDayOffset = \Carbon\Carbon::createFromDate($currentYear, $currentMonth, 1)->dayOfWeekIso - 1;
             @endphp
@@ -36,9 +36,9 @@
                 <div class="flex flex-col items-center justify-center p-1 sm:p-2 rounded-lg {{ $day['isToday'] ? 'bg-primary-600 text-white font-bold' : '' }}">
                     <span>{{ $day['date'] }}</span>
                     @if($day['status'] === 'success')
-                        <div class="w-1.5 h-1.5 rounded-full bg-success-500 mt-1"></div>
+                        <div class="w-1.5 h-1.5 rounded-full mt-1" style="background-color: #10b981;"></div>
                     @elseif($day['status'] === 'warning')
-                        <div class="w-1.5 h-1.5 rounded-full bg-warning-500 mt-1"></div>
+                        <div class="w-1.5 h-1.5 rounded-full mt-1" style="background-color: #f59e0b;"></div>
                     @else
                         <div class="w-1.5 h-1.5 rounded-full mt-1 opacity-0"></div>
                     @endif
@@ -47,8 +47,8 @@
         </div>
 
         <div class="flex space-x-4 mt-6 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-3">
-            <div class="flex items-center"><div class="w-2 h-2 rounded-full bg-success-500 mr-2"></div> Lengkap</div>
-            <div class="flex items-center"><div class="w-2 h-2 rounded-full bg-warning-500 mr-2"></div> Ada izin/sakit</div>
+            <div class="flex items-center"><div class="w-2 h-2 rounded-full mr-2" style="background-color: #10b981;"></div> Lengkap</div>
+            <div class="flex items-center"><div class="w-2 h-2 rounded-full mr-2" style="background-color: #f59e0b;"></div> Ada izin/sakit</div>
         </div>
     </x-filament::section>
 </x-filament-widgets::widget>

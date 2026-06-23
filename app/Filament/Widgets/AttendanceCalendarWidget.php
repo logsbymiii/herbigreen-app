@@ -5,9 +5,15 @@ namespace App\Filament\Widgets;
 use Filament\Widgets\Widget;
 use App\Models\Attendance;
 use Carbon\Carbon;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\ExportAction;
+use App\Filament\Exports\AttendanceExporter;
 
-class AttendanceCalendarWidget extends Widget
+class AttendanceCalendarWidget extends Widget implements HasActions
 {
+    use InteractsWithActions;
+
     protected string $view = 'filament.widgets.attendance-calendar-widget';
 
     protected int | string | array $columnSpan = 'full';
@@ -74,5 +80,13 @@ class AttendanceCalendarWidget extends Widget
             ];
             $currentDate->addDay();
         }
+    }
+    public function exportAction(): \Filament\Actions\Action
+    {
+        return ExportAction::make('export')
+            ->exporter(AttendanceExporter::class)
+            ->label('Ekspor Spreadsheet')
+            ->color('success')
+            ->icon('heroicon-o-document-arrow-down');
     }
 }

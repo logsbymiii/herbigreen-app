@@ -148,9 +148,6 @@ class AttendancesTable
                 \Filament\Actions\EditAction::make(),
             ])
             ->toolbarActions([
-                \Filament\Actions\ExportAction::make()
-                    ->exporter(\App\Filament\Exports\AttendanceExporter::class)
-                    ->color('primary'),
                 \Filament\Actions\BulkActionGroup::make([
                     \Filament\Actions\DeleteBulkAction::make(),
                 ]),

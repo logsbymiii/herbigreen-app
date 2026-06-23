@@ -17,8 +17,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 class HostLiveReportResource extends Resource
 {
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $model = SmartDailyReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedVideoCamera;

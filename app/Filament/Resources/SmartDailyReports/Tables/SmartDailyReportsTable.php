@@ -39,23 +39,21 @@ class SmartDailyReportsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('division')
+                    ->label('Filter Divisi')
+                    ->relationship('employee.division', 'name'),
                 \Filament\Tables\Filters\Filter::make('report_date')
                     ->form([
-                        \Filament\Forms\Components\DatePicker::make('date')
+                        \Filament\Forms\Components\DatePicker::make('report_date')
                             ->label('Tanggal Laporan'),
                     ])
                     ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
                         return $query
                             ->when(
-                                $data['date'],
+                                $data['report_date'],
                                 fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('report_date', $date),
                             );
                     }),
-                \Filament\Tables\Filters\SelectFilter::make('division_id')
-                    ->relationship('employee.division', 'name')
-                    ->label('Divisi')
-                    ->searchable()
-                    ->preload(),
             ])
             ->recordActions([
                 \Filament\Actions\ViewAction::make(),

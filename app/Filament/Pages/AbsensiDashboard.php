@@ -8,8 +8,6 @@ use App\Filament\Widgets\TodayAttendanceWidget;
 
 class AbsensiDashboard extends Page
 {
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     
     protected static string|\UnitEnum|null $navigationGroup = 'HR & Karyawan';

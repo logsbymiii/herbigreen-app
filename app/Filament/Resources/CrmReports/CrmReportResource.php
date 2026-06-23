@@ -18,8 +18,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CrmReportResource extends Resource
 {
-    protected static bool $shouldRegisterNavigation = false;
-
     protected static ?string $model = SmartDailyReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;

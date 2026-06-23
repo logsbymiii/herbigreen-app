@@ -20,7 +20,17 @@ class AttendancesTable
                     ->searchable(),
                 TextColumn::make('type')
                     ->label('Tipe Kehadiran')
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'hadir' => 'success',
+                        'wfh' => 'info',
+                        'sakit' => 'warning',
+                        'izin' => 'warning',
+                        'cuti' => 'primary',
+                        'alpa' => 'danger',
+                        'telat' => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('note')
                     ->label('Alasan / Catatan')
                     ->searchable()

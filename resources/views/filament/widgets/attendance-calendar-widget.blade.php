@@ -37,9 +37,9 @@
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem; border-radius: 0.5rem; {{ $day['isToday'] ? 'background-color: #10b981; color: white; font-weight: bold;' : '' }}">
                         <span>{{ $day['date'] }}</span>
                         @if($day['status'] === 'success')
-                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; margin-top: 4px;"></div>
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: {{ $day['isToday'] ? '#ffffff' : '#10b981' }}; margin-top: 4px;"></div>
                         @elseif($day['status'] === 'warning')
-                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; margin-top: 4px;"></div>
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; margin-top: 4px; {{ $day['isToday'] ? 'box-shadow: 0 0 0 1px white;' : '' }}"></div>
                         @else
                             <div style="width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; opacity: 0;"></div>
                         @endif

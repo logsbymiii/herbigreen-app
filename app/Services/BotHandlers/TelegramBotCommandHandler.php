@@ -412,7 +412,52 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
 
-        ProcessAttendanceJob::dispatch($employee->id, $type);
+        // Kalau Sakit atau Izin, tanya alasannya
+        $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_reason', ['type' => $type]);
+        $this->sendMessage($chatId, "📝 Silakan ketik alasan {$type} Anda.\n\n*(Opsional: Anda juga bisa melampirkan foto surat dokter/bukti izin dengan caption alasannya)*");
+        return ['status' => true];
+    }
+
+    private function processAbsenReason(int | string $chatId, string $message, array $rawUpdate): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        if (!$employee) {
+            $this->conversationState->clearState($chatId);
+            return ['status' => false];
+        }
+
+        $tempData = $this->conversationState->getTempData($chatId);
+        $type = $tempData['type'] ?? 'izin';
+        $reason = trim($message);
+
+        if (strlen($reason) < 3 && empty($rawUpdate['message']['photo']) && empty($rawUpdate['message']['document'])) {
+            $this->sendMessage($chatId, "⚠️ Alasan terlalu singkat. Mohon berikan alasan yang jelas.");
+            return ['status' => true];
+        }
+
+        // Extract photo URL if exists
+        $urlFile = null;
+        $fileId = null;
+        if (isset($rawUpdate['message']['photo']) && is_array($rawUpdate['message']['photo'])) {
+            $fileId = end($rawUpdate['message']['photo'])['file_id'];
+        } elseif (isset($rawUpdate['message']['document'])) {
+            $fileId = $rawUpdate['message']['document']['file_id'];
+        }
+
+        if ($fileId) {
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'file_id' => $fileId
+            ]);
+            if ($response->successful()) {
+                $filePath = $response->json('result.file_path');
+                if ($filePath) {
+                    $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                }
+            }
+        }
+
+        ProcessAttendanceJob::dispatchSync($employee->id, $reason, $type, $urlFile);
         $this->conversationState->clearState($chatId);
 
         // AI generate konfirmasi yang kontekstual
@@ -612,6 +657,7 @@ _(Ketik *batal* untuk membatalkan)_");
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
             'awaiting_report_text'  => $this->processReportText($chatId, $message),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
+            'awaiting_absen_reason' => $this->processAbsenReason($chatId, $message, $rawUpdate ?? []),
             'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($chatId, $message),

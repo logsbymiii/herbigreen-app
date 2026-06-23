@@ -224,6 +224,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             'awaiting_report_type' => $this->processReportType($phone, $message, $rawUpdate),
             'awaiting_report_text'  => $this->processReportText($phone, $message),
             'awaiting_absen_type'   => $this->processAbsenType($phone, $message),
+            'awaiting_absen_reason' => $this->processAbsenReason($phone, $message, $rawUpdate),
             'awaiting_edit_report_text'  => $this->processEditReportText($phone, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($phone, $message),
             'awaiting_edit_profile_value'  => $this->processEditProfileValue($phone, $message),
@@ -581,7 +582,32 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         }
 
         $type = $typeMap[$choice];
-        ProcessAttendanceJob::dispatch($employee->id, $type);
+        
+        $this->conversationState->setCurrentStep($phone, 'awaiting_absen_reason', ['type' => $type]);
+        $this->sendMessage($phone, "📝 Silakan ketik alasan {$type} kamu.\n\n*(Opsional: Kamu juga bisa mengirimkan foto surat dokter/bukti izin)*");
+        return ['status' => true];
+    }
+
+    private function processAbsenReason(string $phone, string $message, array $rawUpdate): array
+    {
+        $employee = Employee::where('phone', $phone)->first();
+        if (!$employee) {
+            $this->conversationState->clearState($phone);
+            return ['status' => false];
+        }
+
+        $tempData = $this->conversationState->getTempData($phone);
+        $type = $tempData['type'] ?? 'izin';
+        $reason = trim($message);
+
+        if (strlen($reason) < 3 && empty($rawUpdate['url'])) {
+            $this->sendMessage($phone, "⚠️ Alasan terlalu singkat. Mohon berikan alasan yang jelas.");
+            return ['status' => true];
+        }
+
+        $urlFile = $rawUpdate['url'] ?? null;
+
+        ProcessAttendanceJob::dispatchSync($employee->id, $reason, $type, $urlFile);
         $this->conversationState->clearState($phone);
 
         $ai        = new AiResponseService();

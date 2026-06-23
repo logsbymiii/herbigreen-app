@@ -59,7 +59,7 @@ class AttendanceCalendarWidget extends Widget
             
             $status = 'none';
             if ($dayAttendances->count() > 0) {
-                if ($dayAttendances->whereIn('type', ['sakit', 'izin', 'cuti'])->count() > 0) {
+                if ($dayAttendances->whereIn('type', ['sakit', 'izin'])->count() > 0) {
                     $status = 'warning'; // Ada izin/sakit
                 } else {
                     $status = 'success'; // Lengkap hadir

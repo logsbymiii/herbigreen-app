@@ -92,17 +92,17 @@ PENTING: Balas HANYA sapaan singkatnya saja.";
     {
         $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
 Buatkan pesan konfirmasi singkat (1-2 kalimat) yang hangat untuk karyawan bernama {$nama} yang baru saja lapor {$type}.
-Variasikan pesannya — bisa doain cepat sembuh (kalau sakit), semoga urusan lancar (kalau izin), atau nikmati istirahat (kalau cuti).
+Variasikan pesannya — bisa doain cepat sembuh (kalau sakit) atau semoga urusan lancar (kalau izin).
 Gunakan bahasa Indonesia. Akhiri dengan emoji.
 PENTING: Balas HANYA pesannya saja.";
 
-        $fallback = match($type) {
-            'sakit' => "✅ *Tercatat, {$nama}!* Semoga lekas sembuh ya, istirahat yang cukup! 🙏",
-            'cuti'  => "✅ *Tercatat, {$nama}!* Selamat menikmati cutinya, istirahat yang baik! 🌴",
-            default => "✅ *Tercatat, {$nama}!* Izinmu sudah direkam. Semoga urusannya lancar! 💪",
-        };
+        $responseTemplates = [
+            'sakit' => "✅ *Syafakallah, {$nama}!* Semoga lekas sembuh dan bisa beraktivitas kembali ya.",
+            'izin'  => "✅ *Siap, {$nama}.* Izin sudah dicatat. Semoga urusannya lancar!",
+            'telat' => "✅ *Oke, {$nama}.* Hati-hati di jalan, utamakan keselamatan ya!",
+        ];
 
-        return $this->generate($prompt, $fallback);
+        return $this->generate($prompt, $responseTemplates[$type] ?? "✅ *Tercatat, {$nama}!* Sudah kami rekam.");
     }
 
     /**

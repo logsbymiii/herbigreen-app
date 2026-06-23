@@ -168,8 +168,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         $menu  = "{$sapaan}\n\nMau lapor apa?\n\n";
         $menu .= "1️⃣ Sakit\n";
-        $menu .= "2️⃣ Izin\n";
-        $menu .= "3️⃣ Cuti\n";
+        $menu .= "2️⃣ Izin\n\n";
         $menu .= "\nBalas dengan angka pilihanmu!";
 
         $this->conversationState->setCurrentStep($phone, 'awaiting_absen_type');

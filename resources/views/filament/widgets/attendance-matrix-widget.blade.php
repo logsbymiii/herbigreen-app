@@ -45,8 +45,6 @@
                                             S
                                         @elseif($type === 'izin')
                                             I
-                                        @elseif($type === 'cuti')
-                                            C
                                         @elseif($type === 'alpa')
                                             A
                                         @else
@@ -66,8 +64,8 @@
             <span><strong class="text-blue-500">W</strong>: WFH</span>
             <span><strong class="text-yellow-500">S</strong>: Sakit</span>
             <span><strong class="text-orange-500">I</strong>: Izin</span>
-            <span><strong class="text-purple-500">C</strong>: Cuti</span>
             <span><strong class="text-red-500">A</strong>: Alpa</span>
+            <span><strong class="text-red-500">T</strong>: Telat</span>
         </div>
     </x-filament::section>
 </x-filament-widgets::widget>

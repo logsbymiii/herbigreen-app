@@ -36,8 +36,6 @@ class ListAttendances extends ListRecords
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'sakit')),
             'izin' => \Filament\Schemas\Components\Tabs\Tab::make('Izin')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'izin')),
-            'cuti' => \Filament\Schemas\Components\Tabs\Tab::make('Cuti')
-                ->modifyQueryUsing(fn ($query) => $query->where('type', 'cuti')),
         ];
     }
 }

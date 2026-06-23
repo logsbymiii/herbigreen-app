@@ -36,7 +36,7 @@ class EmployeeStatusChart extends ChartWidget
             })
             ->whereHas('attendances', function($q) use ($today) {
                 $q->whereDate('date', $today)
-                  ->whereIn('type', ['sakit', 'izin', 'cuti']);
+                  ->whereIn('type', ['sakit', 'izin']);
             })->count();
         
         // Sisa karyawan yang belum ada kabar apa-apa

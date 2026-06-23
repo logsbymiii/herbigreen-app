@@ -46,7 +46,6 @@ class AttendancesTable
                                 'wfh' => 'info',
                                 'sakit' => 'warning',
                                 'izin' => 'warning',
-                                'cuti' => 'primary',
                                 'alpa' => 'danger',
                                 'telat' => 'danger',
                                 default => 'gray',
@@ -101,7 +100,6 @@ class AttendancesTable
                         'wfh' => 'WFH',
                         'sakit' => 'Sakit',
                         'izin' => 'Izin',
-                        'cuti' => 'Cuti',
                         'alpa' => 'Alpa',
                         'telat' => 'Telat',
                     ])

@@ -18,7 +18,7 @@ class MessageClassifier
         }
 
         // Deteksi absen — kata kunci sakit/izin/cuti
-        if (preg_match('/^(izin|sakit|cuti)/', $lower)) {
+        if (preg_match('/^(izin|sakit)/', $lower)) {
             return 'attendance';
         }
 

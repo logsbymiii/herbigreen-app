@@ -16,13 +16,31 @@ class AttendancesTable
             ->columns([
                 \Filament\Tables\Columns\Layout\Stack::make([
                     \Filament\Tables\Columns\Layout\Split::make([
-                        TextColumn::make('employee.name')
-                            ->weight(\Filament\Support\Enums\FontWeight::Bold)
-                            ->searchable()
-                            ->sortable(),
+                        \Filament\Tables\Columns\ImageColumn::make('employee_avatar')
+                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->employee->name) . '&background=f3f4f6&color=374151&bold=true')
+                            ->circular()
+                            ->grow(false)
+                            ->extraImgAttributes(['style' => 'width: 40px; height: 40px;']),
+                        
+                        \Filament\Tables\Columns\Layout\Stack::make([
+                            TextColumn::make('employee.name')
+                                ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                                ->searchable()
+                                ->sortable(),
+                            TextColumn::make('note_and_date')
+                                ->getStateUsing(function ($record) {
+                                    $date = \Carbon\Carbon::parse($record->date)->translatedFormat('d M');
+                                    $note = $record->note ?: ucfirst($record->type);
+                                    return "{$note} · {$date}";
+                                })
+                                ->color('gray')
+                                ->size(\Filament\Support\Enums\TextSize::Small),
+                        ])->space(1),
+                        
                         TextColumn::make('type')
                             ->badge()
                             ->grow(false)
+                            ->alignEnd()
                             ->color(fn (string $state): string => match ($state) {
                                 'hadir' => 'success',
                                 'wfh' => 'info',
@@ -32,38 +50,9 @@ class AttendancesTable
                                 'alpa' => 'danger',
                                 'telat' => 'danger',
                                 default => 'gray',
-                            }),
-                    ]),
-                    
-                    \Filament\Tables\Columns\Layout\Split::make([
-                        TextColumn::make('date')
-                            ->date('d M Y')
-                            ->icon('heroicon-o-calendar')
-                            ->color('gray')
-                            ->sortable(),
-                        TextColumn::make('clocked_in_at')
-                            ->icon('heroicon-o-clock')
-                            ->grow(false)
-                            ->color(fn ($state, $record) => $state && \Carbon\Carbon::parse($state)->format('H:i') > '08:30' && in_array($record->type, ['hadir', 'wfh']) ? 'danger' : 'gray')
-                            ->formatStateUsing(function ($state, $record) {
-                                if (!$state) return '-';
-                                $time = \Carbon\Carbon::parse($state)->format('H:i');
-                                if (in_array($record->type, ['hadir', 'wfh']) && $time > '08:30') {
-                                    return $time . ' (Telat)';
-                                }
-                                return $time;
                             })
-                            ->sortable(),
-                    ])->extraAttributes(['class' => 'mt-2']),
-                    
-                    TextColumn::make('note')
-                        ->searchable()
-                        ->wrap()
-                        ->color('gray')
-                        ->size(\Filament\Support\Enums\TextSize::Small)
-                        ->icon('heroicon-o-document-text')
-                        ->formatStateUsing(fn ($state) => $state ? "Catatan: {$state}" : '')
-                        ->extraAttributes(['class' => 'mt-2']),
+                            ->formatStateUsing(fn ($state) => ucfirst($state)),
+                    ])->from('md')->extraAttributes(['class' => 'items-center']),
 
                     \Filament\Tables\Columns\ImageColumn::make('proof_path')
                         ->disk('r2')

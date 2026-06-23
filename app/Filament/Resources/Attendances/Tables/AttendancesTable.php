@@ -26,7 +26,13 @@ class AttendancesTable
                     ->disk('r2')
                     ->visibility('private')
                     ->square()
-                    ->defaultImageUrl(fn ($record) => $record->proof_path ? \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10)) : null)
+                    ->getStateUsing(function ($record) {
+                        if (!$record->proof_path) return null;
+                        if (str_starts_with($record->proof_path, 'http')) {
+                            return $record->proof_path;
+                        }
+                        return $record->proof_path;
+                    })
                     ->action(
                         \Filament\Actions\Action::make('viewProof')
                             ->label('Lihat Bukti')
@@ -34,7 +40,15 @@ class AttendancesTable
                             ->modalHeading('Bukti Kehadiran')
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Tutup')
-                            ->modalContent(fn ($record) => $record->proof_path ? new \Illuminate\Support\HtmlString('<img src="' . \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10)) . '" style="width: 100%; border-radius: 8px;" />') : new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>'))
+                            ->modalContent(function ($record) {
+                                if (!$record->proof_path) {
+                                    return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
+                                }
+                                $url = str_starts_with($record->proof_path, 'http') 
+                                    ? $record->proof_path 
+                                    : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
+                                return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
+                            })
                     ),
                 TextColumn::make('date')
                     ->label('Tanggal')
@@ -42,8 +56,17 @@ class AttendancesTable
                     ->sortable(),
                 TextColumn::make('clocked_in_at')
                     ->label('Jam')
-                    ->time('H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color(fn ($state, $record) => $state && \Carbon\Carbon::parse($state)->format('H:i') > '08:30' && in_array($record->type, ['hadir', 'wfh']) ? 'danger' : 'success')
+                    ->formatStateUsing(function ($state, $record) {
+                        if (!$state) return '-';
+                        $time = \Carbon\Carbon::parse($state)->format('H:i');
+                        if (in_array($record->type, ['hadir', 'wfh']) && $time > '08:30') {
+                            return $time . ' (Telat)';
+                        }
+                        return $time;
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

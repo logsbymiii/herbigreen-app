@@ -12,6 +12,10 @@ class Attendance extends Model
         'note',
         'proof_path',
         'date',
+        'latitude',
+        'longitude',
+        'clocked_in_at',
+        'clocked_out_at',
     ];
 
     public function employee(){

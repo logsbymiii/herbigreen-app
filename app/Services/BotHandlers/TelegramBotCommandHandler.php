@@ -486,12 +486,25 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
 
-        // Dapatkan URL photo
         $botToken = env('TELEGRAM_BOT_TOKEN');
-        $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", ['file_id' => $photoId]);
-        $urlFile = null;
-        if ($response->successful() && $filePath = $response->json('result.file_path')) {
+        $proofPath = null;
+        if ($photoId) {
+            $fileResponse = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile?file_id={$photoId}");
+            $filePath = $fileResponse->json('result.file_path');
             $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+
+            // Upload to Cloudflare R2
+            try {
+                $fileContent = file_get_contents($urlFile);
+                if ($fileContent) {
+                    $fileName = 'attendances/' . uniqid('absen_') . '.jpg';
+                    \Illuminate\Support\Facades\Storage::disk('r2')->put($fileName, $fileContent);
+                    $proofPath = $fileName;
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Gagal upload absen ke R2: " . $e->getMessage());
+                $proofPath = $urlFile; // Fallback ke URL Telegram
+            }
         }
         
         $tempData = $this->conversationState->getTempData($chatId);
@@ -503,7 +516,7 @@ _(Ketik *batal* untuk membatalkan)_");
             'type' => $attendanceType,
             'latitude' => $tempData['lat'] ?? null,
             'longitude' => $tempData['lng'] ?? null,
-            'proof_path' => $urlFile,
+            'proof_path' => $proofPath,
             'date' => now()->format('Y-m-d'),
             'clocked_in_at' => now(),
         ]);

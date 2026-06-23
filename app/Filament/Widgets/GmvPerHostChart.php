@@ -12,6 +12,7 @@ class GmvPerHostChart extends ChartWidget
    protected ?string $heading = 'Top 5 GMV Host (Minggu Ini)';
     protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 1;
+    protected ?string $maxHeight = '250px';
 
     protected function getData(): array
     {

@@ -6,7 +6,7 @@ use Filament\Pages\Page;
 
 class RankingPerforma extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-trophy';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-trophy';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 

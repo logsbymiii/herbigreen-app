@@ -21,6 +21,10 @@ class AttendancesTable
                 TextColumn::make('type')
                     ->label('Tipe Kehadiran')
                     ->badge(),
+                TextColumn::make('note')
+                    ->label('Alasan / Catatan')
+                    ->searchable()
+                    ->wrap(),
                 \Filament\Tables\Columns\ImageColumn::make('proof_path')
                     ->label('Bukti Kehadiran')
                     ->disk('r2')

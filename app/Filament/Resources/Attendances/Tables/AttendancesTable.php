@@ -14,81 +14,91 @@ class AttendancesTable
     {
         return $table
             ->columns([
-                TextColumn::make('employee.name')
-                    ->label('Karyawan')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('type')
-                    ->label('Tipe Kehadiran')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'hadir' => 'success',
-                        'wfh' => 'info',
-                        'sakit' => 'warning',
-                        'izin' => 'warning',
-                        'cuti' => 'primary',
-                        'alpa' => 'danger',
-                        'telat' => 'danger',
-                        default => 'gray',
-                    }),
-                TextColumn::make('note')
-                    ->label('Alasan / Catatan')
-                    ->searchable()
-                    ->wrap(),
-                \Filament\Tables\Columns\ImageColumn::make('proof_path')
-                    ->label('Bukti Kehadiran')
-                    ->disk('r2')
-                    ->visibility('private')
-                    ->square()
-                    ->getStateUsing(function ($record) {
-                        if (!$record->proof_path) return null;
-                        if (str_starts_with($record->proof_path, 'http')) {
-                            return $record->proof_path;
-                        }
-                        return $record->proof_path;
-                    })
-                    ->action(
-                        \Filament\Actions\Action::make('viewProof')
-                            ->label('Lihat Bukti')
-                            ->icon('heroicon-o-eye')
-                            ->modalHeading('Bukti Kehadiran')
-                            ->modalSubmitAction(false)
-                            ->modalCancelActionLabel('Tutup')
-                            ->modalContent(function ($record) {
-                                if (!$record->proof_path) {
-                                    return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
+                \Filament\Tables\Columns\Layout\Stack::make([
+                    \Filament\Tables\Columns\Layout\Split::make([
+                        TextColumn::make('employee.name')
+                            ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('type')
+                            ->badge()
+                            ->grow(false)
+                            ->color(fn (string $state): string => match ($state) {
+                                'hadir' => 'success',
+                                'wfh' => 'info',
+                                'sakit' => 'warning',
+                                'izin' => 'warning',
+                                'cuti' => 'primary',
+                                'alpa' => 'danger',
+                                'telat' => 'danger',
+                                default => 'gray',
+                            }),
+                    ]),
+                    
+                    \Filament\Tables\Columns\Layout\Split::make([
+                        TextColumn::make('date')
+                            ->date('d M Y')
+                            ->icon('heroicon-o-calendar')
+                            ->color('gray')
+                            ->sortable(),
+                        TextColumn::make('clocked_in_at')
+                            ->icon('heroicon-o-clock')
+                            ->grow(false)
+                            ->color(fn ($state, $record) => $state && \Carbon\Carbon::parse($state)->format('H:i') > '08:30' && in_array($record->type, ['hadir', 'wfh']) ? 'danger' : 'gray')
+                            ->formatStateUsing(function ($state, $record) {
+                                if (!$state) return '-';
+                                $time = \Carbon\Carbon::parse($state)->format('H:i');
+                                if (in_array($record->type, ['hadir', 'wfh']) && $time > '08:30') {
+                                    return $time . ' (Telat)';
                                 }
-                                $url = str_starts_with($record->proof_path, 'http') 
-                                    ? $record->proof_path 
-                                    : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
-                                return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
+                                return $time;
                             })
-                    ),
-                TextColumn::make('date')
-                    ->label('Tanggal')
-                    ->date('d M Y')
-                    ->sortable(),
-                TextColumn::make('clocked_in_at')
-                    ->label('Jam')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn ($state, $record) => $state && \Carbon\Carbon::parse($state)->format('H:i') > '08:30' && in_array($record->type, ['hadir', 'wfh']) ? 'danger' : 'success')
-                    ->formatStateUsing(function ($state, $record) {
-                        if (!$state) return '-';
-                        $time = \Carbon\Carbon::parse($state)->format('H:i');
-                        if (in_array($record->type, ['hadir', 'wfh']) && $time > '08:30') {
-                            return $time . ' (Telat)';
-                        }
-                        return $time;
-                    }),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                            ->sortable(),
+                    ])->extraAttributes(['class' => 'mt-2']),
+                    
+                    TextColumn::make('note')
+                        ->searchable()
+                        ->wrap()
+                        ->color('gray')
+                        ->size(\Filament\Support\Enums\TextSize::Small)
+                        ->icon('heroicon-o-document-text')
+                        ->formatStateUsing(fn ($state) => $state ? "Catatan: {$state}" : '')
+                        ->extraAttributes(['class' => 'mt-2']),
+
+                    \Filament\Tables\Columns\ImageColumn::make('proof_path')
+                        ->disk('r2')
+                        ->visibility('private')
+                        ->square()
+                        ->getStateUsing(function ($record) {
+                            if (!$record->proof_path) return null;
+                            if (str_starts_with($record->proof_path, 'http')) {
+                                return $record->proof_path;
+                            }
+                            return $record->proof_path;
+                        })
+                        ->action(
+                            \Filament\Actions\Action::make('viewProof')
+                                ->label('Lihat Bukti')
+                                ->icon('heroicon-o-eye')
+                                ->modalHeading('Bukti Kehadiran')
+                                ->modalSubmitAction(false)
+                                ->modalCancelActionLabel('Tutup')
+                                ->modalContent(function ($record) {
+                                    if (!$record->proof_path) {
+                                        return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
+                                    }
+                                    $url = str_starts_with($record->proof_path, 'http') 
+                                        ? $record->proof_path 
+                                        : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
+                                    return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
+                                })
+                        )
+                        ->extraAttributes(['class' => 'mt-2']),
+                ])->space(2)
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('employee_id')

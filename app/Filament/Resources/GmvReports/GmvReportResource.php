@@ -21,13 +21,13 @@ class GmvReportResource extends Resource
 {
     protected static ?string $model = GmvReport::class;
 
-    protected static ?string $modelLabel = 'Laporan GMV';
-    protected static ?string $pluralModelLabel = 'Laporan GMV';
-    protected static ?string $navigationLabel = 'Laporan GMV';
+    protected static ?string $modelLabel = 'Host Live (GMV)';
+    protected static ?string $pluralModelLabel = 'Host Live (GMV)';
+    protected static ?string $navigationLabel = 'Host Live (GMV)';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-video-camera';
 
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
     {

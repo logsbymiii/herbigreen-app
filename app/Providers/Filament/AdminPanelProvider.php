@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/logo-herbigreen.png'))
             ->brandLogoHeight('3rem')
             ->colors([
-                'primary' => Color::hex('#4EA674'), // Ocean Green (Enak di mata)
+                'primary' => Color::hex('#10B981'),
                 'danger' => Color::hex('#EF4343'),
                 'warning' => Color::hex('#F0D411'),
                 'success' => Color::hex('#21C45D'),

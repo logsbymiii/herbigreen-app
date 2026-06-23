@@ -36,6 +36,7 @@ class EmployeesTable
                     ->titlePrefixedWithLabel(false)
                     ->collapsible(),
             ])
+            ->defaultGroup('division.name')
             ->filters([
                 //
             ])

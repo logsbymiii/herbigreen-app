@@ -12,23 +12,27 @@
     }
 @endphp
 
-<div class="flex items-center justify-between w-full p-2">
-    <div class="flex items-center gap-4">
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0.5rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
         <!-- Avatar Initials -->
-        <div class="flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+        <div style="display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 9999px; font-weight: bold; font-size: 1.125rem; background-color: #d1fae5; color: #065f46;">
             {{ strtoupper($initials) }}
         </div>
         
-        <!-- Name and Phone -->
-        <div class="flex flex-col">
-            <span class="font-bold text-gray-900 dark:text-white text-base leading-tight">{{ $record->name }}</span>
-            <span class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ $formattedPhone }}</span>
+        <!-- Name, Divisi, and Phone -->
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: bold; font-size: 1rem; line-height: 1.25;">{{ $record->name }}</span>
+            </div>
+            <span style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">
+                {{ $formattedPhone }} &bull; <span style="color: #059669; font-weight: 600;">{{ $record->division->name ?? 'Semua Divisi' }}</span>
+            </span>
         </div>
     </div>
     
     <!-- Status Dot and Chevron -->
-    <div class="flex items-center gap-3">
-        <div class="w-2.5 h-2.5 rounded-full {{ $record->is_active ? 'bg-emerald-500' : 'bg-red-500' }}"></div>
-        <x-heroicon-m-chevron-right class="w-5 h-5 text-gray-400" />
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="width: 0.75rem; height: 0.75rem; border-radius: 9999px; background-color: {{ $record->is_active ? '#10b981' : '#ef4444' }};"></div>
+        <x-heroicon-m-chevron-right style="width: 1.25rem; height: 1.25rem; color: #9ca3af;" />
     </div>
 </div>

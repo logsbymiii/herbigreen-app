@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\HostLiveReports;
+namespace App\Filament\Resources\DivisionReports;
 
-use App\Filament\Resources\HostLiveReports\Pages\CreateHostLiveReport;
-use App\Filament\Resources\HostLiveReports\Pages\EditHostLiveReport;
-use App\Filament\Resources\HostLiveReports\Pages\ListHostLiveReports;
+use App\Filament\Resources\DivisionReports\Pages\CreateDivisionReport;
+use App\Filament\Resources\DivisionReports\Pages\EditDivisionReport;
+use App\Filament\Resources\DivisionReports\Pages\ListDivisionReports;
 use App\Filament\Resources\SmartDailyReports\Schemas\SmartDailyReportForm;
 use App\Filament\Resources\SmartDailyReports\Tables\SmartDailyReportsTable;
 use App\Models\SmartDailyReport;
@@ -13,15 +13,14 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
-class HostLiveReportResource extends Resource
+class DivisionReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedVideoCamera;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-folder-open';
 
-    protected static ?string $navigationLabel = 'Laporan Host Live';
+    protected static ?string $navigationLabel = 'Laporan Per Divisi';
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
@@ -30,16 +29,9 @@ class HostLiveReportResource extends Resource
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
     {
         if ($record && $record->employee) {
-            return "Host Live {$record->employee->name}";
+            return "Laporan {$record->employee->name}";
         }
-        return 'Laporan Host Live';
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()->whereHas('employee.division', function ($query) {
-            $query->where('name', 'Host Live');
-        });
+        return 'Laporan Divisi';
     }
 
     public static function form(Schema $schema): Schema
@@ -60,9 +52,9 @@ class HostLiveReportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListHostLiveReports::route('/'),
-            'create' => CreateHostLiveReport::route('/create'),
-            'edit' => EditHostLiveReport::route('/{record}/edit'),
+            'index' => ListDivisionReports::route('/'),
+            'create' => CreateDivisionReport::route('/create'),
+            'edit' => EditDivisionReport::route('/{record}/edit'),
         ];
     }
 }

@@ -27,7 +27,7 @@ class GmvReportResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
     {

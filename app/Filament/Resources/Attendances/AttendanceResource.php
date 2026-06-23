@@ -19,7 +19,7 @@ class AttendanceResource extends Resource
     protected static ?string $model = Attendance::class;
 
     // 1. Ganti icon kotak numpuk bawaan jadi jam
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
     protected static string|\UnitEnum|null $navigationGroup = 'HR & Karyawan';
 
     // 2. Tambahin label bahasa Indonesianya

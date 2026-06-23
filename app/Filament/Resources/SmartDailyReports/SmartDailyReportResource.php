@@ -18,7 +18,7 @@ class SmartDailyReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-duplicate';
 
     protected static ?string $navigationLabel = 'Semua Laporan';
 

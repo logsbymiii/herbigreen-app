@@ -45,7 +45,8 @@ class SmartDailyReportsTable
                 \Filament\Tables\Filters\Filter::make('report_date')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('report_date')
-                            ->label('Tanggal Laporan'),
+                            ->label('Tanggal Laporan')
+                            ->default(now()->toDateString()),
                     ])
                     ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
                         return $query

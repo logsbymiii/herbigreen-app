@@ -14,6 +14,8 @@ class AttendanceCalendarWidget extends Widget implements HasActions
 {
     use InteractsWithActions;
 
+    protected static bool $isDiscovered = false;
+
     protected string $view = 'filament.widgets.attendance-calendar-widget';
 
     protected int | string | array $columnSpan = 'full';

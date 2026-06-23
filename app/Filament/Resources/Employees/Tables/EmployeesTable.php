@@ -5,8 +5,9 @@ namespace App\Filament\Resources\Employees\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 
 class EmployeesTable
@@ -24,10 +25,15 @@ class EmployeesTable
                     ->searchable(),
                 TextColumn::make('phone')
                     ->label('Nomor HP')
-                    ->searchable(),
-                IconColumn::make('is_active')
-                    ->label('Status Aktif')
-                    ->boolean(),
+                    ->searchable()
+                    ->formatStateUsing(function (string $state) {
+                        if (preg_match('/^62(\d{3})(\d{3,4})(\d{3,4})$/', $state, $matches)) {
+                            return '+62 ' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
+                        }
+                        return '+' . substr($state, 0, 2) . ' ' . substr($state, 2);
+                    }),
+                ToggleColumn::make('is_active')
+                    ->label('Status Aktif'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -36,6 +42,11 @@ class EmployeesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->groups([
+                Group::make('division.name')
+                    ->label('Divisi')
+                    ->collapsible(),
             ])
             ->filters([
                 //

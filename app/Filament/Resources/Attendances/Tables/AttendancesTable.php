@@ -77,14 +77,50 @@ class AttendancesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('employee_id')
+                    ->relationship('employee', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Filter Karyawan'),
+                \Filament\Tables\Filters\SelectFilter::make('type')
+                    ->options([
+                        'hadir' => 'Hadir',
+                        'wfh' => 'WFH',
+                        'sakit' => 'Sakit',
+                        'izin' => 'Izin',
+                        'cuti' => 'Cuti',
+                        'alpa' => 'Alpa',
+                        'telat' => 'Telat',
+                    ])
+                    ->label('Filter Status'),
+                \Filament\Tables\Filters\Filter::make('date')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('date_from')->label('Dari Tanggal'),
+                        \Filament\Forms\Components\DatePicker::make('date_until')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
+                        return $query
+                            ->when(
+                                $data['date_from'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['date_until'],
+                                fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    })
             ])
-            ->recordActions([
-                EditAction::make(),
+            ->actions([
+                \Filament\Tables\Actions\EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->headerActions([
+                \Filament\Tables\Actions\ExportAction::make()
+                    ->exporter(\App\Filament\Exports\AttendanceExporter::class)
+                    ->color('primary')
+            ])
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

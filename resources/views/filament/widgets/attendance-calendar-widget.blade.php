@@ -57,5 +57,7 @@
                 </div>
             </div>
         </div>
+
+        <x-filament-actions::modals />
     </x-filament::section>
 </x-filament-widgets::widget>

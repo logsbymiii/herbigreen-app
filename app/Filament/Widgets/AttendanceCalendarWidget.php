@@ -81,6 +81,7 @@ class AttendanceCalendarWidget extends Widget implements HasActions
             $currentDate->addDay();
         }
     }
+    #[\Livewire\Attributes\Computed]
     public function exportAction(): \Filament\Actions\Action
     {
         return ExportAction::make('export')

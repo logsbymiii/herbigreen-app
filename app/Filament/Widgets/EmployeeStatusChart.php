@@ -23,12 +23,23 @@ class EmployeeStatusChart extends ChartWidget
     {
         $today = Carbon::today();
 
-        $laporanMasuk = SmartDailyReport::whereDate('report_date', $today)->count();
-        $izinHariIni = Attendance::whereDate('created_at', $today)
-                                ->whereIn('type', ['sakit', 'izin'])
-                                ->count();
         $totalKaryawanAktif = Employee::where('is_active', true)->count();
+
+        $laporanMasuk = Employee::where('is_active', true)
+            ->whereHas('smartDailyReports', function($q) use ($today) {
+                $q->whereDate('report_date', $today);
+            })->count();
+
+        $izinHariIni = Employee::where('is_active', true)
+            ->whereDoesntHave('smartDailyReports', function($q) use ($today) {
+                $q->whereDate('report_date', $today);
+            })
+            ->whereHas('attendances', function($q) use ($today) {
+                $q->whereDate('date', $today)
+                  ->whereIn('type', ['sakit', 'izin', 'cuti']);
+            })->count();
         
+        // Sisa karyawan yang belum ada kabar apa-apa
         $belumLapor = max(0, $totalKaryawanAktif - $laporanMasuk - $izinHariIni);
 
         return [

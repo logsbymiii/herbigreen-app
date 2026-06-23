@@ -28,8 +28,8 @@ class UnreportedEmployeesWidget extends BaseWidget
                         $query->whereDate('report_date', $today);
                     })
                     ->whereDoesntHave('attendances', function (Builder $query) use ($today) {
-                        $query->whereDate('created_at', $today)
-                              ->whereIn('type', ['sakit', 'izin']);
+                        $query->whereDate('date', $today)
+                              ->whereIn('type', ['sakit', 'izin', 'cuti']);
                     })
             )
             ->columns([

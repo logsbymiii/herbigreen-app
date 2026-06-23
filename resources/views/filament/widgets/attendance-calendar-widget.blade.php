@@ -34,7 +34,7 @@
                 @endfor
 
                 @foreach($calendarData as $day)
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem; border-radius: 0.5rem; {{ $day['isToday'] ? 'background-color: rgb(var(--primary-600)); color: white; font-weight: bold;' : '' }}">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem; border-radius: 0.5rem; {{ $day['isToday'] ? 'background-color: #10b981; color: white; font-weight: bold;' : '' }}">
                         <span>{{ $day['date'] }}</span>
                         @if($day['status'] === 'success')
                             <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; margin-top: 4px;"></div>

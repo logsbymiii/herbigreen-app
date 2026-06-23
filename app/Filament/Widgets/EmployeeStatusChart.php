@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use Filament\Widgets\ChartWidget;
-use App\Models\Report;
+use App\Models\SmartDailyReport;
 use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
@@ -23,7 +23,7 @@ class EmployeeStatusChart extends ChartWidget
     {
         $today = Carbon::today();
 
-        $laporanMasuk = Report::whereDate('created_at', $today)->count();
+        $laporanMasuk = SmartDailyReport::whereDate('report_date', $today)->count();
         $izinHariIni = Attendance::whereDate('created_at', $today)
                                 ->whereIn('type', ['sakit', 'izin'])
                                 ->count();

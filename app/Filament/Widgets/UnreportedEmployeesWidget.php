@@ -24,8 +24,8 @@ class UnreportedEmployeesWidget extends BaseWidget
             ->query(
                 Employee::query()
                     ->where('is_active', true)
-                    ->whereDoesntHave('reports', function (Builder $query) use ($today) {
-                        $query->whereDate('created_at', $today);
+                    ->whereDoesntHave('smartDailyReports', function (Builder $query) use ($today) {
+                        $query->whereDate('report_date', $today);
                     })
                     ->whereDoesntHave('attendances', function (Builder $query) use ($today) {
                         $query->whereDate('created_at', $today)

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Report;
+use App\Models\SmartDailyReport;
 use Filament\Widgets\ChartWidget;
 use Carbon\Carbon;
 
@@ -37,13 +37,13 @@ class WeeklyTrendChart extends ChartWidget
                 $startOfWeek = Carbon::now()->subWeeks($i)->startOfWeek();
                 $endOfWeek = Carbon::now()->subWeeks($i)->endOfWeek();
                 $labels[] = 'Mg ' . $startOfWeek->format('W');
-                $data[] = Report::whereBetween('created_at', [$startOfWeek, $endOfWeek])->count();
+                $data[] = SmartDailyReport::whereBetween('report_date', [$startOfWeek, $endOfWeek])->count();
             }
         } else {
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::now()->subDays($i);
                 $labels[] = $date->translatedFormat('D');
-                $data[] = Report::whereDate('created_at', $date)->count();
+                $data[] = SmartDailyReport::whereDate('report_date', $date)->count();
             }
         }
 

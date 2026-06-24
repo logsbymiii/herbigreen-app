@@ -14,6 +14,8 @@ class EditEmployee extends EditRecord
     {
         return [
             DeleteAction::make(),
+            \Filament\Actions\RestoreAction::make(),
+            \Filament\Actions\ForceDeleteAction::make(),
         ];
     }
 }

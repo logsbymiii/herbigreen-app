@@ -38,12 +38,14 @@ class EmployeesTable
             ])
             ->defaultGroup('division.name')
             ->filters([
-                //
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->recordUrl(fn ($record) => \App\Filament\Resources\Employees\EmployeeResource::getUrl('edit', ['record' => $record]))
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

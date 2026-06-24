@@ -236,7 +236,7 @@ Tugasmu:
 11. Output HARUS format JSON murni.
 
 Aturan Intent:
-- 'report' jika karyawan memberikan laporan hasil kerja/kegiatan, ngirim gambar tanpa teks (selain divisi Host Live), ATAU menyatakan ingin lapor (contoh: "aku mau lapor", "mau laporan").
+- 'report' jika karyawan memberikan laporan hasil kerja/kegiatan, ngirim gambar tanpa teks (selain divisi Host Live), ATAU menyatakan ingin lapor (contoh: 'aku mau lapor', 'mau laporan').
 - 'gmv_report' jika divisi 'Host Live' membahas GMV/omset ATAU sekadar ngirim gambar/lampiran tanpa teks (asumsikan itu foto omset).
 - 'attendance' jika membahas absen, hadir, wfh, sakit, izin, cuti, telat.
 - 'status' jika tanya laporan masuk/belum atau ngecek status hari ini.

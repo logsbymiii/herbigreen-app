@@ -60,5 +60,17 @@ class ProcessAttendanceJob implements ShouldQueue
         ]);
 
         Log::info("KOKI ABSEN: ID {$this->employeeId} berhasil absen dengan status: {$this->attendanceType}");
+
+        if (in_array($this->attendanceType, ['sakit', 'izin', 'wfh'])) {
+            if (\Illuminate\Support\Facades\Storage::exists('management_group_id.txt')) {
+                $managementGroupId = \Illuminate\Support\Facades\Storage::get('management_group_id.txt');
+                $employee = \App\Models\Employee::find($this->employeeId);
+                if ($employee && $managementGroupId) {
+                    $provider = \App\Services\MessageProviderFactory::create();
+                    $notifText = "🔔 *[Info Kehadiran]*\n{$employee->name} dari divisi {$employee->division?->name} menyatakan *" . strtoupper($this->attendanceType) . "* hari ini.\n\nAlasan: {$this->message}";
+                    $provider->sendMessage(trim($managementGroupId), $notifText);
+                }
+            }
+        }
     }
 }

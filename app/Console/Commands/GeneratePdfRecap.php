@@ -87,24 +87,30 @@ class GeneratePdfRecap extends Command
         $masJodiId = env('MAS_JODI_TELEGRAM_ID');
         $botToken = env('TELEGRAM_BOT_TOKEN');
 
-        if ($masJodiId && $botToken) {
-            $response = \Illuminate\Support\Facades\Http::attach(
-                'document',
-                $pdfContent,
-                $fileName
-            )->post("https://api.telegram.org/bot{$botToken}/sendDocument", [
-                'chat_id' => $masJodiId,
-                'caption' => "📊 *REKAP HARIAN HERBIGREEN*\nTanggal: " . now()->format('d M Y') . "\n\nBerikut terlampir laporan rekapitulasi performa, metrik, dan kendala dari semua tim hari ini. Silakan dicek bos! 🚀",
-                'parse_mode' => 'Markdown'
-            ]);
+        if (\Illuminate\Support\Facades\Storage::exists('management_group_id.txt')) {
+            $managementGroupId = trim(\Illuminate\Support\Facades\Storage::get('management_group_id.txt'));
+            $provider = \App\Services\MessageProviderFactory::create();
+            
+            // Kirim Executive Summary dulu
+            $summaryCaption = "📊 *REKAP HARIAN HERBIGREEN*\nTanggal: " . now()->format('d M Y') . "\n\n" . $executiveSummary;
+            $provider->sendMessage($managementGroupId, $summaryCaption);
 
-            if ($response->successful()) {
-                $this->info("PDF berhasil dikirim ke Mas Jodi.");
-            } else {
-                $this->error("Gagal kirim PDF: " . $response->body());
+            // Kirim PDF kalau token bot tersedia untuk Telegram
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            if ($botToken && str_starts_with($managementGroupId, '-')) {
+                // Telegram ID group biasanya diawali minus
+                \Illuminate\Support\Facades\Http::attach(
+                    'document',
+                    $pdfContent,
+                    $fileName
+                )->post("https://api.telegram.org/bot{$botToken}/sendDocument", [
+                    'chat_id' => $managementGroupId,
+                    'caption' => "File PDF Rekapitulasi Harian 👆",
+                ]);
             }
+            $this->info("PDF & Summary berhasil dikirim ke Management Group.");
         } else {
-            $this->error("MAS_JODI_TELEGRAM_ID atau TELEGRAM_BOT_TOKEN belum diatur.");
+            $this->error("Management Group ID belum di-set via /init_management.");
         }
     }
 }

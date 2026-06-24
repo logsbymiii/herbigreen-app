@@ -31,6 +31,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'edit_laporan' => $this->handleEditLaporan($chatId),
                 'edit_profil'  => $this->handleEditProfil($chatId),
                 'gmv'          => $this->handleGmv($chatId, $message),
+                'init_management' => $this->handleInitManagement($chatId),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -1090,6 +1091,13 @@ Balas dengan angka urutan divisi.");
         }
 
         $this->conversationState->clearState($chatId);
+        return ['status' => true];
+    }
+
+    private function handleInitManagement(string $chatId): array
+    {
+        \Illuminate\Support\Facades\Storage::put('management_group_id.txt', $chatId);
+        $this->sendMessage($chatId, "✅ Siap bos! Grup ini sekarang jadi pusat notifikasi kehadiran (izin/sakit/wfh) dan penerima laporan PDF harian.");
         return ['status' => true];
     }
 }

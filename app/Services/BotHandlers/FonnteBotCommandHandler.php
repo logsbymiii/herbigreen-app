@@ -33,6 +33,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
                 'status'  => $this->handleStatus($phone),
                 'edit_laporan' => $this->handleEditLaporan($phone),
                 'edit_profil'  => $this->handleEditProfil($phone),
+                'init_management' => $this->handleInitManagement($phone),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -613,6 +614,13 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         $konfirmasi = $ai->confirmAbsen($employee->name, $type);
         $this->sendMessage($phone, $konfirmasi);
 
+        return ['status' => true];
+    }
+
+    private function handleInitManagement(string $phone): array
+    {
+        \Illuminate\Support\Facades\Storage::put('management_group_id.txt', $phone);
+        $this->sendMessage($phone, "✅ Siap bos! Grup ini sekarang jadi pusat notifikasi kehadiran (izin/sakit/wfh) dan penerima laporan PDF harian.");
         return ['status' => true];
     }
 }

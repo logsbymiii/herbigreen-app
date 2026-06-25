@@ -724,8 +724,8 @@ _Contoh: 14.00-15.00_");
         $tempData = $this->conversationState->getTempData($chatId);
         
         if (!empty($tempData['url_file'])) {
-            // Langsung dispatch job karena fotonya udah dikirim duluan
-            ProcessGmvReportJob::dispatch(
+            // Langsung dispatch job secara sinkron
+            ProcessGmvReportJob::dispatchSync(
                 $tempData['employee_id'],
                 $tempData['url_file'],
                 $chatId,

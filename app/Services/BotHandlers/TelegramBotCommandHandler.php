@@ -557,6 +557,11 @@ _(Ketik *batal* untuk membatalkan)_");
         
         // Simpan langsung karena kita udah dapat foto
         $attendanceType = ($tempData['is_wfh'] ?? false) ? 'wfh' : 'hadir';
+        
+        // Cek kalau waktu absen lebih dari jam 08:30 otomatis jadi telat (kecuali WFH)
+        if ($attendanceType === 'hadir' && now()->format('H:i') > '08:30') {
+            $attendanceType = 'telat';
+        }
         \App\Models\Attendance::create([
             'employee_id' => $employee->id,
             'type' => $attendanceType,
@@ -569,7 +574,13 @@ _(Ketik *batal* untuk membatalkan)_");
 
         $this->conversationState->clearState($chatId);
         
-        $msg = $attendanceType === 'wfh' ? "✅ Sip, absen masuk *WFH* kamu berhasil dicatat! Selamat bekerja dari rumah! 🏡🔥" : "✅ Sip, absen masuk *Hadir* kamu berhasil dicatat! Selamat bekerja! 🔥";
+        if ($attendanceType === 'wfh') {
+            $msg = "✅ Sip, absen masuk *WFH* kamu berhasil dicatat! Selamat bekerja dari rumah! 🏡🔥";
+        } elseif ($attendanceType === 'telat') {
+            $msg = "⚠️ Absen dicatat sebagai *Telat* (melewati batas jam 08:30). Tetap semangat kerjanya ya! 🔥";
+        } else {
+            $msg = "✅ Sip, absen masuk *Hadir* kamu berhasil dicatat! Selamat bekerja! 🔥";
+        }
         $this->sendMessage($chatId, $msg);
         return ['status' => true];
     }

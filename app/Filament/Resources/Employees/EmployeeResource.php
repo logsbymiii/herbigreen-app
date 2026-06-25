@@ -18,11 +18,13 @@ class EmployeeResource extends Resource
 {
    protected static ?string $model = Employee::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
-    protected static string|\UnitEnum|null $navigationGroup = 'HR & Karyawan';
+    protected static ?string $modelLabel = 'Anggota Tim';
+    protected static ?string $pluralModelLabel = 'Anggota Tim';
+    protected static ?string $navigationGroup = 'Manajemen SDM';
+    protected static ?string $navigationLabel = 'Anggota Tim';
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'Karyawan';
-    protected static ?string $pluralModelLabel = 'Karyawan';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $recordTitleAttribute = 'name';
 

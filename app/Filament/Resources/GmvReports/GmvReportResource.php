@@ -21,11 +21,11 @@ class GmvReportResource extends Resource
 {
     protected static ?string $model = GmvReport::class;
 
-    protected static ?string $modelLabel = 'Laporan GMV';
-    protected static ?string $pluralModelLabel = 'Laporan GMV';
-    protected static ?string $navigationLabel = 'Laporan GMV';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
+    protected static ?string $modelLabel = 'Revenue Tracker (GMV)';
+    protected static ?string $pluralModelLabel = 'Revenue Tracker (GMV)';
+    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static ?string $navigationLabel = 'Revenue Tracker (GMV)';
+    protected static ?int $navigationSort = 3;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 

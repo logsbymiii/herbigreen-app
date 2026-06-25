@@ -18,13 +18,13 @@ class SmartDailyReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-duplicate';
-
-    protected static ?string $navigationLabel = 'Semua Laporan';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
-
+    protected static ?string $modelLabel = 'Laporan Kinerja Harian';
+    protected static ?string $pluralModelLabel = 'Laporan Kinerja Harian';
+    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static ?string $navigationLabel = 'Laporan Kinerja Harian';
     protected static ?int $navigationSort = 1;
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
     {

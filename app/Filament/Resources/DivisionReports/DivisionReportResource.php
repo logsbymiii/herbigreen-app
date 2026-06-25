@@ -18,13 +18,13 @@ class DivisionReportResource extends Resource
 {
     protected static ?string $model = SmartDailyReport::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-folder-open';
-
-    protected static ?string $navigationLabel = 'Laporan Per Divisi';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Laporan & Analitik';
-
+    protected static ?string $modelLabel = 'Laporan per Divisi';
+    protected static ?string $pluralModelLabel = 'Laporan per Divisi';
+    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static ?string $navigationLabel = 'Laporan per Divisi';
     protected static ?int $navigationSort = 2;
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     public static function getRecordTitle(?\Illuminate\Database\Eloquent\Model $record): string
     {

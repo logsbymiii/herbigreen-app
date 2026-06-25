@@ -40,17 +40,17 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::hex('#21C45D'),
                 'gray' => Color::Zinc,
             ])
-            ->darkMode(false)
+            ->font('Inter')
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('HR & Karyawan')
+                    ->label('Manajemen SDM')
                     ->icon('heroicon-o-users')
                     ->collapsed(false),
                 NavigationGroup::make()
-                    ->label('Laporan & Analitik')
-                    ->icon('heroicon-o-document-chart-bar')
-                    ->collapsed(true),
+                    ->label('Laporan Kinerja')
+                    ->icon('heroicon-o-presentation-chart-line')
+                    ->collapsed(false),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

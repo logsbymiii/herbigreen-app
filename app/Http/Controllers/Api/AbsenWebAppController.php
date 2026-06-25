@@ -110,10 +110,17 @@ class AbsenWebAppController extends Controller
         // Kirim Notif ke Telegram User
         try {
             $provider = MessageProviderFactory::create();
-            $lokasiText = ($isWfh) ? "Hadir (WFH)" : "Hadir (Jarak: " . number_format($distance, 0) . "m)";
+            
+            if ($attendanceType === 'telat') {
+                $lokasiText = "Telat (Jarak: " . number_format($distance, 0) . "m)";
+            } else {
+                $lokasiText = ($isWfh) ? "Hadir (WFH)" : "Hadir (Jarak: " . number_format($distance, 0) . "m)";
+            }
+            
             if ($isFreelance && $distance > $officeRadius) $lokasiText .= " [Remote/Freelance]";
 
-            $provider->sendMessage($telegramId, "✅ *Absen Masuk Berhasil*\n\nStatus: {$lokasiText}\nJam: " . now()->format('H:i') . "\n\nData kehadiran telah tercatat di sistem.");
+            $judulNotif = ($attendanceType === 'telat') ? "⚠️ *Absen Masuk (Terlambat)*" : "✅ *Absen Masuk Berhasil*";
+            $provider->sendMessage($telegramId, "{$judulNotif}\n\nStatus: {$lokasiText}\nJam: " . now()->format('H:i') . "\n\nData kehadiran telah tercatat di sistem.");
         } catch (\Exception $e) {
             // Abaikan jika error kirim pesan Telegram
         }

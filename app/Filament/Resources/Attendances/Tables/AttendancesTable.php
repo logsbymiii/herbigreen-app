@@ -89,6 +89,7 @@ class AttendancesTable
                 'xl' => 3,
             ])
             ->filters([
+                \Filament\Tables\Filters\TrashedFilter::make(),
                 \Filament\Tables\Filters\SelectFilter::make('employee_id')
                     ->relationship('employee', 'name')
                     ->searchable()
@@ -145,9 +146,17 @@ class AttendancesTable
                     })
             ])
             ->recordUrl(fn ($record) => \App\Filament\Resources\Attendances\AttendanceResource::getUrl('edit', ['record' => $record]))
-            ->toolbarActions([
-                \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
+            ->actions([
+                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\ForceDeleteAction::make(),
+                \Filament\Tables\Actions\RestoreAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }

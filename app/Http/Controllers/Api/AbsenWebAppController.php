@@ -35,6 +35,16 @@ class AbsenWebAppController extends Controller
             return response()->json(['status' => false, 'message' => 'Karyawan tidak ditemukan']);
         }
 
+        // --- CEK DOUBLE ABSEN ---
+        $sudahAbsen = Attendance::where('employee_id', $employee->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->whereIn('type', ['hadir', 'wfh', 'telat'])
+            ->exists();
+
+        if ($sudahAbsen) {
+            return response()->json(['status' => false, 'message' => 'Anda sudah tercatat melakukan absensi hari ini.']);
+        }
+
         // --- CEK JARAK & LOKASI ---
         $officeLat = env('OFFICE_LATITUDE', -7.662837363034964);
         $officeLng = env('OFFICE_LONGITUDE', 112.69715613912979);

@@ -364,14 +364,11 @@ _(Ketik *batal* untuk membatalkan)_");
         $type = $typeMap[$choice];
         
         if ($type === 'hadir' || $type === 'wfh') {
-            // Cek apakah hari ini sudah absen hadir
-            $sudahAbsen = false;
-            if (strtolower($employee->role ?? '') !== 'admin') {
-                $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
-                    ->whereDate('date', now()->format('Y-m-d'))
-                    ->whereIn('type', ['hadir', 'wfh'])
-                    ->exists();
-            }
+            // Cek apakah hari ini sudah absen hadir (Berlaku untuk semua, termasuk admin)
+            $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
+                ->whereDate('date', now()->format('Y-m-d'))
+                ->whereIn('type', ['hadir', 'wfh', 'telat'])
+                ->exists();
                 
             if ($sudahAbsen) {
                 $this->conversationState->clearState($chatId);

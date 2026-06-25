@@ -328,7 +328,7 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
 
-        ProcessSmartDailyReportJob::dispatch($employee->id, $cleanMessage, (string) $chatId);
+        ProcessSmartDailyReportJob::dispatchSync($employee->id, $cleanMessage, (string) $chatId);
         $this->conversationState->clearState($chatId);
 
         // AI generate konfirmasi yang beda tiap hari

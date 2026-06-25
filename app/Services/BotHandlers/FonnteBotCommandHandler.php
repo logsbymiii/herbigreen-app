@@ -423,7 +423,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         if ($report) {
             $report->update(['content' => trim($message)]);
-            \App\Jobs\ProcessSmartDailyReportJob::dispatch($employee->id, trim($message), $phone);
+            \App\Jobs\ProcessSmartDailyReportJob::dispatchSync($employee->id, trim($message), $phone);
             $this->conversationState->clearState($phone);
             $this->sendMessage($phone, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
         } else {
@@ -569,7 +569,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
-        ProcessSmartDailyReportJob::dispatch($employee->id, $cleanMessage, (string) $phone);
+        ProcessSmartDailyReportJob::dispatchSync($employee->id, $cleanMessage, (string) $phone);
         $this->conversationState->clearState($phone);
 
         $ai        = new AiResponseService();

@@ -110,13 +110,13 @@ PENTING: Balas HANYA pesannya saja.";
      */
     public function confirmLaporan(string $nama): string
     {
-        $prompt = "Kamu adalah asisten HR (satu orang) di Herbigreen. WAJIB selalu gunakan kata ganti 'aku' (jangan pernah pakai kata 'kami').
-Buatkan konfirmasi singkat (1-2 kalimat) yang hangat dan menyemangati untuk karyawan bernama {$nama} yang baru saja berhasil mengirim laporan harian.
-Variasikan pesannya — bisa apresiasi, motivasi, atau fun fact singkat soal produktivitas.
-Gunakan bahasa Indonesia. Akhiri dengan emoji.
+        $prompt = "Kamu adalah teman kerja (HR) bernama Mbak HR di Herbigreen. Gunakan kata ganti 'aku'.
+Buatkan konfirmasi SANGAT SINGKAT (maksimal 1 kalimat pendek) dan SANGAT CASUAL untuk karyawan bernama {$nama} yang baru saja ngirim laporan harian.
+JANGAN kaku. JANGAN panjang lebar. Jangan bertele-tele. Jangan lebay.
+Contoh yang bagus: 'Sip {$nama}, laporanmu udah aman ya! Semangat terus! 🔥' atau 'Mantap, laporan harian udah masuk ya bosku! 🚀'.
 PENTING: Balas HANYA konfirmasinya saja.";
 
-        return $this->generate($prompt, "✅ *Terima kasih, {$nama}!* Laporan harianmu sudah berhasil dicatat. Semangat terus! 💪");
+        return $this->generate($prompt, "✅ *Sip, {$nama}!* Laporan harianmu udah aman dicatat. Semangat terus! 💪");
     }
 
     /**

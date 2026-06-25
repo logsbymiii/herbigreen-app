@@ -33,22 +33,38 @@ class UnreportedEmployeesWidget extends BaseWidget
                     })
             )
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nama Karyawan')
-                    ->searchable()
-                    ->sortable()
-                    ->weight('bold'),
-                Tables\Columns\TextColumn::make('division.name')
-                    ->label('Divisi')
-                    ->badge()
-                    ->color('warning')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->default('Belum Lapor')
-                    ->badge()
-                    ->color('danger')
-                    ->icon('heroicon-m-x-circle'),
+                \Filament\Tables\Columns\Layout\Stack::make([
+                    \Filament\Tables\Columns\Layout\Split::make([
+                        \Filament\Tables\Columns\ImageColumn::make('employee_avatar')
+                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name ?? 'Deleted') . '&background=f3f4f6&color=374151&bold=true')
+                            ->circular()
+                            ->grow(false)
+                            ->extraImgAttributes(['style' => 'width: 40px; height: 40px;']),
+                        
+                        \Filament\Tables\Columns\Layout\Stack::make([
+                            Tables\Columns\TextColumn::make('name')
+                                ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                                ->searchable()
+                                ->sortable(),
+                            Tables\Columns\TextColumn::make('division.name')
+                                ->badge()
+                                ->color('warning')
+                                ->sortable(),
+                        ])->space(1),
+                        
+                        Tables\Columns\TextColumn::make('status')
+                            ->default('Belum Lapor')
+                            ->badge()
+                            ->grow(false)
+                            ->alignEnd()
+                            ->color('danger')
+                            ->icon('heroicon-m-x-circle'),
+                    ])->extraAttributes(['class' => 'items-center']),
+                ])->space(3),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->defaultSort('name')
             ->emptyStateHeading('Semua Karyawan Sudah Lapor 🎉')

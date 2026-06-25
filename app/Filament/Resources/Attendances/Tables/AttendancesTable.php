@@ -17,7 +17,7 @@ class AttendancesTable
                 \Filament\Tables\Columns\Layout\Stack::make([
                     \Filament\Tables\Columns\Layout\Split::make([
                         \Filament\Tables\Columns\ImageColumn::make('employee_avatar')
-                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->employee->name) . '&background=f3f4f6&color=374151&bold=true')
+                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->employee?->name ?? 'Deleted') . '&background=f3f4f6&color=374151&bold=true')
                             ->circular()
                             ->grow(false)
                             ->extraImgAttributes(['style' => 'width: 40px; height: 40px;']),

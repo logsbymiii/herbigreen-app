@@ -86,10 +86,20 @@ class AbsenWebAppController extends Controller
         // --- SIMPAN ABSEN ---
         $attendanceType = ($type == 'wfh') ? 'wfh' : 'hadir';
         
+        // Cek telat jam 08:30
+        if ($attendanceType === 'hadir' && now()->format('H:i') > '08:30') {
+            $attendanceType = 'telat';
+        }
+
+        $note = ($type == 'wfh') ? 'Hadir (WFH) via WebApp' : 'Hadir via WebApp';
+        if ($attendanceType === 'telat') {
+            $note = 'Telat via WebApp';
+        }
+        
         Attendance::create([
             'employee_id' => $employee->id,
             'type'        => $attendanceType,
-            'note'        => ($type == 'wfh') ? 'Hadir (WFH) via WebApp' : 'Hadir via WebApp',
+            'note'        => $note,
             'latitude'    => $lat,
             'longitude'   => $lng,
             'date'        => now()->format('Y-m-d'),

@@ -47,7 +47,7 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                         . "```\n{$this->rawReportText}\n```\n\n"
                         . "Tugasmu:\n"
                         . "1. Ekstrak data kuantitatif yang relevan berdasarkan laporannya (misal: jumlah chat, jumlah video diedit, jumlah pesanan, total sampel, dll). Ubah jadi format key-value JSON yang ringkas. Pastikan kunci (key) HANYA menggunakan bahasa Indonesia dengan format snake_case (contoh: video_baru, logo_dibuat, postingan_diupload).\n"
-                        . "2. Berikan 1-2 kalimat analisa singkat (ai_insight) layaknya manager memuji, mengkritisi, atau memberi saran membangun dari laporan tersebut.\n"
+                        . "2. Buatkan ringkasan eksekutif (ai_insight) yang menjabarkan isi laporan secara LENGKAP namun lebih rapi dan profesional. Rangkum poin-poin utama pencapaian dan angka pentingnya (jangan cuma sekadar memuji/memberi saran). Gunakan kalimat yang jelas agar manajer bisa langsung paham apa saja yang dikerjakan karyawan ini hari ini.\n"
                         . "3. Ekstrak kendala atau masalah yang dialami (jika ada) ke dalam key `kendala`. Jika tidak ada kendala, isi dengan null atau string kosong.\n\n"
                         . "Format balasan WAJIB berupa JSON mentah TANPA markdown (tanpa ```json dll), dengan struktur persis seperti ini:\n"
                         . "{\n"

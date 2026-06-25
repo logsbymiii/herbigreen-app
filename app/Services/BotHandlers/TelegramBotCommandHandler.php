@@ -948,13 +948,30 @@ Silakan kirim ulang gambar dengan kualitas yang lebih tajam/jelas untuk diproses
 
         $tempData = $this->conversationState->getTempData($chatId);
 
-        $employee = Employee::create([
-            'name' => $tempData['name'],
-            'division_id' => $tempData['division_id'],
-            'phone' => $tempData['phone'],
-            'telegram_id' => (string) $chatId,
-            'is_active' => true,
-        ]);
+        // Cek apakah ada akun yang soft deleted
+        $employee = Employee::withTrashed()
+            ->where('telegram_id', (string) $chatId)
+            ->orWhere('phone', $tempData['phone'])
+            ->first();
+
+        if ($employee) {
+            $employee->restore();
+            $employee->update([
+                'name' => $tempData['name'],
+                'division_id' => $tempData['division_id'],
+                'phone' => $tempData['phone'],
+                'telegram_id' => (string) $chatId,
+                'is_active' => true,
+            ]);
+        } else {
+            $employee = Employee::create([
+                'name' => $tempData['name'],
+                'division_id' => $tempData['division_id'],
+                'phone' => $tempData['phone'],
+                'telegram_id' => (string) $chatId,
+                'is_active' => true,
+            ]);
+        }
 
         $this->conversationState->clearState($chatId);
 

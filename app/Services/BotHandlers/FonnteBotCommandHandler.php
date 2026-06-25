@@ -361,12 +361,27 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
 
         $tempData = $this->conversationState->getTempData($phone);
 
-        $employee = Employee::create([
-            'name'        => $tempData['name'],
-            'division_id' => $tempData['division_id'],
-            'phone'       => $phone,
-            'is_active'   => true,
-        ]);
+        // Cek apakah ada akun yang soft deleted
+        $employee = Employee::withTrashed()
+            ->where('phone', $phone)
+            ->first();
+
+        if ($employee) {
+            $employee->restore();
+            $employee->update([
+                'name'        => $tempData['name'],
+                'division_id' => $tempData['division_id'],
+                'phone'       => $phone,
+                'is_active'   => true,
+            ]);
+        } else {
+            $employee = Employee::create([
+                'name'        => $tempData['name'],
+                'division_id' => $tempData['division_id'],
+                'phone'       => $phone,
+                'is_active'   => true,
+            ]);
+        }
 
         $this->conversationState->clearState($phone);
 

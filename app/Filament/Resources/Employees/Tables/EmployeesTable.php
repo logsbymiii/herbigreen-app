@@ -44,8 +44,8 @@ class EmployeesTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\RestoreBulkAction::make(),
-                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
+                    \Filament\Actions\RestoreBulkAction::make(),
+                    \Filament\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

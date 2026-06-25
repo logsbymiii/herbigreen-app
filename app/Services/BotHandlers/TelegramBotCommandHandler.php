@@ -193,6 +193,16 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true, 'message' => 'Not registered'];
         }
 
+        $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->whereIn('type', ['hadir', 'wfh', 'telat', 'sakit', 'izin', 'alpa'])
+            ->exists();
+
+        if ($sudahAbsen) {
+            $this->sendMessage($chatId, "⚠️ Anda sudah tercatat melakukan absensi hari ini. Terima kasih!");
+            return ['status' => true];
+        }
+
         $menu = "👋 Halo {$employee->name},\n\nSilakan pilih jenis absensi:\n\n";
         $menu .= "1. Hadir (Di Kantor)\n";
         $menu .= "2. Hadir (Pengajuan WFH / Sedang WFH)\n";

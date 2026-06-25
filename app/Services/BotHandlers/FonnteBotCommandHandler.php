@@ -164,6 +164,16 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         }
 
+        $sudahAbsen = \App\Models\Attendance::where('employee_id', $employee->id)
+            ->whereDate('date', now()->format('Y-m-d'))
+            ->whereIn('type', ['hadir', 'wfh', 'telat', 'sakit', 'izin', 'alpa'])
+            ->exists();
+
+        if ($sudahAbsen) {
+            $this->sendMessage($phone, "⚠️ Kamu sudah tercatat melakukan absensi hari ini. Terima kasih!");
+            return ['status' => true];
+        }
+
         $ai     = new AiResponseService();
         $sapaan = $ai->greetingAbsen($employee->name);
 

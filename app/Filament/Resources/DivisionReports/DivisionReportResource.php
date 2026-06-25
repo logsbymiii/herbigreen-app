@@ -20,7 +20,7 @@ class DivisionReportResource extends Resource
 
     protected static ?string $modelLabel = 'Laporan per Divisi';
     protected static ?string $pluralModelLabel = 'Laporan per Divisi';
-    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Kinerja';
     protected static ?string $navigationLabel = 'Laporan per Divisi';
     protected static ?int $navigationSort = 2;
 

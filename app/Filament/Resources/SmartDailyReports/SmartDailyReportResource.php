@@ -20,7 +20,7 @@ class SmartDailyReportResource extends Resource
 
     protected static ?string $modelLabel = 'Laporan Kinerja Harian';
     protected static ?string $pluralModelLabel = 'Laporan Kinerja Harian';
-    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Kinerja';
     protected static ?string $navigationLabel = 'Laporan Kinerja Harian';
     protected static ?int $navigationSort = 1;
 

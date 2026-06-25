@@ -20,7 +20,7 @@ class AttendanceResource extends Resource
 
     protected static ?string $modelLabel = 'Presensi Harian';
     protected static ?string $pluralModelLabel = 'Presensi Harian';
-    protected static ?string $navigationGroup = 'Manajemen SDM';
+    protected static string|\UnitEnum|null $navigationGroup = 'Manajemen SDM';
     protected static ?string $navigationLabel = 'Presensi Harian';
     protected static ?int $navigationSort = 2;
 

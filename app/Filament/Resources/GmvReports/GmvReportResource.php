@@ -23,7 +23,7 @@ class GmvReportResource extends Resource
 
     protected static ?string $modelLabel = 'Revenue Tracker (GMV)';
     protected static ?string $pluralModelLabel = 'Revenue Tracker (GMV)';
-    protected static ?string $navigationGroup = 'Laporan Kinerja';
+    protected static string|\UnitEnum|null $navigationGroup = 'Laporan Kinerja';
     protected static ?string $navigationLabel = 'Revenue Tracker (GMV)';
     protected static ?int $navigationSort = 3;
 

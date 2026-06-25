@@ -20,7 +20,7 @@ class WfhRequestResource extends Resource
 
     protected static ?string $modelLabel = 'Izin WFH / Remote';
     protected static ?string $pluralModelLabel = 'Izin WFH / Remote';
-    protected static ?string $navigationGroup = 'Manajemen SDM';
+    protected static string|\UnitEnum|null $navigationGroup = 'Manajemen SDM';
     protected static ?string $navigationLabel = 'Izin WFH / Remote';
     protected static ?int $navigationSort = 3;
 

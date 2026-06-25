@@ -14,29 +14,41 @@ class SmartDailyReportsTable
     {
         return $table
             ->columns([
-                TextColumn::make('employee.name')
-                    ->label('Karyawan')
-                    ->searchable()
-                    ->sortable()
-                    ->description(fn ($record) => $record->employee->division->name ?? '-'),
-                TextColumn::make('report_date')
-                    ->label('Tanggal')
-                    ->date('d M Y')
-                    ->sortable(),
-                TextColumn::make('ai_insight')
-                    ->label('AI Insight')
-                    ->wrap()
-                    ->color('primary')
-                    ->limit(100)
-                    ->tooltip(fn ($record) => $record->ai_insight),
-                TextColumn::make('raw_report')
-                    ->label('Laporan Asli')
-                    ->limit(30)
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\Layout\Stack::make([
+                    \Filament\Tables\Columns\Layout\Split::make([
+                        \Filament\Tables\Columns\ImageColumn::make('employee_avatar')
+                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->employee?->name ?? 'Deleted') . '&background=f3f4f6&color=374151&bold=true')
+                            ->circular()
+                            ->grow(false)
+                            ->extraImgAttributes(['style' => 'width: 40px; height: 40px;']),
+                        
+                        \Filament\Tables\Columns\Layout\Stack::make([
+                            TextColumn::make('employee.name')
+                                ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                                ->searchable()
+                                ->sortable(),
+                            TextColumn::make('date_and_division')
+                                ->getStateUsing(function ($record) {
+                                    $date = \Carbon\Carbon::parse($record->report_date)->translatedFormat('d M Y');
+                                    $div = $record->employee->division->name ?? 'Tidak Ada Divisi';
+                                    return "{$div} · {$date}";
+                                })
+                                ->color('gray')
+                                ->size(\Filament\Support\Enums\TextSize::Small),
+                        ])->space(1),
+                    ])->extraAttributes(['class' => 'items-center']),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('ai_insight')
+                            ->wrap()
+                            ->color('primary')
+                            ->extraAttributes(['class' => 'mt-2 text-sm']),
+                    ]),
+                ])->space(3),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('division')

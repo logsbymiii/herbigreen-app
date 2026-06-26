@@ -133,6 +133,13 @@
                 </div>
 
                 @if($emp->report_today)
+                    @if($emp->gmv_today > 0)
+                        <div class="content-section" style="background-color:#fff3cd; padding:8px; border-radius:4px; border-left:4px solid #ffc107;">
+                            <span style="font-weight:bold; color:#856404; font-size:12px;">🏆 GMV TERCATAT (Sistem):</span>
+                            <span style="font-weight:bold; color:#856404; font-size:14px; margin-left:5px;">Rp {{ number_format($emp->gmv_today, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
                     <div class="content-section">
                         <div class="content-label">Catatan AI:</div>
                         <div class="ai-text">

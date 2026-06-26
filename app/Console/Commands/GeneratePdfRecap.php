@@ -28,6 +28,9 @@ class GeneratePdfRecap extends Command
                 
             $emp->report_today = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
                 ->whereDate('report_date', $date)->first();
+                
+            $emp->gmv_today = \App\Models\GmvReport::where('employee_id', $emp->id)
+                ->whereDate('live_date', $date)->sum('gmv_amount');
         }
 
         // Group by division
@@ -40,7 +43,8 @@ class GeneratePdfRecap extends Command
         foreach ($employees as $emp) {
             if ($emp->report_today && !empty($emp->report_today->raw_report)) {
                 $divName = $emp->division->name ?? 'Lainnya';
-                $allReportsText .= "Karyawan: {$emp->name} | Divisi: {$divName}\nLaporan: {$emp->report_today->raw_report}\n\n";
+                $gmvInfo = $emp->gmv_today > 0 ? "\nData Sistem (GMV Leaderboard): Rp " . number_format($emp->gmv_today, 0, ',', '.') : "";
+                $allReportsText .= "Karyawan: {$emp->name} | Divisi: {$divName}\nLaporan: {$emp->report_today->raw_report}{$gmvInfo}\n\n";
             }
         }
 

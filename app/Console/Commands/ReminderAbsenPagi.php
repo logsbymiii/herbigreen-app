@@ -18,7 +18,7 @@ class ReminderAbsenPagi extends Command
     public function handle()
     {
         $employees = \App\Models\Employee::whereNotNull('telegram_id')->get();
-        $provider = \App\Services\BotHandlers\MessageProviderFactory::create('telegram');
+        $provider = \App\Services\MessageProviderFactory::create();
 
         foreach ($employees as $emp) {
             $sudahAbsen = \App\Models\Attendance::where('employee_id', $emp->id)

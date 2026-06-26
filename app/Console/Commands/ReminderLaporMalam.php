@@ -22,7 +22,7 @@ class ReminderLaporMalam extends Command
                 $q->where('name', 'like', '%Host Live%');
             })->get();
             
-        $provider = \App\Services\BotHandlers\MessageProviderFactory::create('telegram');
+        $provider = \App\Services\MessageProviderFactory::create();
 
         foreach ($employees as $emp) {
             $sudahLapor = \App\Models\Report::where('employee_id', $emp->id)

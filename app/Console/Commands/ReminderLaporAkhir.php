@@ -20,7 +20,7 @@ class ReminderLaporAkhir extends Command
         $employees = \App\Models\Employee::whereNotNull('telegram_id')
             ->get();
             
-        $provider = \App\Services\BotHandlers\MessageProviderFactory::create('telegram');
+        $provider = \App\Services\MessageProviderFactory::create();
 
         foreach ($employees as $emp) {
             $isHostLive = strtolower($emp->division->name ?? '') === 'host live';

@@ -325,19 +325,9 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
 
-        $sudahLapor = false;
-        if ($employee->role !== 'admin') {
-            $sudahLapor = \App\Models\Report::where('employee_id', $employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
-                ->exists();
-        }
-
-        if ($sudahLapor) {
-            $this->conversationState->clearState($chatId);
-            $this->sendMessage($chatId, "⚠️ Anda sudah mengirimkan laporan hari ini, *{$employee->name}*. Laporan hanya dapat dikirim satu kali dalam sehari.");
-            return ['status' => true];
-        }
-
+        // Fitur baru: Karyawan boleh mengirim laporan berkali-kali dalam sehari.
+        // Laporan akan di-append/digabung oleh ProcessSmartDailyReportJob.
+        
         ProcessSmartDailyReportJob::dispatchSync($employee->id, $cleanMessage, (string) $chatId);
         $this->conversationState->clearState($chatId);
 
@@ -1019,8 +1009,8 @@ Silakan kirim ulang gambar dengan kualitas yang lebih tajam/jelas untuk diproses
             return ['status' => true];
         }
 
-        $sudahLapor = \App\Models\Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', now()->format('Y-m-d'))
+        $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $employee->id)
+            ->whereDate('report_date', now()->format('Y-m-d'))
             ->exists();
 
         if (!$sudahLapor) {
@@ -1036,15 +1026,16 @@ Silakan kirim ulang gambar dengan kualitas yang lebih tajam/jelas untuk diproses
     private function processEditReportText(int | string $chatId, string $message): array
     {
         $employee = Employee::where('telegram_id', $chatId)->first();
-        $report = \App\Models\Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', now()->format('Y-m-d'))
+        $report = \App\Models\SmartDailyReport::where('employee_id', $employee->id)
+            ->whereDate('report_date', now()->format('Y-m-d'))
             ->first();
 
         if ($report) {
-            $report->update(['content' => trim($message)]);
-            \App\Jobs\ProcessSmartDailyReportJob::dispatch($employee->id, trim($message), (string) $chatId);
+            // Kita biarkan ProcessSmartDailyReportJob yang handle penggabungan/AI-nya
+            \App\Jobs\ProcessSmartDailyReportJob::dispatchSync($employee->id, trim($message), (string) $chatId);
+            
             $this->conversationState->clearState($chatId);
-            $this->sendMessage($chatId, "✅ Sip! Laporanmu hari ini udah berhasil diperbarui.");
+            $this->sendMessage($chatId, "✅ Laporan tambahan Anda berhasil diproses dan digabungkan oleh AI!");
         } else {
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "❌ Gagal memperbarui. Laporan tidak ditemukan.");

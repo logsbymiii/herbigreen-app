@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\SmartDailyReports\Tables;
 
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -71,18 +71,18 @@ class SmartDailyReportsTable
                     }),
                 \Filament\Tables\Filters\TrashedFilter::make(),
             ])
-            ->actions([
-                \Filament\Tables\Actions\ViewAction::make(),
-                \Filament\Tables\Actions\EditAction::make(),
-                \Filament\Tables\Actions\DeleteAction::make(),
-                \Filament\Tables\Actions\RestoreAction::make(),
-                \Filament\Tables\Actions\ForceDeleteAction::make(),
+            ->recordActions([
+                \Filament\Actions\ViewAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
+                \Filament\Actions\RestoreAction::make(),
+                \Filament\Actions\ForceDeleteAction::make(),
             ])
-            ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\RestoreBulkAction::make(),
-                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
+            ->toolbarActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                    \Filament\Actions\RestoreBulkAction::make(),
+                    \Filament\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

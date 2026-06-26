@@ -40,7 +40,7 @@ class GmvLeaderboardWidget extends BaseWidget
                     ->weight('bold')
                     ->icon('heroicon-o-user')
                     ->description('Tim Host Live Herbigreen'),
-                Tables\Columns\TextColumn::make('gmv_today_sum_gmv_amount')
+                Tables\Columns\TextColumn::make('gmv_today')
                     ->label('Omset Hari Ini')
                     ->default(0)
                     ->money('IDR', locale: 'id')
@@ -50,7 +50,7 @@ class GmvLeaderboardWidget extends BaseWidget
                     ->badge()
                     ->color('success')
                     ->icon('heroicon-m-arrow-trending-up'),
-                Tables\Columns\TextColumn::make('gmv_this_month_sum_gmv_amount')
+                Tables\Columns\TextColumn::make('gmv_this_month')
                     ->label('Total Omset Bulan Ini (Rank)')
                     ->default(0)
                     ->money('IDR', locale: 'id')

@@ -25,8 +25,8 @@ class ReminderLaporMalam extends Command
         $provider = \App\Services\MessageProviderFactory::create();
 
         foreach ($employees as $emp) {
-            $sudahLapor = \App\Models\Report::where('employee_id', $emp->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
+            $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
+                ->whereDate('report_date', now()->format('Y-m-d'))
                 ->exists();
 
             if (!$sudahLapor) {

@@ -27,8 +27,8 @@ class ReminderLaporAwal extends Command
             $isHostLive = strtolower($emp->division->name ?? '') === 'host live';
             if ($isHostLive) continue; // Host live ada jam sendiri
             
-            $sudahLapor = \App\Models\Report::where('employee_id', $emp->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
+            $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
+                ->whereDate('report_date', now()->format('Y-m-d'))
                 ->exists();
 
             if (!$sudahLapor) {

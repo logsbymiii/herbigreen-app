@@ -28,8 +28,8 @@ class GmvLeaderboardWidget extends BaseWidget
                         $query->whereMonth('created_at', now()->month)
                               ->whereYear('created_at', now()->year);
                     }], 'gmv_amount')
+                    ->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(created_at) = ? AND YEAR(created_at) = ? AND gmv_reports.deleted_at IS NULL) DESC', [now()->month, now()->year])
             )
-            ->defaultSort('gmv_this_month_sum_gmv_amount', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Host Live')

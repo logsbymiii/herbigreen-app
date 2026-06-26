@@ -31,7 +31,7 @@ class ReminderLaporWajib extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "‼️ Woy {$emp->name}! Udah jam 16:00 nih! WAJIB banget ngirim laporan sekarang juga ya! 🤬");
+                $provider->sendMessage($emp->telegram_id, "⚠️ Halo, {$emp->name}. Waktu pelaporan wajib harian telah tiba. Mohon segera mengirimkan laporan aktivitas Anda hari ini. Terima kasih.");
             }
         }
     }

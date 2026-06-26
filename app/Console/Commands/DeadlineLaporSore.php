@@ -37,7 +37,7 @@ class DeadlineLaporSore extends Command
                     ['type' => 'alpa']
                 );
                 
-                $provider->sendMessage($emp->telegram_id, "❌ WAKTU HABIS! Laporan udah nggak diterima lagi. Kamu otomatis dihitung *TIDAK MASUK (ALPA)* hari ini karena telat lapor! 📉");
+                $provider->sendMessage($emp->telegram_id, "❌ Batas waktu pengisian laporan telah habis. Kehadiran Anda hari ini otomatis diubah menjadi *TIDAK MASUK (ALPA)* karena tidak ada laporan yang diterima. 📉");
             }
         }
     }

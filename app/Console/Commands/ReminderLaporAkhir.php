@@ -31,7 +31,7 @@ class ReminderLaporAkhir extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🚨 ALERT TERAKHIR! Jam 17:00 nih {$emp->name}! Buruan kirim laporan atau dianggap alpa! ☠️");
+                $provider->sendMessage($emp->telegram_id, "🚨 Peringatan Terakhir, {$emp->name}. Mohon segera mengirimkan laporan harian Anda sebelum batas waktu habis, agar kehadiran Anda tetap terhitung hari ini.");
             }
         }
     }

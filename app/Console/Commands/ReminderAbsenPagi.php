@@ -26,7 +26,7 @@ class ReminderAbsenPagi extends Command
                 ->exists();
 
             if (!$sudahAbsen) {
-                $provider->sendMessage($emp->telegram_id, "☀️ Pagi {$emp->name}! Yuk jangan lupa ketik /absen dulu sebelum mulai kerja ya! Jangan sampai telat! ⏰");
+                $provider->sendMessage($emp->telegram_id, "☀️ Selamat Pagi, {$emp->name}. Jangan lupa untuk melakukan absensi kehadiran sebelum memulai aktivitas hari ini. Selamat bekerja! ⏰");
             }
         }
     }

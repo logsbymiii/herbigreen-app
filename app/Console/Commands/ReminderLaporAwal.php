@@ -32,7 +32,7 @@ class ReminderLaporAwal extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🔔 Halo {$emp->name}! Udah jam 15:45 nih. Yuk laporin hari ini ngapain aja sebelum jam pulang ya! 📝");
+                $provider->sendMessage($emp->telegram_id, "🔔 Halo, {$emp->name}. Mengingatkan bahwa jam kerja hampir usai. Mohon segera mengisi laporan aktivitas harian Anda. 📝");
             }
         }
     }

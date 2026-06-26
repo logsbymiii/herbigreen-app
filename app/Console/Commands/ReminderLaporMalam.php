@@ -30,7 +30,7 @@ class ReminderLaporMalam extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🌙 Semangat malam {$emp->name}! Udah jam 22:30 nih. Yuk buruan laporan GMV-nya disetorin sebelum jam 23:45 ya! 💸");
+                $provider->sendMessage($emp->telegram_id, "🌙 Selamat Malam, {$emp->name}. Mohon jangan lupa untuk mengirimkan laporan GMV shift malam Anda sebelum mengakhiri pekerjaan. Terima kasih. 😴");
             }
         }
     }

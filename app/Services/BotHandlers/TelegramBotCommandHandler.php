@@ -300,7 +300,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             ]);
             $this->sendMessage($chatId, "📝 Silakan ketik *nama akun* yang Anda gunakan untuk live.
 
-_Contoh: HERBITOK USQI_");
+_Contoh: HERBITOK OFFICIAL_");
             return ['status' => true];
         } else {
             $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1, 2, atau 3.
@@ -695,7 +695,7 @@ _(Ketik *batal* untuk membatalkan)_");
         if (strlen($accountName) < 2) {
             $this->sendMessage($chatId, "❌ Nama akun tidak valid. Silakan ketik ulang.
 
-_Contoh: HERBITOK USQI_");
+_Contoh: HERBITOK OFFICIAL_");
             return ['status' => true];
         }
 

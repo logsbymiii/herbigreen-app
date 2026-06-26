@@ -38,13 +38,17 @@ class GmvLeaderboardWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('gmv_today_sum_gmv_amount')
                     ->label('GMV Hari Ini')
                     ->money('IDR', locale: 'id')
-                    ->sortable()
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND DATE(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->format('Y-m-d')]);
+                    })
                     ->badge()
                     ->color('success'),
                 Tables\Columns\TextColumn::make('gmv_this_month_sum_gmv_amount')
                     ->label('Total GMV (Bulan Ini)')
                     ->money('IDR', locale: 'id')
-                    ->sortable()
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(created_at) = ? AND YEAR(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->month, now()->year]);
+                    })
                     ->badge()
                     ->color('warning'),
             ])

@@ -148,8 +148,8 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 }
             }
 
-            $report = Report::where('employee_id', $this->employee->id)
-                ->whereDate('created_at', now()->format('Y-m-d'))
+            $report = \App\Models\SmartDailyReport::where('employee_id', $this->employee->id)
+                ->whereDate('report_date', now()->format('Y-m-d'))
                 ->first();
             
             if (!$report) {
@@ -158,9 +158,9 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 $cleanExtract = trim($extractedData);
                 // Jika AI berhasil mengekstrak teks laporan baru, dan bukan sekadar mengulang chat user:
                 if (strlen($cleanExtract) > 10 && $cleanExtract !== trim($this->message)) {
-                    $report->update(['content' => $cleanExtract]);
-                    \App\Jobs\ProcessSmartDailyReportJob::dispatch($this->employee->id, $cleanExtract, (string)$this->sender);
-                    $provider->sendMessage($this->sender, "✅ Pembaruan berhasil! Laporan Anda hari ini telah diperbarui menjadi:\n\n{$cleanExtract}");
+                    // Biarkan ProcessSmartDailyReportJob yang handle penggabungan/AI-nya
+                    \App\Jobs\ProcessSmartDailyReportJob::dispatchSync($this->employee->id, $cleanExtract, (string)$this->sender);
+                    $provider->sendMessage($this->sender, "✅ Pembaruan berhasil! Laporan tambahan Anda berhasil diproses dan digabungkan oleh AI!");
                 } else {
                     $stateService = new \App\Services\DatabaseConversationState();
                     $stateService->setCurrentStep($this->sender, 'awaiting_edit_report_text');

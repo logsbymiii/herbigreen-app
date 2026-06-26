@@ -821,20 +821,30 @@ _Contoh: 14.00-15.00_");
                 'live_date'       => $tempData['live_date'],
             ]);
 
-            // Tambahkan juga ke Laporan Harian sebagai history
+            // Tambahkan juga ke SmartDailyReport supaya tampil di Laporan per Divisi dan gak masuk Wall of Shame
             $platformDisplay = $tempData['platform'] ?? 'Lainnya';
             $accountDisplay = $tempData['account_name'] ?? '';
             $timeDisplay = '';
             if (!empty($tempData['live_start']) && !empty($tempData['live_end'])) {
-                $timeDisplay = "\nJam Live: {$tempData['live_start']} - {$tempData['live_end']}";
+                $timeDisplay = " ({$tempData['live_start']}-{$tempData['live_end']})";
             }
             $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
-            \App\Models\Report::create([
+            
+            $smartReport = \App\Models\SmartDailyReport::firstOrNew([
                 'employee_id' => $tempData['employee_id'],
-                'type' => 'harian',
-                'content' => "Laporan GMV [{$platformDisplay}] {$accountDisplay}: Rp {$gmvFormatted}{$timeDisplay}\nPesanan: " . ($tempData['order_count'] ?? 0) . "\nProduk Terjual: " . ($tempData['product_sold'] ?? 0) . "\nPenonton: " . ($tempData['viewers_count'] ?? 0) . "\nPenonton Tertinggi: " . ($tempData['highest_viewers'] ?? 0),
-                'reported_at' => now(),
+                'report_date' => now()->format('Y-m-d'),
             ]);
+            
+            $newReportText = "Melaporkan GMV Rp {$gmvFormatted} untuk live {$platformDisplay} {$accountDisplay}{$timeDisplay}";
+            
+            if ($smartReport->exists) {
+                $smartReport->raw_report .= "\n" . $newReportText;
+            } else {
+                $smartReport->raw_report = $newReportText;
+                $smartReport->ai_insight = "Host Live telah menginput omset harian.";
+                $smartReport->extracted_metrics = ['tipe' => 'Otomatis dari GMV'];
+            }
+            $smartReport->save();
 
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");

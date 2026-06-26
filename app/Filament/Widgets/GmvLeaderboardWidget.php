@@ -58,7 +58,7 @@ class GmvLeaderboardWidget extends BaseWidget
                     ->badge()
                     ->color('warning')
                     ->icon('heroicon-s-trophy')
-                    ->size(Tables\Columns\TextColumn\TextColumnSize::Large),
+                    ->size('lg'),
             ])
             ->heading('🏆 GMV Leaderboard (Host Live)')
             ->description('Peringkat performa omset Host Live bulan ini.')

@@ -41,6 +41,7 @@ class SmartDailyReportsTable
                     \Filament\Tables\Columns\Layout\Stack::make([
                         TextColumn::make('ai_insight')
                             ->wrap()
+                            ->markdown()
                             ->color('primary')
                             ->extraAttributes(['class' => 'mt-2 text-sm']),
                     ]),

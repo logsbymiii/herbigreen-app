@@ -731,7 +731,11 @@ _Contoh: 14.00-15.00_");
         $tempData = $this->conversationState->getTempData($chatId);
         
         if (!empty($tempData['url_file'])) {
+            $this->sendMessage($chatId, "⏳ Data diterima. Sistem sedang memproses lampiran screenshot Anda, mohon tunggu.");
+            
             // Langsung dispatch job secara sinkron
+            // Karena sinkron, job akan set 'waiting_gmv_confirmation' state
+            // JANGAN di-clear setelah job selesai.
             ProcessGmvReportJob::dispatchSync(
                 $tempData['employee_id'],
                 $tempData['url_file'],
@@ -740,14 +744,9 @@ _Contoh: 14.00-15.00_");
                 $tempData['live_start'] ?? null,
                 $tempData['live_end'] ?? null
             );
-
-            $this->sendMessage($chatId, "⏳ Data diterima. Sistem sedang memproses lampiran screenshot Anda, mohon tunggu.");
-            $this->conversationState->clearState($chatId);
         } else {
             $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_screenshot');
-            $this->sendMessage($chatId, "📸 Silakan kirimkan *screenshot GMV* Anda.
-
-_(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)_");
+            $this->sendMessage($chatId, "📸 Silakan kirimkan *screenshot GMV* Anda.\n\n_(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)_");
         }
 
         return ['status' => true];
@@ -784,7 +783,10 @@ _(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)
         // Ambil data sesi dari state
         $tempData = $this->conversationState->getTempData($chatId);
 
+        $this->sendMessage($chatId, "⏳ Sistem sedang memproses gambar Anda, mohon tunggu sebentar.");
+
         // Dispatch job secara sinkron biar user gak nunggu queue worker
+        // Jangan hapus state setelahnya karena Job yang akan nge-set state berikutnya.
         ProcessGmvReportJob::dispatchSync(
             $tempData['employee_id'],
             $urlFile,
@@ -793,11 +795,6 @@ _(Mohon pastikan tangkapan layar jelas dan bukan foto dari layar perangkat lain)
             $tempData['live_start'] ?? null,
             $tempData['live_end'] ?? null
         );
-
-        $this->sendMessage($chatId, "⏳ Sistem sedang memproses gambar Anda, mohon tunggu sebentar.");
-        // State akan di-clear setelah konfirmasi di processGmvConfirmation
-        // Tapi kita clear step supaya nggak loop
-        $this->conversationState->clearState($chatId);
         return ['status' => true];
     }
 

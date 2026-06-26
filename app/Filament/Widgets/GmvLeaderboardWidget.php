@@ -28,8 +28,8 @@ class GmvLeaderboardWidget extends BaseWidget
                         $query->whereMonth('created_at', now()->month)
                               ->whereYear('created_at', now()->year);
                     }], 'gmv_amount')
-                    ->orderByDesc('gmv_this_month_sum_gmv_amount')
             )
+            ->defaultSort('gmv_this_month_sum_gmv_amount', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Host Live')

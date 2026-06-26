@@ -97,8 +97,8 @@ class GeneratePdfRecap extends Command
 
             // Kirim PDF kalau token bot tersedia untuk Telegram
             $botToken = env('TELEGRAM_BOT_TOKEN');
-            if ($botToken && str_starts_with($managementGroupId, '-')) {
-                // Telegram ID group biasanya diawali minus
+            if ($botToken) {
+                // Bisa dikirim ke private chat maupun group
                 \Illuminate\Support\Facades\Http::attach(
                     'document',
                     $pdfContent,

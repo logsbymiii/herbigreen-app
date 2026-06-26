@@ -28,20 +28,20 @@ class GmvLeaderboardWidget extends BaseWidget
                         $query->whereMonth('created_at', now()->month)
                               ->whereYear('created_at', now()->year);
                     }], 'gmv_amount')
-                    ->orderByDesc('gmv_this_month')
+                    ->orderByDesc('gmv_this_month_sum_gmv_amount')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Host Live')
                     ->searchable()
                     ->weight('bold'),
-                Tables\Columns\TextColumn::make('gmv_today')
+                Tables\Columns\TextColumn::make('gmv_today_sum_gmv_amount')
                     ->label('GMV Hari Ini')
                     ->money('IDR', locale: 'id')
                     ->sortable()
                     ->badge()
                     ->color('success'),
-                Tables\Columns\TextColumn::make('gmv_this_month')
+                Tables\Columns\TextColumn::make('gmv_this_month_sum_gmv_amount')
                     ->label('Total GMV (Bulan Ini)')
                     ->money('IDR', locale: 'id')
                     ->sortable()

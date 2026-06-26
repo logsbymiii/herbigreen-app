@@ -25,13 +25,13 @@ class GmvLeaderboardWidget extends BaseWidget
                         $query->where('name', 'like', '%Host Live%');
                     })
                     ->withSum(['gmvReports as gmv_today' => function ($query) {
-                        $query->whereDate('created_at', now()->format('Y-m-d'));
+                        $query->whereDate('live_date', now()->format('Y-m-d'));
                     }], 'gmv_amount')
                     ->withSum(['gmvReports as gmv_this_month' => function ($query) {
-                        $query->whereMonth('created_at', now()->month)
-                              ->whereYear('created_at', now()->year);
+                        $query->whereMonth('live_date', now()->month)
+                              ->whereYear('live_date', now()->year);
                     }], 'gmv_amount')
-                    ->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(created_at) = ? AND YEAR(created_at) = ? AND gmv_reports.deleted_at IS NULL) DESC', [now()->month, now()->year])
+                    ->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(live_date) = ? AND YEAR(live_date) = ? AND gmv_reports.deleted_at IS NULL) DESC', [now()->month, now()->year])
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -45,7 +45,7 @@ class GmvLeaderboardWidget extends BaseWidget
                     ->default(0)
                     ->money('IDR', locale: 'id')
                     ->sortable(query: function (Builder $query, string $direction): Builder {
-                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND DATE(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->format('Y-m-d')]);
+                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND DATE(live_date) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->format('Y-m-d')]);
                     })
                     ->badge()
                     ->color('success')
@@ -55,7 +55,7 @@ class GmvLeaderboardWidget extends BaseWidget
                     ->default(0)
                     ->money('IDR', locale: 'id')
                     ->sortable(query: function (Builder $query, string $direction): Builder {
-                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(created_at) = ? AND YEAR(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->month, now()->year]);
+                        return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(live_date) = ? AND YEAR(live_date) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->month, now()->year]);
                     })
                     ->badge()
                     ->color('warning')

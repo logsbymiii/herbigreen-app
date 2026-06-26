@@ -91,11 +91,7 @@ class GeneratePdfRecap extends Command
             $managementGroupId = trim(\Illuminate\Support\Facades\Storage::get('management_group_id.txt'));
             $provider = \App\Services\MessageProviderFactory::create();
             
-            // Kirim Executive Summary dulu
-            $summaryCaption = "📊 *REKAP HARIAN HERBIGREEN*\nTanggal: " . now()->format('d M Y') . "\n\n" . $executiveSummary;
-            $provider->sendMessage($managementGroupId, $summaryCaption);
-
-            // Kirim PDF kalau token bot tersedia untuk Telegram
+            // Kirim PDF langsung (Summary panjang sudah ada di dalam PDF)
             $botToken = env('TELEGRAM_BOT_TOKEN');
             if ($botToken) {
                 // Bisa dikirim ke private chat maupun group
@@ -105,7 +101,8 @@ class GeneratePdfRecap extends Command
                     $fileName
                 )->post("https://api.telegram.org/bot{$botToken}/sendDocument", [
                     'chat_id' => $managementGroupId,
-                    'caption' => "File PDF Rekapitulasi Harian 👆",
+                    'caption' => "📊 *REKAP HARIAN HERBIGREEN*\nTanggal: " . now()->format('d M Y') . "\n\nSilakan unduh file PDF di atas untuk melihat detail laporan harian seluruh tim beserta Executive Summary (Analisis AI).",
+                    'parse_mode' => 'Markdown'
                 ]);
             }
             $this->info("PDF & Summary berhasil dikirim ke Management Group.");

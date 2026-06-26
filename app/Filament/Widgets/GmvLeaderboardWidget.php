@@ -7,6 +7,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\ImageColumn;
 
 class GmvLeaderboardWidget extends BaseWidget
 {
@@ -34,26 +37,33 @@ class GmvLeaderboardWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Host Live')
                     ->searchable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->icon('heroicon-o-user')
+                    ->description('Tim Host Live Herbigreen'),
                 Tables\Columns\TextColumn::make('gmv_today_sum_gmv_amount')
-                    ->label('GMV Hari Ini')
+                    ->label('Omset Hari Ini')
                     ->money('IDR', locale: 'id')
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND DATE(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->format('Y-m-d')]);
                     })
                     ->badge()
-                    ->color('success'),
+                    ->color('success')
+                    ->icon('heroicon-m-arrow-trending-up'),
                 Tables\Columns\TextColumn::make('gmv_this_month_sum_gmv_amount')
-                    ->label('Total GMV (Bulan Ini)')
+                    ->label('Total Omset Bulan Ini (Rank)')
                     ->money('IDR', locale: 'id')
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         return $query->orderByRaw('(SELECT COALESCE(SUM(gmv_amount), 0) FROM gmv_reports WHERE gmv_reports.employee_id = employees.id AND MONTH(created_at) = ? AND YEAR(created_at) = ? AND gmv_reports.deleted_at IS NULL) ' . $direction, [now()->month, now()->year]);
                     })
                     ->badge()
-                    ->color('warning'),
+                    ->color('warning')
+                    ->icon('heroicon-s-trophy')
+                    ->size(Tables\Columns\TextColumn\TextColumnSize::Large),
             ])
             ->heading('🏆 GMV Leaderboard (Host Live)')
+            ->description('Peringkat performa omset Host Live bulan ini.')
             ->defaultPaginationPageOption(5)
-            ->paginated(false); // To show it as a clean leaderboard
+            ->paginated(false)
+            ->striped();
     }
 }

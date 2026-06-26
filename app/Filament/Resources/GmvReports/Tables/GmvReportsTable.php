@@ -58,14 +58,20 @@ class GmvReportsTable
                 'xl' => 3,
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([ // <-- Ubah jadi actions() bawaan standar Filament
+                \Filament\Tables\Actions\ViewAction::make(),
                 EditAction::make(),
+                \Filament\Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\RestoreAction::make(),
+                \Filament\Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([ // <-- Ubah jadi bulkActions() bawaan standar Filament
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

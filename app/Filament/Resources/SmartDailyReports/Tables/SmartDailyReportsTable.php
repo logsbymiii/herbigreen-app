@@ -67,14 +67,20 @@ class SmartDailyReportsTable
                                 fn (\Illuminate\Database\Eloquent\Builder $query, $date): \Illuminate\Database\Eloquent\Builder => $query->whereDate('report_date', $date),
                             );
                     }),
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
-            ->recordActions([
-                \Filament\Actions\ViewAction::make(),
-                \Filament\Actions\EditAction::make(),
+            ->actions([
+                \Filament\Tables\Actions\ViewAction::make(),
+                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Tables\Actions\DeleteAction::make(),
+                \Filament\Tables\Actions\RestoreAction::make(),
+                \Filament\Tables\Actions\ForceDeleteAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

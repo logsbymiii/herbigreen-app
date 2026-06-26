@@ -19,7 +19,7 @@ class GeneratePdfRecap extends Command
     {
         $date = now()->format('Y-m-d');
         
-        $employees = \App\Models\Employee::with(['division'])->where('role', '!=', 'admin')->get();
+        $employees = \App\Models\Employee::with(['division'])->get();
         
         // Pasang data attendance dan report hari ini ke tiap employee
         foreach ($employees as $emp) {

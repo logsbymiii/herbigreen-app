@@ -5,9 +5,9 @@ namespace App\Filament\Resources\GmvReports\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 
 class GmvReportsTable
 {

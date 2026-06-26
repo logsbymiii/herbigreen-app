@@ -17,9 +17,8 @@ class ReminderLaporAwal extends Command
 
     public function handle()
     {
-        // Kecuali admin dan host sesi malam
+        // Kecuali host sesi malam
         $employees = \App\Models\Employee::whereNotNull('telegram_id')
-            ->where('role', '!=', 'admin')
             ->get();
             
         $provider = \App\Services\BotHandlers\MessageProviderFactory::create('telegram');

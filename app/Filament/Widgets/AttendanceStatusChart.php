@@ -6,16 +6,16 @@ use Filament\Widgets\ChartWidget;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Support\RawJs;
-use App\Models\SmartDailyReport;
 use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
 
-class EmployeeStatusChart extends ChartWidget implements HasActions
+class AttendanceStatusChart extends ChartWidget implements HasActions
 {
     use InteractsWithActions;
-    protected static ?int $sort = 2;
-    protected ?string $heading = 'Status Laporan Hari Ini';
+    
+    protected static ?int $sort = 2; // Keep it next to EmployeeStatusChart
+    protected ?string $heading = 'Kehadiran Karyawan Hari Ini';
     protected ?string $maxHeight = '250px';
     protected int | string | array $columnSpan = [
         'sm' => 'full',
@@ -26,34 +26,46 @@ class EmployeeStatusChart extends ChartWidget implements HasActions
     protected function getData(): array
     {
         $today = Carbon::today();
-
+        
         $totalKaryawanAktif = Employee::where('is_active', true)->count();
 
-        $laporanMasuk = Employee::where('is_active', true)
-            ->whereHas('smartDailyReports', function($q) use ($today) {
-                $q->whereDate('report_date', $today);
-            })->count();
-
-        $belumLapor = max(0, $totalKaryawanAktif - $laporanMasuk);
+        // Get actual counts
+        $wfh = Attendance::whereDate('date', $today)->where('type', 'wfh')->count();
+        $sakit = Attendance::whereDate('date', $today)->where('type', 'sakit')->count();
+        $izin = Attendance::whereDate('date', $today)->where('type', 'izin')->count();
+        
+        // Asumsi sisanya hadir/belum absen, tapi kalau tidak diabsen kita tidak tahu.
+        // Jika asusmsinya semua yang tidak WFH/Sakit/Izin harus ke kantor (Hadir).
+        // Kita hitung yang absen "hadir" jika ada, jika tidak, kurangi total aktif.
+        $hadir = Attendance::whereDate('date', $today)->where('type', 'hadir')->count();
+        
+        // Yang belum absen sama sekali = Total Karyawan Aktif - (Yang udah ngabsen)
+        $belumAbsen = max(0, $totalKaryawanAktif - ($hadir + $wfh + $sakit + $izin));
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Karyawan',
-                    'data' => [$laporanMasuk, $belumLapor],
+                    'label' => 'Kehadiran',
+                    'data' => [$hadir, $wfh, $sakit, $izin, $belumAbsen],
                     'backgroundColor' => [
-                        '#10B981', // Success (Green) for Laporan Masuk
-                        '#EF4444', // Danger (Red) for Belum Lapor
+                        '#10B981', // Hadir (Green)
+                        '#3B82F6', // WFH (Blue)
+                        '#F59E0B', // Sakit (Yellow)
+                        '#6366F1', // Izin (Indigo)
+                        '#EF4444', // Belum Absen (Red)
                     ],
                     'borderColor' => [
                         '#10B981', 
-                        '#EF4444', 
+                        '#3B82F6', 
+                        '#F59E0B', 
+                        '#6366F1',
+                        '#EF4444',
                     ],
                     'borderWidth' => 0,
                     'hoverOffset' => 4
                 ],
             ],
-            'labels' => ['Sudah Lapor', 'Belum Lapor'],
+            'labels' => ['Hadir', 'WFH', 'Sakit', 'Izin', 'Belum Absen'],
         ];
     }
 
@@ -62,21 +74,24 @@ class EmployeeStatusChart extends ChartWidget implements HasActions
         $today = Carbon::today();
         $query = Employee::where('is_active', true)->with('division');
         
-        if ($status === 'Sudah Lapor') {
-            return $query->whereHas('smartDailyReports', function($q) use ($today) {
-                $q->whereDate('report_date', $today);
+        $statusKey = strtolower($status);
+        
+        if (in_array($statusKey, ['hadir', 'wfh', 'sakit', 'izin'])) {
+            return $query->whereHas('attendances', function($q) use ($today, $statusKey) {
+                $q->whereDate('date', $today)->where('type', $statusKey);
             })->get();
         } else {
-            return $query->whereDoesntHave('smartDailyReports', function($q) use ($today) {
-                $q->whereDate('report_date', $today);
+            // Belum Absen
+            return $query->whereDoesntHave('attendances', function($q) use ($today) {
+                $q->whereDate('date', $today);
             })->get();
         }
     }
 
-    public function showDetailsAction(): \Filament\Actions\Action
+    public function showAttendanceDetailsAction(): \Filament\Actions\Action
     {
-        return \Filament\Actions\Action::make('showDetails')
-            ->modalHeading(fn (array $arguments) => 'Detail Karyawan: ' . ($arguments['status'] ?? ''))
+        return \Filament\Actions\Action::make('showAttendanceDetails')
+            ->modalHeading(fn (array $arguments) => 'Detail Kehadiran: ' . ($arguments['status'] ?? ''))
             ->modalContent(function (array $arguments) {
                 $status = $arguments['status'] ?? '';
                 $employees = $this->getEmployeesByStatus($status);
@@ -110,8 +125,7 @@ class EmployeeStatusChart extends ChartWidget implements HasActions
                     if (elements.length > 0) {
                         const index = elements[0].index;
                         const label = chart.data.labels[index];
-                        // Trigger Livewire / Filament action
-                        \$wire.mountAction('showDetails', { status: label });
+                        \$wire.mountAction('showAttendanceDetails', { status: label });
                     }
                 }
             JS),

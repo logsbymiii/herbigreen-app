@@ -14,6 +14,7 @@ class WeeklyTrendChart extends ChartWidget
         'md' => 1,
         'xl' => 1,
     ];
+    protected ?string $maxHeight = '250px';
 
     public ?string $filter = 'days';
 

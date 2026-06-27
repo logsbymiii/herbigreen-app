@@ -13,6 +13,7 @@ use Carbon\Carbon;
 class AttendanceStatusChart extends ChartWidget implements HasActions
 {
     use InteractsWithActions;
+    protected static string $view = 'filament.widgets.chart-with-actions';
     
     protected static ?int $sort = 2; // Keep it next to EmployeeStatusChart
     protected ?string $heading = 'Kehadiran Karyawan Hari Ini';

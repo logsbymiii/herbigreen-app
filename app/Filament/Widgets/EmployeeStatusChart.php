@@ -14,6 +14,7 @@ use Carbon\Carbon;
 class EmployeeStatusChart extends ChartWidget implements HasActions
 {
     use InteractsWithActions;
+    protected static string $view = 'filament.widgets.chart-with-actions';
     protected static ?int $sort = 2;
     protected ?string $heading = 'Status Laporan Hari Ini';
     protected ?string $maxHeight = '250px';

@@ -17,7 +17,10 @@ class ReminderAbsenPagi extends Command
 
     public function handle()
     {
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')->get();
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)->get();
         $provider = \App\Services\MessageProviderFactory::create();
 
         \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Memulai proses reminder absen pagi.");
@@ -29,7 +32,7 @@ class ReminderAbsenPagi extends Command
                 ->exists();
 
             if (!$sudahAbsen) {
-                $provider->sendMessage($emp->telegram_id, "☀️ Selamat Pagi, {$emp->name}. Jangan lupa untuk melakukan absensi kehadiran sebelum memulai aktivitas hari ini. Selamat bekerja! ⏰");
+                $provider->sendMessage($emp->{$identifierColumn}, "☀️ Selamat Pagi, {$emp->name}. Jangan lupa untuk melakukan absensi kehadiran sebelum memulai aktivitas hari ini. Selamat bekerja! ⏰");
                 $count++;
             }
         }

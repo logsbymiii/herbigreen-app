@@ -17,8 +17,10 @@ class ReminderLaporWajib extends Command
 
     public function handle()
     {
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')
-            ->get();
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)->get();
             
         $provider = \App\Services\MessageProviderFactory::create();
 
@@ -34,7 +36,7 @@ class ReminderLaporWajib extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "⚠️ Halo, {$emp->name}. Waktu pelaporan wajib harian telah tiba. Mohon segera mengirimkan laporan aktivitas Anda hari ini. Terima kasih.");
+                $provider->sendMessage($emp->{$identifierColumn}, "⚠️ Halo, {$emp->name}. Waktu pelaporan wajib harian telah tiba. Mohon segera mengirimkan laporan aktivitas Anda hari ini. Terima kasih.");
                 $count++;
             }
         }

@@ -17,8 +17,10 @@ class ReminderLaporAkhir extends Command
 
     public function handle()
     {
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')
-            ->get();
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)->get();
             
         $provider = \App\Services\MessageProviderFactory::create();
 
@@ -34,7 +36,7 @@ class ReminderLaporAkhir extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🚨 Peringatan Terakhir, {$emp->name}. Mohon segera mengirimkan laporan harian Anda sebelum batas waktu habis, agar kehadiran Anda tetap terhitung hari ini.");
+                $provider->sendMessage($emp->{$identifierColumn}, "🚨 Peringatan Terakhir, {$emp->name}. Mohon segera mengirimkan laporan harian Anda sebelum batas waktu habis, agar kehadiran Anda tetap terhitung hari ini.");
                 $count++;
             }
         }

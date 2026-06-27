@@ -17,8 +17,10 @@ class DeadlineLaporSore extends Command
 
     public function handle()
     {
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')
-            ->get();
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)->get();
             
         $provider = \App\Services\MessageProviderFactory::create();
 
@@ -40,7 +42,7 @@ class DeadlineLaporSore extends Command
                     ['type' => 'alpa']
                 );
                 
-                $provider->sendMessage($emp->telegram_id, "❌ Batas waktu pengisian laporan telah habis. Kehadiran Anda hari ini otomatis diubah menjadi *TIDAK MASUK (ALPA)* karena tidak ada laporan yang diterima. 📉");
+                $provider->sendMessage($emp->{$identifierColumn}, "❌ Batas waktu pengisian laporan telah habis. Kehadiran Anda hari ini otomatis diubah menjadi *TIDAK MASUK (ALPA)* karena tidak ada laporan yang diterima. 📉");
                 $count++;
             }
         }

@@ -17,9 +17,11 @@ class ReminderLaporAwal extends Command
 
     public function handle()
     {
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
         // Kecuali host sesi malam
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')
-            ->get();
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)->get();
             
         $provider = \App\Services\MessageProviderFactory::create();
 
@@ -35,7 +37,7 @@ class ReminderLaporAwal extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🔔 Halo, {$emp->name}. Mengingatkan bahwa jam kerja hampir usai. Mohon segera mengisi laporan aktivitas harian Anda. 📝");
+                $provider->sendMessage($emp->{$identifierColumn}, "🔔 Halo, {$emp->name}. Mengingatkan bahwa jam kerja hampir usai. Mohon segera mengisi laporan aktivitas harian Anda. 📝");
                 $count++;
             }
         }

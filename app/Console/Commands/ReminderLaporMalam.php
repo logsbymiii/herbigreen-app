@@ -17,7 +17,10 @@ class ReminderLaporMalam extends Command
 
     public function handle()
     {
-        $employees = \App\Models\Employee::whereNotNull('telegram_id')
+        $providerType = env('MESSAGE_PROVIDER', 'fonnte');
+        $identifierColumn = $providerType === 'telegram' ? 'telegram_id' : 'phone';
+
+        $employees = \App\Models\Employee::whereNotNull($identifierColumn)
             ->whereHas('division', function($q) {
                 $q->where('name', 'like', '%Host Live%');
             })->get();
@@ -33,7 +36,7 @@ class ReminderLaporMalam extends Command
                 ->exists();
 
             if (!$sudahLapor) {
-                $provider->sendMessage($emp->telegram_id, "🌙 Selamat Malam, {$emp->name}. Mohon jangan lupa untuk mengirimkan laporan GMV shift malam Anda sebelum mengakhiri pekerjaan. Terima kasih. 😴");
+                $provider->sendMessage($emp->{$identifierColumn}, "🌙 Selamat Malam, {$emp->name}. Mohon jangan lupa untuk mengirimkan laporan GMV shift malam Anda sebelum mengakhiri pekerjaan. Terima kasih. 😴");
                 $count++;
             }
         }

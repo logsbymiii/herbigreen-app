@@ -9,7 +9,11 @@ use Carbon\Carbon;
 class WeeklyTrendChart extends ChartWidget
 {
     protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 2;
+    protected int | string | array $columnSpan = [
+        'sm' => 'full',
+        'md' => 1,
+        'xl' => 1,
+    ];
 
     public ?string $filter = 'days';
 

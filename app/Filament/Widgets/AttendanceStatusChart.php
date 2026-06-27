@@ -125,7 +125,10 @@ class AttendanceStatusChart extends ChartWidget implements HasActions
                     if (elements.length > 0) {
                         const index = elements[0].index;
                         const label = chart.data.labels[index];
-                        \$wire.mountAction('showAttendanceDetails', { status: label });
+                        const wireEl = chart.canvas.closest('[wire\\\\:id]');
+                        if (wireEl) {
+                            window.Livewire.find(wireEl.getAttribute('wire:id')).mountAction('showAttendanceDetails', { status: label });
+                        }
                     }
                 }
             JS),

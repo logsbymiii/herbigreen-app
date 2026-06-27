@@ -28,7 +28,18 @@ class ListAttendances extends ListRecords
                 ->exports([
                     \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
                         ->fromTable()
-                        ->except(['No'])
+                        ->except(['No', 'proof_path'])
+                        ->withColumns([
+                            \pxlrbt\FilamentExcel\Columns\Column::make('proof_path_image')
+                                ->heading('Bukti Surat')
+                                ->formatStateUsing(function ($record) {
+                                    if (!$record->proof_path) return '';
+                                    $url = str_starts_with($record->proof_path, 'http') 
+                                        ? $record->proof_path 
+                                        : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addDays(7));
+                                    return '=IMAGE("' . $url . '")';
+                                }),
+                        ])
                         ->withFilename('Export_Presensi_' . date('Y-m-d'))
                 ]),
             CreateAction::make(),

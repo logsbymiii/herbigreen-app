@@ -109,15 +109,42 @@ class AttendancesTable
                     ->form([
                         \Filament\Forms\Components\Select::make('month')
                             ->label('Bulan')
-                            ->options([
-                                '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
-                                '04' => 'April', '05' => 'Mei', '06' => 'Juni',
-                                '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
-                                '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
-                            ]),
+                            ->options(function () {
+                                $months = \App\Models\Attendance::selectRaw('MONTH(date) as month')
+                                    ->whereNotNull('date')
+                                    ->distinct()
+                                    ->orderBy('month')
+                                    ->pluck('month')
+                                    ->toArray();
+                                
+                                $monthNames = [
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                ];
+
+                                $options = [];
+                                foreach ($months as $m) {
+                                    $options[str_pad($m, 2, '0', STR_PAD_LEFT)] = $monthNames[(int)$m];
+                                }
+                                return $options;
+                            }),
                         \Filament\Forms\Components\Select::make('year')
                             ->label('Tahun')
-                            ->options(array_combine(range(2023, now()->year), range(2023, now()->year))),
+                            ->options(function () {
+                                $years = \App\Models\Attendance::selectRaw('YEAR(date) as year')
+                                    ->whereNotNull('date')
+                                    ->distinct()
+                                    ->orderByDesc('year')
+                                    ->pluck('year')
+                                    ->toArray();
+                                
+                                $options = [];
+                                foreach ($years as $y) {
+                                    $options[$y] = $y;
+                                }
+                                return $options;
+                            }),
                     ])
                     ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
                         return $query

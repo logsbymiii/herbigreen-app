@@ -20,6 +20,7 @@ class ListEmployees extends ListRecords
                 ->exports([
                     \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
                         ->fromTable()
+                        ->except(['No'])
                         ->withFilename('Export_Karyawan_' . date('Y-m-d'))
                 ]),
             CreateAction::make(),

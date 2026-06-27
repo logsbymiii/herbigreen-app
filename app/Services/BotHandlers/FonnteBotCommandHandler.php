@@ -34,7 +34,6 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
                 'edit_laporan' => $this->handleEditLaporan($phone),
                 'edit_profil'  => $this->handleEditProfil($phone),
                 'init_management' => $this->handleInitManagement($phone),
-                'init_community'  => $this->handleInitCommunity($phone),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -262,43 +261,6 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
                 'raw_ocr_text'    => $tempData['raw_ocr_text'],
                 'live_date'       => $tempData['live_date'],
             ]);
-            $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
-            $platformDisplay = $tempData['platform'] ?? 'Lainnya';
-
-            // Tambahkan juga ke SmartDailyReport supaya tampil di Laporan per Divisi dan gak masuk Wall of Shame
-            $accountDisplay = $tempData['account_name'] ?? '';
-            $timeDisplay = '';
-            if (!empty($tempData['live_start']) && !empty($tempData['live_end'])) {
-                $timeDisplay = " ({$tempData['live_start']}-{$tempData['live_end']})";
-            }
-            
-            $smartReport = \App\Models\SmartDailyReport::firstOrNew([
-                'employee_id' => $tempData['employee_id'],
-                'report_date' => now()->format('Y-m-d'),
-            ]);
-            
-            $newReportText = "Melaporkan GMV Rp {$gmvFormatted} untuk live {$platformDisplay} {$accountDisplay}{$timeDisplay}";
-            
-            if ($smartReport->exists) {
-                $smartReport->raw_report .= "\n" . $newReportText;
-            } else {
-                $smartReport->raw_report = $newReportText;
-                $smartReport->ai_insight = "Host Live telah menginput omset harian.";
-                $smartReport->extracted_metrics = ['tipe' => 'Otomatis dari GMV'];
-            }
-            $smartReport->save();
-
-            // SHOUTOUT GMV > 1 JUTA
-            if ($tempData['gmv_amount'] > 1000000 && \Illuminate\Support\Facades\Storage::exists('community_group_id.txt')) {
-                $communityGroupId = trim(\Illuminate\Support\Facades\Storage::get('community_group_id.txt'));
-                $employeeName = \App\Models\Employee::find($tempData['employee_id'])->name ?? 'Seorang Host';
-                
-                $shoutoutMsg = "🔥 *BOOM! SHOUTOUT!*\n\n"
-                             . "{$employeeName} baru aja cetak omset *Rp {$gmvFormatted}* dari live {$platformDisplay}! 🚀\n\n"
-                             . "Keren abis! Siapa nih yang mau nyusul mecahin rekor?";
-                             
-                $this->sendMessage($communityGroupId, $shoutoutMsg);
-            }
 
             $this->conversationState->clearState($phone);
             $this->sendMessage($phone, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
@@ -684,13 +646,6 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
     {
         \Illuminate\Support\Facades\Storage::put('management_group_id.txt', $phone);
         $this->sendMessage($phone, "✅ Siap bos! Grup ini sekarang jadi pusat notifikasi kehadiran (izin/sakit/wfh) dan penerima laporan PDF harian.");
-        return ['status' => true];
-    }
-
-    private function handleInitCommunity(string $phone): array
-    {
-        \Illuminate\Support\Facades\Storage::put('community_group_id.txt', $phone);
-        $this->sendMessage($phone, "🎉 Yuhuu! Grup ini resmi jadi basecamp HerbiGreen Community!\n\nBot bakal ngasih *Shoutout* otomatis kalau ada yang mecahin rekor absen paling subuh atau cetak omset GMV gede. Tetap semangat gengs! 🔥");
         return ['status' => true];
     }
 }

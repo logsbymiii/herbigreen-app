@@ -54,7 +54,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             $laporan = \App\Models\SmartDailyReport::where('employee_id', $employee->id)->whereDate('report_date', $today->format('Y-m-d'))->latest()->first();
             $absen = Attendance::where('employee_id', $employee->id)->whereDate('date', $today->format('Y-m-d'))->latest()->first();
             
-            $todaysReportContent = $laporan ? $laporan->content : null;
+            $todaysReportContent = $laporan ? $laporan->raw_report : null;
             $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : "Telah tercatat kehadiran: BELUM ABSEN SAMA SEKALI";
             
             $ai = new AiResponseService();
@@ -133,7 +133,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         if ($laporan) {
             $jam     = Carbon::parse($laporan->created_at)->setTimezone('Asia/Jakarta')->format('H:i');
             $status .= "✅ *Laporan:* Sudah dikirim pukul {$jam} WIB\n";
-            $status .= "📝 *Isi Laporan:*\n_" . $laporan->content . "_\n\n";
+            $status .= "📝 *Isi Laporan:*\n_" . $laporan->raw_report . "_\n\n";
         } else {
             $status .= "❌ *Laporan:* Belum dikirim\n";
         }

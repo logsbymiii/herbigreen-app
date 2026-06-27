@@ -95,11 +95,10 @@ class AttendanceStatusChart extends ChartWidget implements HasActions
             ->modalHeading(fn (array $arguments) => 'Detail Kehadiran: ' . ($arguments['status'] ?? ''))
             ->modalContent(function (array $arguments) {
                 $status = $arguments['status'] ?? '';
-                $employees = $this->getEmployeesByStatus($status);
-                return view('filament.widgets.employee-status-details', ['employees' => $employees, 'status' => $status]);
+                return view('filament.widgets.employee-status-details', ['status' => $status, 'chartType' => 'attendance']);
             })
             ->modalSubmitAction(false)
-            ->modalCancelAction(false);
+            ->modalCancelActionLabel('Tutup');
     }
 
     protected function getType(): string

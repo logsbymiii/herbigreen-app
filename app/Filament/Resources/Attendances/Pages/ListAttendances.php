@@ -21,36 +21,17 @@ class ListAttendances extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \pxlrbt\FilamentExcel\Actions\Pages\ExportAction::make()
+            \Filament\Actions\Action::make('export_custom')
                 ->label('Export Excel')
                 ->color('success')
                 ->icon('heroicon-o-document-arrow-down')
-                ->exports([
-                    \pxlrbt\FilamentExcel\Exports\ExcelExport::make()
-                        ->fromTable()
-                        ->except(['No', 'proof_path'])
-                        ->withColumns([
-                            \pxlrbt\FilamentExcel\Columns\Column::make('bukti_kehadiran')
-                                ->heading('Bukti Kehadiran')
-                                ->formatStateUsing(function ($record) {
-                                    if ($record->type !== 'hadir' || !$record->proof_path) return '';
-                                    $url = str_starts_with($record->proof_path, 'http') 
-                                        ? $record->proof_path 
-                                        : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addDays(7));
-                                    return '=IMAGE("' . $url . '")';
-                                }),
-                            \pxlrbt\FilamentExcel\Columns\Column::make('bukti_surat')
-                                ->heading('Bukti Surat')
-                                ->formatStateUsing(function ($record) {
-                                    if ($record->type === 'hadir' || !$record->proof_path) return '';
-                                    $url = str_starts_with($record->proof_path, 'http') 
-                                        ? $record->proof_path 
-                                        : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addDays(7));
-                                    return '=IMAGE("' . $url . '")';
-                                }),
-                        ])
-                        ->withFilename('Export_Presensi_' . date('Y-m-d'))
-                ]),
+                ->action(function ($livewire) {
+                    $query = clone $livewire->getFilteredTableQuery();
+                    return \Maatwebsite\Excel\Facades\Excel::download(
+                        new \App\Exports\AttendancesExport($query),
+                        'Export_Presensi_' . date('Y-m-d') . '.xlsx'
+                    );
+                }),
             CreateAction::make(),
         ];
     }

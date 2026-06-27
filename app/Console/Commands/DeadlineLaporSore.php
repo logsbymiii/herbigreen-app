@@ -22,6 +22,9 @@ class DeadlineLaporSore extends Command
             
         $provider = \App\Services\MessageProviderFactory::create();
 
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Memulai proses deadline lapor sore (19:00).");
+        
+        $count = 0;
         foreach ($employees as $emp) {
             $isHostLive = strtolower($emp->division->name ?? '') === 'host live';
             if ($isHostLive) continue;
@@ -38,7 +41,10 @@ class DeadlineLaporSore extends Command
                 );
                 
                 $provider->sendMessage($emp->telegram_id, "❌ Batas waktu pengisian laporan telah habis. Kehadiran Anda hari ini otomatis diubah menjadi *TIDAK MASUK (ALPA)* karena tidak ada laporan yang diterima. 📉");
+                $count++;
             }
         }
+        
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Selesai mengirim deadline lapor sore (Alpa) ke {$count} karyawan.");
     }
 }

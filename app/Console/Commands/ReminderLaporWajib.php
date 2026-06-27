@@ -22,6 +22,9 @@ class ReminderLaporWajib extends Command
             
         $provider = \App\Services\MessageProviderFactory::create();
 
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Memulai proses reminder lapor wajib (16:00).");
+        
+        $count = 0;
         foreach ($employees as $emp) {
             $isHostLive = strtolower($emp->division->name ?? '') === 'host live';
             if ($isHostLive) continue;
@@ -32,7 +35,10 @@ class ReminderLaporWajib extends Command
 
             if (!$sudahLapor) {
                 $provider->sendMessage($emp->telegram_id, "⚠️ Halo, {$emp->name}. Waktu pelaporan wajib harian telah tiba. Mohon segera mengirimkan laporan aktivitas Anda hari ini. Terima kasih.");
+                $count++;
             }
         }
+        
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Selesai mengirim reminder lapor wajib ke {$count} karyawan.");
     }
 }

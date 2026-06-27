@@ -24,6 +24,9 @@ class ReminderLaporMalam extends Command
             
         $provider = \App\Services\MessageProviderFactory::create();
 
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Memulai proses reminder lapor malam (22:30).");
+        
+        $count = 0;
         foreach ($employees as $emp) {
             $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
                 ->whereDate('report_date', now()->format('Y-m-d'))
@@ -31,7 +34,10 @@ class ReminderLaporMalam extends Command
 
             if (!$sudahLapor) {
                 $provider->sendMessage($emp->telegram_id, "🌙 Selamat Malam, {$emp->name}. Mohon jangan lupa untuk mengirimkan laporan GMV shift malam Anda sebelum mengakhiri pekerjaan. Terima kasih. 😴");
+                $count++;
             }
         }
+        
+        \Illuminate\Support\Facades\Log::info("KOKI REMINDER: Selesai mengirim reminder lapor malam ke {$count} host live.");
     }
 }

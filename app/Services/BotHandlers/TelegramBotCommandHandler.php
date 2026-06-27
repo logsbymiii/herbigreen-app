@@ -28,6 +28,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'absen'   => $this->handleAbsen($chatId),
                 'izin'    => $this->handleAbsen($chatId), // alias /absen
                 'wfh'     => $this->handleWfh($chatId),
+                'wfc'     => $this->handleWfh($chatId), // alias /wfh
                 'edit_laporan' => $this->handleEditLaporan($chatId),
                 'edit_profil'  => $this->handleEditProfil($chatId),
                 'gmv'          => $this->handleGmv($chatId, $message),
@@ -225,7 +226,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         $this->conversationState->setCurrentStep($chatId, 'awaiting_wfh_reason');
-        $this->sendMessage($chatId, "🏠 *Pengajuan WFH*\n\nSilakan ketik alasan pengajuan Work From Home Anda:");
+        $this->sendMessage($chatId, "🏠 *Pengajuan WFH / WFC*\n\nSilakan ketik alasan pengajuan Work From Home / Cafe Anda:");
         return ['status' => true];
     }
     
@@ -248,12 +249,12 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         ]);
 
         $this->conversationState->clearState($chatId);
-        $this->sendMessage($chatId, "✅ Pengajuan WFH kamu berhasil dikirim ke HRD. Harap menunggu persetujuan.");
+        $this->sendMessage($chatId, "✅ Pengajuan WFH / WFC kamu berhasil dikirim ke HRD. Harap menunggu persetujuan.");
 
         // Kirim Notifikasi ke HR
         $simauId = env('SIMAU_TELEGRAM_ID');
         if ($simauId) {
-            $hrMessage = "🔔 *PENGAJUAN WFH BARU*\n\n"
+            $hrMessage = "🔔 *PENGAJUAN WFH / WFC BARU*\n\n"
                        . "👤 Nama: *{$employee->name}*\n"
                        . "📅 Tanggal: *" . now()->format('d M Y') . "*\n"
                        . "📝 Alasan: _{$reason}_\n\n"

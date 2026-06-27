@@ -32,6 +32,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'edit_profil'  => $this->handleEditProfil($chatId),
                 'gmv'          => $this->handleGmv($chatId, $message),
                 'init_management' => $this->handleInitManagement($chatId),
+                'init_community'  => $this->handleInitCommunity($chatId),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
             };
         }
@@ -836,6 +837,18 @@ _Contoh: 14.00-15.00_");
             }
             $smartReport->save();
 
+            // SHOUTOUT GMV > 1 JUTA
+            if ($tempData['gmv_amount'] > 1000000 && \Illuminate\Support\Facades\Storage::exists('community_group_id.txt')) {
+                $communityGroupId = trim(\Illuminate\Support\Facades\Storage::get('community_group_id.txt'));
+                $employeeName = \App\Models\Employee::find($tempData['employee_id'])->name ?? 'Seorang Host';
+                
+                $shoutoutMsg = "🔥 *BOOM! SHOUTOUT!*\n\n"
+                             . "{$employeeName} baru aja cetak omset *Rp {$gmvFormatted}* dari live {$platformDisplay}! 🚀\n\n"
+                             . "Keren abis! Siapa nih yang mau nyusul mecahin rekor?";
+                             
+                $this->sendMessage($communityGroupId, $shoutoutMsg);
+            }
+
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
             \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm YA (Tele). Disimpan.");
@@ -1131,6 +1144,13 @@ Balas dengan angka urutan divisi.");
     {
         \Illuminate\Support\Facades\Storage::put('management_group_id.txt', $chatId);
         $this->sendMessage($chatId, "✅ Siap bos! Grup ini sekarang jadi pusat notifikasi kehadiran (izin/sakit/wfh) dan penerima laporan PDF harian.");
+        return ['status' => true];
+    }
+
+    private function handleInitCommunity(string $chatId): array
+    {
+        \Illuminate\Support\Facades\Storage::put('community_group_id.txt', $chatId);
+        $this->sendMessage($chatId, "🎉 Yuhuu! Grup ini resmi jadi basecamp HerbiGreen Community!\n\nBot bakal ngasih *Shoutout* otomatis kalau ada yang mecahin rekor absen paling subuh atau cetak omset GMV gede. Tetap semangat gengs! 🔥");
         return ['status' => true];
     }
 }

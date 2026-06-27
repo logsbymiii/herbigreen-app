@@ -61,6 +61,7 @@ class ProcessAttendanceJob implements ShouldQueue
 
         Log::info("KOKI ABSEN: ID {$this->employeeId} berhasil absen dengan status: {$this->attendanceType}");
 
+        // Notif Management untuk izin/sakit/wfh
         if (in_array($this->attendanceType, ['sakit', 'izin', 'wfh'])) {
             if (\Illuminate\Support\Facades\Storage::exists('management_group_id.txt')) {
                 $managementGroupId = \Illuminate\Support\Facades\Storage::get('management_group_id.txt');
@@ -69,6 +70,27 @@ class ProcessAttendanceJob implements ShouldQueue
                     $provider = \App\Services\MessageProviderFactory::create();
                     $notifText = "🔔 *[Info Kehadiran]*\n{$employee->name} dari divisi {$employee->division?->name} menyatakan *" . strtoupper($this->attendanceType) . "* hari ini.\n\nAlasan: {$this->message}";
                     $provider->sendMessage(trim($managementGroupId), $notifText);
+                }
+            }
+        }
+
+        // Shoutout Komunitas untuk Absen Paling Pagi (Hadir)
+        if ($this->attendanceType === 'hadir') {
+            $totalHadirToday = Attendance::where('date', now()->format('Y-m-d'))
+                                         ->where('type', 'hadir')
+                                         ->count();
+                                         
+            // Jika dia adalah orang pertama yang hadir hari ini
+            if ($totalHadirToday === 1 && \Illuminate\Support\Facades\Storage::exists('community_group_id.txt')) {
+                $communityGroupId = \Illuminate\Support\Facades\Storage::get('community_group_id.txt');
+                $employee = \App\Models\Employee::find($this->employeeId);
+                if ($employee && $communityGroupId) {
+                    $provider = \App\Services\MessageProviderFactory::create();
+                    $time = now()->format('H:i');
+                    $msg = "🌅 *MORNING SHOUTOUT!*\n\n"
+                         . "Berikan tepuk tangan buat *{$employee->name}* yang jadi pemegang rekor absen paling pagi hari ini (Jam {$time} WIB)! 🏆\n\n"
+                         . "Semangat kerjanya, ayo yang lain jangan mau kalah! 🔥";
+                    $provider->sendMessage(trim($communityGroupId), $msg);
                 }
             }
         }

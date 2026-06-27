@@ -133,6 +133,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         if ($laporan) {
             $jam     = Carbon::parse($laporan->created_at)->setTimezone('Asia/Jakarta')->format('H:i');
             $status .= "✅ *Laporan:* Sudah dikirim pukul {$jam} WIB\n";
+            $status .= "📝 *Isi Laporan:*\n_" . $laporan->content . "_\n\n";
         } else {
             $status .= "❌ *Laporan:* Belum dikirim\n";
         }

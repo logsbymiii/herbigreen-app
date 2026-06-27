@@ -14,79 +14,62 @@ class AttendancesTable
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\Layout\Stack::make([
-                    \Filament\Tables\Columns\Layout\Split::make([
-                        \Filament\Tables\Columns\ImageColumn::make('employee_avatar')
-                            ->getStateUsing(fn ($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->employee?->name ?? 'Deleted') . '&background=f3f4f6&color=374151&bold=true')
-                            ->circular()
-                            ->grow(false)
-                            ->extraImgAttributes(['style' => 'width: 40px; height: 40px;']),
-                        
-                        \Filament\Tables\Columns\Layout\Stack::make([
-                            TextColumn::make('employee.name')
-                                ->weight(\Filament\Support\Enums\FontWeight::Bold)
-                                ->searchable()
-                                ->sortable(),
-                            TextColumn::make('note_and_date')
-                                ->getStateUsing(function ($record) {
-                                    $date = \Carbon\Carbon::parse($record->date)->translatedFormat('d M');
-                                    $note = $record->note ?: ucfirst($record->type);
-                                    return "{$note} · {$date}";
-                                })
-                                ->color('gray')
-                                ->size(\Filament\Support\Enums\TextSize::Small),
-                        ])->space(1),
-                        
-                        TextColumn::make('type')
-                            ->badge()
-                            ->grow(false)
-                            ->alignEnd()
-                            ->color(fn (string $state): string => match ($state) {
-                                'hadir' => 'success',
-                                'wfh' => 'info',
-                                'sakit' => 'warning',
-                                'izin' => 'warning',
-                                'alpa' => 'danger',
-                                'telat' => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn ($state) => ucfirst($state)),
-                    ])->extraAttributes(['class' => 'items-center']),
-
-                    \Filament\Tables\Columns\ImageColumn::make('proof_path')
-                        ->disk('r2')
-                        ->visibility('private')
-                        ->square()
-                        ->getStateUsing(function ($record) {
-                            if (!$record->proof_path) return null;
-                            if (str_starts_with($record->proof_path, 'http')) {
-                                return $record->proof_path;
-                            }
+                \Filament\Tables\Columns\TextColumn::make('No')
+                    ->rowIndex(),
+                \Filament\Tables\Columns\TextColumn::make('employee.name')
+                    ->label('Nama')
+                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->searchable()
+                    ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('type')
+                    ->label('Tipe Kehadiran')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'hadir' => 'success',
+                        'wfh' => 'info',
+                        'sakit' => 'warning',
+                        'izin' => 'warning',
+                        'alpa' => 'danger',
+                        'telat' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn ($state) => ucfirst($state)),
+                \Filament\Tables\Columns\TextColumn::make('note')
+                    ->label('Keterangan')
+                    ->searchable(),
+                \Filament\Tables\Columns\TextColumn::make('date')
+                    ->label('Tanggal')
+                    ->date('d M Y')
+                    ->sortable(),
+                \Filament\Tables\Columns\ImageColumn::make('proof_path')
+                    ->label('Bukti Surat')
+                    ->disk('r2')
+                    ->visibility('private')
+                    ->square()
+                    ->getStateUsing(function ($record) {
+                        if (!$record->proof_path) return null;
+                        if (str_starts_with($record->proof_path, 'http')) {
                             return $record->proof_path;
-                        })
-                        ->action(
-                            \Filament\Actions\Action::make('viewProof')
-                                ->label('Lihat Bukti')
-                                ->icon('heroicon-o-eye')
-                                ->modalHeading('Bukti Kehadiran')
-                                ->modalSubmitAction(false)
-                                ->modalCancelActionLabel('Tutup')
-                                ->modalContent(function ($record) {
-                                    if (!$record->proof_path) {
-                                        return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
-                                    }
-                                    $url = str_starts_with($record->proof_path, 'http') 
-                                        ? $record->proof_path 
-                                        : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
-                                    return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
-                                })
-                        )
-                        ->extraAttributes(['class' => 'mt-2']),
-                ])->space(2)
-            ])
-            ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
+                        }
+                        return $record->proof_path;
+                    })
+                    ->action(
+                        \Filament\Actions\Action::make('viewProof')
+                            ->label('Lihat Bukti')
+                            ->icon('heroicon-o-eye')
+                            ->modalHeading('Bukti Kehadiran')
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Tutup')
+                            ->modalContent(function ($record) {
+                                if (!$record->proof_path) {
+                                    return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
+                                }
+                                $url = str_starts_with($record->proof_path, 'http') 
+                                    ? $record->proof_path 
+                                    : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
+                                return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
+                            })
+                    ),
             ])
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
@@ -175,11 +158,9 @@ class AttendancesTable
                     ->columns(2),
             ])
             ->recordUrl(fn ($record) => \App\Filament\Resources\Attendances\AttendanceResource::getUrl('edit', ['record' => $record]))
-            ->recordActions([
+            ->actions([
                 \Filament\Actions\EditAction::make(),
                 \Filament\Actions\DeleteAction::make(),
-                \Filament\Actions\ForceDeleteAction::make(),
-                \Filament\Actions\RestoreAction::make(),
             ])
             ->toolbarActions([
                 \Filament\Actions\BulkActionGroup::make([

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Attendances\Pages;
 use App\Filament\Resources\Attendances\AttendanceResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Livewire\Attributes\On;
 
 class ListAttendances extends ListRecords
 {
@@ -37,5 +38,13 @@ class ListAttendances extends ListRecords
             'izin' => \Filament\Schemas\Components\Tabs\Tab::make('Izin')
                 ->modifyQueryUsing(fn ($query) => $query->where('type', 'izin')),
         ];
+    }
+
+    #[On('filterByDate')]
+    public function handleFilterByDate($date)
+    {
+        $this->tableFilters['date']['date_from'] = $date;
+        $this->tableFilters['date']['date_until'] = $date;
+        $this->resetTable();
     }
 }

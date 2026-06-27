@@ -12,7 +12,7 @@
     $hasMaxHeight = filled($maxHeight) && $maxHeight !== '100%';
 @endphp
 
-<x-filament-widgets::widget class="fi-wi-chart">
+<x-filament-widgets::widget class="fi-wi-chart" x-on:chart-clicked="$wire.mountAction($event.detail.action, { status: $event.detail.status })">
     <x-filament::section
         :description="$description"
         :heading="$heading"

@@ -110,10 +110,10 @@ class EmployeeStatusChart extends ChartWidget implements HasActions
                     if (elements.length > 0) {
                         const index = elements[0].index;
                         const label = chart.data.labels[index];
-                        const wireEl = chart.canvas.closest('[wire\\\\:id]');
-                        if (wireEl) {
-                            window.Livewire.find(wireEl.getAttribute('wire:id')).mountAction('showDetails', { status: label });
-                        }
+                        chart.canvas.dispatchEvent(new CustomEvent('chart-clicked', {
+                            detail: { action: 'showDetails', status: label },
+                            bubbles: true
+                        }));
                     }
                 }
             JS),

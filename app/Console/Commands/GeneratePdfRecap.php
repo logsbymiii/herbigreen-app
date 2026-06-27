@@ -29,11 +29,50 @@ class GeneratePdfRecap extends Command
             $emp->report_today = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
                 ->whereDate('report_date', $date)->first();
                 
-            $emp->gmv_today = \App\Models\GmvReport::where('employee_id', $emp->id)
-                ->whereDate('live_date', $date)->sum('gmv_amount');
+            $gmvQuery = \App\Models\GmvReport::where('employee_id', $emp->id)
+                ->whereDate('live_date', $date);
+
+            $emp->gmv_stats = [
+                'gmv_amount' => $gmvQuery->sum('gmv_amount'),
+                'order_count' => $gmvQuery->sum('order_count'),
+                'product_sold' => $gmvQuery->sum('product_sold'),
+                'viewers_count' => $gmvQuery->sum('viewers_count'),
+                'highest_viewers' => $gmvQuery->max('highest_viewers'),
+            ];
+            
+            $emp->gmv_today = $emp->gmv_stats['gmv_amount'];
+            
+            // Cek WFH status
+            $emp->is_wfh = \App\Models\WfhRequest::where('employee_id', $emp->id)
+                ->whereDate('request_date', $date)
+                ->where('status', 'approved')
+                ->exists();
         }
 
-        // Group by division
+        // --- SECTION 1: Executive Summary Stats ---
+        $totalHadir = $employees->filter(fn($e) => $e->attendance_today && $e->attendance_today->type === 'hadir')->count();
+        $totalSakitIzin = $employees->filter(fn($e) => $e->attendance_today && in_array($e->attendance_today->type, ['sakit', 'izin']))->count();
+        $totalAlpa = $employees->filter(fn($e) => !$e->attendance_today || $e->attendance_today->type === 'alpa')->count();
+        $totalLaporan = $employees->filter(fn($e) => $e->report_today != null)->count();
+
+        // --- SECTION 2: Financial & Performance ---
+        $totalGmv = $employees->sum('gmv_today');
+        $top3Gmv = $employees->filter(fn($e) => $e->gmv_today > 0)
+                             ->sortByDesc('gmv_today')
+                             ->take(3)
+                             ->values();
+
+        // --- SECTION 3: Wall of Shame ---
+        $wfhList = $employees->filter(fn($e) => $e->is_wfh)->values();
+        $lateList = $employees->filter(function($e) {
+            if ($e->attendance_today && $e->attendance_today->type === 'hadir' && $e->attendance_today->clocked_in_at) {
+                return \Carbon\Carbon::parse($e->attendance_today->clocked_in_at)->format('H:i') > '08:00';
+            }
+            return false;
+        })->values();
+        $noReportList = $employees->filter(fn($e) => !$e->report_today)->values();
+
+        // Group by division untuk Section 4
         $divisions = $employees->groupBy(function($emp) {
             return $emp->division->name ?? 'Lainnya';
         });
@@ -43,8 +82,16 @@ class GeneratePdfRecap extends Command
         foreach ($employees as $emp) {
             if ($emp->report_today && !empty($emp->report_today->raw_report)) {
                 $divName = $emp->division->name ?? 'Lainnya';
-                $gmvInfo = $emp->gmv_today > 0 ? "\nData Sistem (GMV Leaderboard): Rp " . number_format($emp->gmv_today, 0, ',', '.') : "";
-                $allReportsText .= "Karyawan: {$emp->name} | Divisi: {$divName}\nLaporan: {$emp->report_today->raw_report}{$gmvInfo}\n\n";
+                $gmvInfo = "";
+                if ($emp->gmv_today > 0) {
+                    $gmvInfo = "\n\nDATA SISTEM (Tercatat di Database GMV):\n" .
+                               "- Omset (GMV): Rp " . number_format($emp->gmv_today, 0, ',', '.') . "\n" .
+                               "- Pesanan: " . $emp->gmv_stats['order_count'] . "\n" .
+                               "- Produk Terjual: " . $emp->gmv_stats['product_sold'] . "\n" .
+                               "- Total Penonton: " . $emp->gmv_stats['viewers_count'] . "\n" .
+                               "- Penonton Tertinggi (Peak): " . $emp->gmv_stats['highest_viewers'];
+                }
+                $allReportsText .= "Karyawan: {$emp->name} | Divisi: {$divName}\nLaporan Teks: {$emp->report_today->raw_report}{$gmvInfo}\n\n";
             }
         }
 
@@ -55,11 +102,11 @@ class GeneratePdfRecap extends Command
             try {
                 $prompt = "Kamu adalah Chief Operating Officer (COO) cerdas. Berikut adalah gabungan laporan harian dari semua karyawan hari ini:\n"
                         . "```\n{$allReportsText}\n```\n\n"
-                        . "Buatkan 'Executive Summary' untuk CEO (Mas Jodi). Ringkasan harus mencakup:\n"
-                        . "1. Penilaian keseluruhan performa tim hari ini (Singkat).\n"
+                        . "Buatkan 'Executive Summary' singkat. Ringkasan HANYA mencakup:\n"
+                        . "1. Penilaian performa tim hari ini (Singkat).\n"
                         . "2. Highlight divisi atau individu yang mencapai target bagus.\n"
                         . "3. Red Flags (Masalah/Blocker) yang butuh atensi.\n\n"
-                        . "Format menggunakan Markdown yang rapi (bold, bullet points). Gunakan bahasa Indonesia profesional tapi asik dibaca.";
+                        . "Format menggunakan Markdown yang rapi (bold, bullet points). Gunakan bahasa Indonesia profesional tapi ringkas.";
 
                 $geminiResponse = \Illuminate\Support\Facades\Http::timeout(60)->withHeaders([
                     'Content-Type' => 'application/json',
@@ -79,9 +126,20 @@ class GeneratePdfRecap extends Command
 
         // Generate PDF
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.daily_recap', [
-            'date' => now()->format('d M Y'),
+            'date' => now()->format('d F Y'),
             'divisions' => $divisions,
-            'executiveSummary' => \Illuminate\Support\Str::markdown($executiveSummary)
+            'executiveSummary' => \Illuminate\Support\Str::markdown($executiveSummary),
+            'stats' => [
+                'hadir' => $totalHadir,
+                'sakit_izin' => $totalSakitIzin,
+                'alpa' => $totalAlpa,
+                'laporan' => $totalLaporan,
+                'total_gmv' => $totalGmv,
+            ],
+            'top3Gmv' => $top3Gmv,
+            'wfhList' => $wfhList,
+            'lateList' => $lateList,
+            'noReportList' => $noReportList,
         ]);
         
         $fileName = "Rekap_Harian_Herbigreen_{$date}.pdf";

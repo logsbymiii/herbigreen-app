@@ -7,171 +7,280 @@
         body { 
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
             font-size: 12px; 
-            color: #222;
-            line-height: 1.5;
+            color: #333;
+            line-height: 1.4;
             margin: 0;
-            padding: 0 10px;
+            padding: 15px;
         }
+        /* Header */
         .header {
-            border-bottom: 2px solid #222;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            text-align: center;
+            border-bottom: 2px solid #2f5233;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: left;
         }
         .header h1 {
             margin: 0 0 5px 0;
-            font-size: 22px;
-            letter-spacing: 1px;
-        }
-        .header p {
-            margin: 0;
-            color: #666;
-            font-size: 13px;
-        }
-        .summary-box {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        .summary-box h3 {
-            margin-top: 0;
-            font-size: 15px;
-            color: #111;
-        }
-        .division-header {
-            font-size: 16px;
-            color: #111;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        .employee-card {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #eee;
-        }
-        .emp-name {
-            font-size: 14px;
-            font-weight: bold;
-            color: #000;
-        }
-        .badge {
-            font-size: 10px;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        .badge-hadir { background-color: #e6f4ea; color: #137333; }
-        .badge-alpa { background-color: #fce8e6; color: #c5221f; }
-        .emp-time {
-            font-size: 11px;
-            color: #777;
-            margin-left: 5px;
-        }
-        .content-section {
-            margin-top: 8px;
-            font-size: 12px;
-        }
-        .content-label {
-            font-weight: bold;
-            color: #555;
-            font-size: 11px;
+            font-size: 18px;
+            color: #2f5233;
             text-transform: uppercase;
         }
-        .ai-text {
-            margin-top: 4px;
+        .header-meta {
+            font-size: 11px;
+            color: #666;
+            margin: 2px 0;
         }
-        .ai-text p { margin: 0 0 5px 0; }
-        .ai-text ul { margin: 0; padding-left: 18px; }
-        .metric-text {
-            color: #444;
-            margin-top: 4px;
+        
+        /* Section Titles */
+        .section-title {
+            background-color: #2f5233;
+            color: #fff;
+            padding: 6px 10px;
+            font-size: 13px;
+            margin: 25px 0 10px 0;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .kendala-text {
-            color: #c5221f;
-            margin-top: 4px;
+
+        /* Section 1: 4 Kotak Angka (Tabel) */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .stats-table td {
+            width: 25%;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .stats-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2f5233;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .stats-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        /* Executive Summary AI Text */
+        .ai-summary {
+            background-color: #f4fbf7;
+            padding: 10px 15px;
+            border-left: 4px solid #4EA674;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+        .ai-summary p { margin-top: 0; margin-bottom: 8px; }
+        .ai-summary ul { margin: 0; padding-left: 20px; }
+
+        /* Tables */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.data-table th {
+            background-color: #f2f2f2;
+            color: #333;
             font-weight: bold;
         }
+        table.data-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        /* Wall of Shame specific */
+        .wos-table th { background-color: #fee2e2; color: #991b1b; }
+        .wos-empty { text-align: center; font-style: italic; color: #166534; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; }
+
+        /* General Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .text-green { color: #166534; }
+        .text-red { color: #991b1b; }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 5px;
+            font-size: 9px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+        }
+        .badge-1 { background-color: #fbbf24; color: #78350f; } /* Gold */
+        .badge-2 { background-color: #e5e7eb; color: #374151; } /* Silver */
+        .badge-3 { background-color: #fef3c7; color: #92400e; } /* Bronze */
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>REKAP HARIAN HERBIGREEN</h1>
-        <p>Tanggal: <strong>{{ $date }}</strong></p>
-    </div>
     
-    @if(isset($executiveSummary))
-    <div class="summary-box">
-        <h3>📊 Executive Summary (AI Analysis)</h3>
-        <div class="ai-text">
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Rangkuman Operasional Harian PT Herbigreen</h1>
+        <div class="header-meta"><strong>Tanggal:</strong> {{ $date }}</div>
+        <div class="header-meta"><strong>Status:</strong> Generated by Serdadu Bot (00:00 WIB)</div>
+    </div>
+
+    <!-- SECTION 1: EXECUTIVE SUMMARY -->
+    <div class="section-title">📊 Section 1: Executive Summary & Absensi</div>
+    
+    <table class="stats-table">
+        <tr>
+            <td>
+                <span class="stats-value">{{ $stats['hadir'] }}</span>
+                <span class="stats-label">Karyawan Hadir</span>
+            </td>
+            <td>
+                <span class="stats-value">{{ $stats['sakit_izin'] }}</span>
+                <span class="stats-label">Sakit / Izin</span>
+            </td>
+            <td>
+                <span class="stats-value" style="color: #991b1b;">{{ $stats['alpa'] }}</span>
+                <span class="stats-label">Alpa / Mangkir</span>
+            </td>
+            <td>
+                <span class="stats-value">{{ $stats['laporan'] }}</span>
+                <span class="stats-label">Laporan Diproses</span>
+            </td>
+        </tr>
+    </table>
+
+    @if(!empty($executiveSummary))
+    <div class="ai-summary">
+        <strong>📝 Ringkasan AI:</strong>
+        <div style="margin-top: 5px;">
             {!! $executiveSummary !!}
         </div>
     </div>
     @endif
 
-    @foreach($divisions as $division => $emps)
-        <div class="division-header">
-            <strong>Divisi: {{ strtoupper($division) }}</strong>
-        </div>
-        
-        @foreach($emps as $emp)
-            <div class="employee-card">
-                <div>
-                    <span class="emp-name">{{ $emp->name }}</span>
-                    @if($emp->attendance_today)
-                        <span class="badge badge-hadir">{{ strtoupper($emp->attendance_today->type) }}</span>
-                        @if($emp->attendance_today->type === 'hadir' && $emp->attendance_today->clocked_in_at)
-                            <span class="emp-time">({{ \Carbon\Carbon::parse($emp->attendance_today->clocked_in_at)->format('H:i') }} WIB)</span>
-                        @endif
-                    @else
-                        <span class="badge badge-alpa">ALPA</span>
-                    @endif
-                </div>
+    <!-- SECTION 2: FINANCIAL & PERFORMANCE -->
+    <div class="section-title">💰 Section 2: Financial & Performance</div>
+    
+    <div style="margin-bottom: 10px;">
+        <strong style="font-size: 14px;">Total GMV Perusahaan: <span class="text-green">Rp {{ number_format($stats['total_gmv'], 0, ',', '.') }}</span></strong>
+    </div>
 
-                @if($emp->report_today)
-                    @if($emp->gmv_today > 0)
-                        <div class="content-section" style="background-color:#fff3cd; padding:8px; border-radius:4px; border-left:4px solid #ffc107;">
-                            <span style="font-weight:bold; color:#856404; font-size:12px;">🏆 GMV TERCATAT (Sistem):</span>
-                            <span style="font-weight:bold; color:#856404; font-size:14px; margin-left:5px;">Rp {{ number_format($emp->gmv_today, 0, ',', '.') }}</span>
-                        </div>
-                    @endif
+    @if(count($top3Gmv) > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th width="10%" class="text-center">Rank</th>
+                    <th width="40%">Nama Host</th>
+                    <th width="50%" class="text-right">Total GMV (Rp)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($top3Gmv as $index => $host)
+                    <tr>
+                        <td class="text-center">
+                            @if($index == 0) <span class="badge badge-1">#1</span>
+                            @elseif($index == 1) <span class="badge badge-2">#2</span>
+                            @elseif($index == 2) <span class="badge badge-3">#3</span>
+                            @endif
+                        </td>
+                        <td class="font-bold">{{ $host->name }}</td>
+                        <td class="text-right font-bold text-green">Rp {{ number_format($host->gmv_today, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <div style="padding: 10px; background: #f9f9f9; border: 1px solid #ddd; font-style: italic;">Tidak ada data GMV yang tercatat hari ini.</div>
+    @endif
 
-                    <div class="content-section">
-                        <div class="content-label">Catatan AI:</div>
-                        <div class="ai-text">
-                            {!! \Illuminate\Support\Str::markdown($emp->report_today->ai_insight ?? 'Tidak ada catatan khusus.') !!}
-                        </div>
-                    </div>
+    <!-- SECTION 3: WALL OF SHAME -->
+    <div class="section-title" style="background-color: #991b1b;">🚨 Section 3: Evaluasi Kedisiplinan</div>
 
-                    @if($emp->report_today->extracted_metrics && count($emp->report_today->extracted_metrics) > 0)
-                        <div class="content-section">
-                            <div class="content-label">Metrik Utama:</div>
-                            <div class="metric-text">
-                                @foreach($emp->report_today->extracted_metrics as $key => $val)
-                                    {{ ucwords(str_replace('_', ' ', $key)) }}: <strong>{{ $val }}</strong> 
-                                    @if(!$loop->last) | @endif
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
+    @if(count($wfhList) > 0 || count($lateList) > 0 || count($noReportList) > 0)
+        <table class="data-table wos-table">
+            <thead>
+                <tr>
+                    <th width="35%">Nama Karyawan</th>
+                    <th width="25%">Status / Kategori</th>
+                    <th width="40%">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($wfhList as $emp)
+                <tr>
+                    <td class="font-bold">{{ $emp->name }}</td>
+                    <td>🏠 Status WFH</td>
+                    <td>Harap dipantau produktivitas remote-nya.</td>
+                </tr>
+                @endforeach
+                
+                @foreach($lateList as $emp)
+                <tr>
+                    <td class="font-bold">{{ $emp->name }}</td>
+                    <td class="text-red">⏰ Datang Terlambat</td>
+                    <td>Absen masuk tercatat pada {{ \Carbon\Carbon::parse($emp->attendance_today->clocked_in_at)->format('H:i') }} WIB (Toleransi 08:00 WIB).</td>
+                </tr>
+                @endforeach
 
-                    @if($emp->report_today->kendala)
-                        <div class="content-section">
-                            <div class="content-label">Kendala:</div>
-                            <div class="kendala-text">{{ $emp->report_today->kendala }}</div>
-                        </div>
-                    @endif
-                @else
-                    <div class="content-section" style="color:#999; font-style:italic;">
-                        Belum ada laporan masuk hari ini.
-                    </div>
-                @endif
-            </div>
-        @endforeach
-    @endforeach
+                @foreach($noReportList as $emp)
+                <tr>
+                    <td class="font-bold">{{ $emp->name }}</td>
+                    <td class="text-red">❌ Tidak Lapor</td>
+                    <td>Terkena auto-cutoff pkl 19:00 karena tidak mengumpulkan Laporan Sore.</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <div class="wos-empty">🎉 Luar biasa! Semua karyawan disiplin, tidak ada keterlambatan dan absen mangkir hari ini.</div>
+    @endif
+
+    <!-- SECTION 4: DETAIL LAPORAN DIVISI -->
+    <div class="section-title">📝 Section 4: Detail Laporan Divisi (Lampiran)</div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="20%">Nama</th>
+                <th width="20%">Divisi</th>
+                <th width="60%">Ringkasan Kerja & Catatan AI</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($divisions as $divisionName => $emps)
+                @foreach($emps as $emp)
+                    <tr>
+                        <td class="font-bold">{{ $emp->name }}</td>
+                        <td>{{ $divisionName }}</td>
+                        <td>
+                            @if($emp->report_today)
+                                <div style="margin-bottom: 5px;"><strong>Laporan Harian:</strong><br>{{ $emp->report_today->raw_report }}</div>
+                                
+                                @if($emp->report_today->kendala)
+                                    <div class="text-red" style="margin-bottom: 5px;"><strong>Kendala:</strong> {{ $emp->report_today->kendala }}</div>
+                                @endif
+                                
+                                <div style="background-color: #f4fbf7; padding: 5px; border-left: 2px solid #4EA674; margin-top: 5px;">
+                                    <strong>Insight AI:</strong> {!! \Illuminate\Support\Str::markdown($emp->report_today->ai_insight ?? '') !!}
+                                </div>
+                            @else
+                                <em class="text-red">Tidak ada laporan kerja yang dikumpulkan.</em>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            @endforeach
+        </tbody>
+    </table>
+
 </body>
 </html>

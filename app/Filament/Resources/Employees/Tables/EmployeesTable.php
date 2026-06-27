@@ -44,8 +44,8 @@ class EmployeesTable
                 \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                \Filament\Tables\Actions\EditAction::make(),
-                \Filament\Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
             ])
             ->recordUrl(fn ($record) => \App\Filament\Resources\Employees\EmployeeResource::getUrl('edit', ['record' => $record]))
             ->toolbarActions([

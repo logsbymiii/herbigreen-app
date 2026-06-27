@@ -124,7 +124,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($laporan) {
             $jam     = Carbon::parse($laporan->created_at)->setTimezone('Asia/Jakarta')->format('H:i');
             $status .= "✅ *Laporan:* Sudah dikirim pukul {$jam} WIB\n";
-            $status .= "📝 *Isi Laporan:*\n_" . $laporan->raw_report . "_\n\n";
+            $status .= "📝 *Ringkasan AI:*\n" . ($laporan->ai_insight ?? 'Belum diproses AI') . "\n\n";
         } else {
             $status .= "❌ *Laporan:* Belum dikirim\n";
         }

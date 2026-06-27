@@ -8,6 +8,9 @@ use App\Jobs\ProcessDailyReportJob;
 use App\Jobs\ProcessSmartDailyReportJob;
 use App\Jobs\ProcessAttendanceJob;
 use App\Jobs\ProcessGmvReportJob;
+use App\Models\Report;
+use App\Models\Attendance;
+use Carbon\Carbon;
 use App\Services\AiResponseService;
 
 class TelegramBotCommandHandler extends BaseBotCommandHandler
@@ -31,6 +34,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 'wfc'     => $this->handleWfh($chatId), // alias /wfh
                 'edit_laporan' => $this->handleEditLaporan($chatId),
                 'edit_profil'  => $this->handleEditProfil($chatId),
+                'status'       => $this->handleStatus($chatId),
                 'gmv'          => $this->handleGmv($chatId, $message),
                 'init_management' => $this->handleInitManagement($chatId),
                 default   => ['status' => false, 'message' => 'Command tidak dikenal'],
@@ -58,7 +62,85 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return $this->handleConversationStep($chatId, $currentStep, $message, $rawUpdate);
         }
 
+        // Coba baca intensi pakai AI jika karyawan sudah terdaftar
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        if ($employee && !empty(trim($message))) {
+            $hasFile = isset($rawUpdate['message']['photo']) || isset($rawUpdate['message']['document']);
+            $today = Carbon::today();
+            $laporan = Report::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            $absen = Attendance::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            
+            $todaysReportContent = $laporan ? $laporan->content : null;
+            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : null;
+            
+            $ai = new AiResponseService();
+            $aiResult = $ai->analyzeIntentAndReply($employee->name, $employee->division->name ?? 'Tim', $message, $hasFile, $todaysReportContent, $todaysAttendanceStatus);
+            
+            $intent = $aiResult['intent'] ?? 'general_chat';
+            $reply = $aiResult['reply'] ?? "Oke sip!";
+            
+            if ($intent === 'status') {
+                return $this->handleStatus($chatId);
+            } elseif ($intent === 'attendance') {
+                return $this->handleAbsen($chatId);
+            } elseif ($intent === 'report') {
+                return $this->handleLapor($chatId);
+            } elseif ($intent === 'gmv_report') {
+                return $this->handleGmv($chatId, $message);
+            } else {
+                $this->sendMessage($chatId, $reply);
+                return ['status' => true];
+            }
+        }
+
         return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
+    }
+
+    private function handleStatus(int | string $chatId): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+
+        if (!$employee) {
+            $this->sendMessage($chatId, "❌ Nomor Telegram kamu belum terdaftar.\nKetik /daftar untuk mendaftar dulu ya!");
+            return ['status' => true];
+        }
+
+        $today   = Carbon::today();
+        $laporan = Report::where('employee_id', $employee->id)
+            ->whereDate('created_at', $today)
+            ->latest()
+            ->first();
+
+        $absen = Attendance::where('employee_id', $employee->id)
+            ->whereDate('created_at', $today)
+            ->latest()
+            ->first();
+
+        $status  = "📊 *Status Laporan Hari Ini*\n";
+        $status .= "👤 {$employee->name} — {$employee->division->name}\n";
+        $status .= "📅 " . $today->translatedFormat('l, d F Y') . "\n";
+        $status .= str_repeat("─", 28) . "\n";
+
+        if ($laporan) {
+            $jam     = Carbon::parse($laporan->created_at)->setTimezone('Asia/Jakarta')->format('H:i');
+            $status .= "✅ *Laporan:* Sudah dikirim pukul {$jam} WIB\n";
+        } else {
+            $status .= "❌ *Laporan:* Belum dikirim\n";
+        }
+
+        if ($absen) {
+            $tipeAbsen = ucfirst($absen->type ?? 'absen');
+            $status   .= "📋 *Kehadiran:* {$tipeAbsen}\n";
+        } else {
+            $status .= "🟢 *Kehadiran:* Hadir (Belum ada catatan khusus)\n";
+        }
+
+        if (!$laporan) {
+            $status .= "\n⚠️ Jangan lupa kirim laporan hari ini ya!";
+        }
+
+        $this->sendMessage($chatId, $status);
+        return ['status' => true];
     }
 
     private function handleWfhApproval(int | string $chatId, string $action, string $wfhId): array

@@ -46,6 +46,35 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             return $this->handleConversationStep($phone, $currentStep, $message, $rawUpdate);
         }
 
+        // Coba baca intensi pakai AI jika karyawan sudah terdaftar
+        $employee = Employee::where('phone', $phone)->first();
+        if ($employee && !empty(trim($message))) {
+            $hasFile = isset($rawUpdate['message']['type']) && in_array($rawUpdate['message']['type'], ['image', 'file']);
+            $today = Carbon::today();
+            $laporan = Report::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            $absen = Attendance::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            
+            $todaysReportContent = $laporan ? $laporan->content : null;
+            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : null;
+            
+            $ai = new AiResponseService();
+            $aiResult = $ai->analyzeIntentAndReply($employee->name, $employee->division->name ?? 'Tim', $message, $hasFile, $todaysReportContent, $todaysAttendanceStatus);
+            
+            $intent = $aiResult['intent'] ?? 'general_chat';
+            $reply = $aiResult['reply'] ?? "Oke sip!";
+            
+            if ($intent === 'status') {
+                return $this->handleStatus($phone);
+            } elseif ($intent === 'attendance') {
+                return $this->handleAbsen($phone);
+            } elseif ($intent === 'report') {
+                return $this->handleLapor($phone);
+            } else {
+                $this->sendMessage($phone, $reply);
+                return ['status' => true];
+            }
+        }
+
         return ['status' => false, 'message' => 'Tidak ada command atau conversation aktif'];
     }
 

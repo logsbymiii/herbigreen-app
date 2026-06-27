@@ -41,23 +41,46 @@ class AttendancesTable
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
-                \Filament\Tables\Columns\ImageColumn::make('proof_path')
+                \Filament\Tables\Columns\ImageColumn::make('bukti_kehadiran')
+                    ->label('Bukti Kehadiran')
+                    ->disk('r2')
+                    ->visibility('private')
+                    ->square()
+                    ->getStateUsing(function ($record) {
+                        if ($record->type !== 'hadir' || !$record->proof_path) return null;
+                        return $record->proof_path;
+                    })
+                    ->action(
+                        \Filament\Actions\Action::make('viewBuktiKehadiran')
+                            ->label('Lihat Bukti')
+                            ->icon('heroicon-o-eye')
+                            ->modalHeading('Bukti Kehadiran')
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Tutup')
+                            ->modalContent(function ($record) {
+                                if (!$record->proof_path) {
+                                    return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
+                                }
+                                $url = str_starts_with($record->proof_path, 'http') 
+                                    ? $record->proof_path 
+                                    : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
+                                return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
+                            })
+                    ),
+                \Filament\Tables\Columns\ImageColumn::make('bukti_surat')
                     ->label('Bukti Surat')
                     ->disk('r2')
                     ->visibility('private')
                     ->square()
                     ->getStateUsing(function ($record) {
-                        if (!$record->proof_path) return null;
-                        if (str_starts_with($record->proof_path, 'http')) {
-                            return $record->proof_path;
-                        }
+                        if ($record->type === 'hadir' || !$record->proof_path) return null;
                         return $record->proof_path;
                     })
                     ->action(
-                        \Filament\Actions\Action::make('viewProof')
+                        \Filament\Actions\Action::make('viewBuktiSurat')
                             ->label('Lihat Bukti')
                             ->icon('heroicon-o-eye')
-                            ->modalHeading('Bukti Kehadiran')
+                            ->modalHeading('Bukti Surat')
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Tutup')
                             ->modalContent(function ($record) {

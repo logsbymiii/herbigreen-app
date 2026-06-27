@@ -51,11 +51,11 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         if ($employee && !empty(trim($message))) {
             $hasFile = isset($rawUpdate['message']['type']) && in_array($rawUpdate['message']['type'], ['image', 'file']);
             $today = Carbon::today();
-            $laporan = Report::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
-            $absen = Attendance::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            $laporan = \App\Models\SmartDailyReport::where('employee_id', $employee->id)->whereDate('report_date', $today->format('Y-m-d'))->latest()->first();
+            $absen = Attendance::where('employee_id', $employee->id)->whereDate('date', $today->format('Y-m-d'))->latest()->first();
             
             $todaysReportContent = $laporan ? $laporan->content : null;
-            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : null;
+            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : "Telah tercatat kehadiran: BELUM ABSEN SAMA SEKALI";
             
             $ai = new AiResponseService();
             $aiResult = $ai->analyzeIntentAndReply($employee->name, $employee->division->name ?? 'Tim', $message, $hasFile, $todaysReportContent, $todaysAttendanceStatus);
@@ -115,13 +115,13 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
         }
 
         $today   = Carbon::today();
-        $laporan = Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', $today)
+        $laporan = \App\Models\SmartDailyReport::where('employee_id', $employee->id)
+            ->whereDate('report_date', $today->format('Y-m-d'))
             ->latest()
             ->first();
 
         $absen = Attendance::where('employee_id', $employee->id)
-            ->whereDate('created_at', $today)
+            ->whereDate('date', $today->format('Y-m-d'))
             ->latest()
             ->first();
 
@@ -141,7 +141,7 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
             $tipeAbsen = ucfirst($absen->type ?? 'absen');
             $status   .= "📋 *Kehadiran:* {$tipeAbsen}\n";
         } else {
-            $status .= "🟢 *Kehadiran:* Hadir\n";
+            $status .= "🔴 *Kehadiran:* Belum Absen\n";
         }
 
         if (!$laporan && !$absen) {

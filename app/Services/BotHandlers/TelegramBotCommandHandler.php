@@ -67,11 +67,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         if ($employee && !empty(trim($message))) {
             $hasFile = isset($rawUpdate['message']['photo']) || isset($rawUpdate['message']['document']);
             $today = Carbon::today();
-            $laporan = Report::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
-            $absen = Attendance::where('employee_id', $employee->id)->whereDate('created_at', $today)->latest()->first();
+            $laporan = \App\Models\SmartDailyReport::where('employee_id', $employee->id)->whereDate('report_date', $today->format('Y-m-d'))->latest()->first();
+            $absen = Attendance::where('employee_id', $employee->id)->whereDate('date', $today->format('Y-m-d'))->latest()->first();
             
             $todaysReportContent = $laporan ? $laporan->content : null;
-            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : null;
+            $todaysAttendanceStatus = $absen ? "Telah tercatat kehadiran: " . ucfirst($absen->type) : "Telah tercatat kehadiran: BELUM ABSEN SAMA SEKALI";
             
             $ai = new AiResponseService();
             $aiResult = $ai->analyzeIntentAndReply($employee->name, $employee->division->name ?? 'Tim', $message, $hasFile, $todaysReportContent, $todaysAttendanceStatus);
@@ -106,13 +106,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         }
 
         $today   = Carbon::today();
-        $laporan = Report::where('employee_id', $employee->id)
-            ->whereDate('created_at', $today)
+        $laporan = \App\Models\SmartDailyReport::where('employee_id', $employee->id)
+            ->whereDate('report_date', $today->format('Y-m-d'))
             ->latest()
             ->first();
 
         $absen = Attendance::where('employee_id', $employee->id)
-            ->whereDate('created_at', $today)
+            ->whereDate('date', $today->format('Y-m-d'))
             ->latest()
             ->first();
 
@@ -132,7 +132,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $tipeAbsen = ucfirst($absen->type ?? 'absen');
             $status   .= "📋 *Kehadiran:* {$tipeAbsen}\n";
         } else {
-            $status .= "🟢 *Kehadiran:* Hadir (Belum ada catatan khusus)\n";
+            $status .= "🔴 *Kehadiran:* Belum Absen\n";
         }
 
         if (!$laporan) {

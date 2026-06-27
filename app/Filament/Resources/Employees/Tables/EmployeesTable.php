@@ -41,6 +41,9 @@ class EmployeesTable
                     ->sortable(),
             ])
             ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('division_id')
+                    ->label('Divisi')
+                    ->relationship('division', 'name'),
                 \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

@@ -135,7 +135,7 @@
     </div>
 
     <!-- SECTION 1: EXECUTIVE SUMMARY -->
-    <div class="section-title">Section 1: Executive Summary & Absensi</div>
+    <div class="section-title">Executive Summary & Absensi</div>
     
     <table class="stats-table">
         <tr>
@@ -168,7 +168,7 @@
     @endif
 
     <!-- SECTION 2: FINANCIAL & PERFORMANCE -->
-    <div class="section-title">Section 2: Financial & Performance</div>
+    <div class="section-title">Financial & Performance</div>
     
     <div style="margin-bottom: 10px;">
         <strong style="font-size: 14px;">Total GMV Perusahaan: <span class="text-green">Rp {{ number_format($stats['total_gmv'], 0, ',', '.') }}</span></strong>
@@ -203,7 +203,7 @@
     @endif
 
     <!-- SECTION 3: WALL OF SHAME -->
-    <div class="section-title" style="background-color: #991b1b;">Section 3: Evaluasi Kedisiplinan</div>
+    <div class="section-title" style="background-color: #991b1b;">Evaluasi Kedisiplinan</div>
 
     @if(count($wfhList) > 0 || count($lateList) > 0 || count($noReportList) > 0)
         <table class="data-table wos-table">
@@ -245,7 +245,7 @@
     @endif
 
     <!-- SECTION 4: DETAIL LAPORAN DIVISI -->
-    <div class="section-title">Section 4: Detail Laporan Divisi (Lampiran)</div>
+    <div class="section-title">Detail Laporan Divisi (Lampiran)</div>
     
     <table class="data-table">
         <thead>

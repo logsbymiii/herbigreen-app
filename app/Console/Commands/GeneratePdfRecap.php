@@ -106,7 +106,8 @@ class GeneratePdfRecap extends Command
                         . "1. Penilaian performa tim hari ini (Singkat).\n"
                         . "2. Highlight divisi atau individu yang mencapai target bagus.\n"
                         . "3. Red Flags (Masalah/Blocker) yang butuh atensi.\n\n"
-                        . "Format menggunakan Markdown yang rapi (bold, bullet points). Gunakan bahasa Indonesia profesional tapi ringkas.";
+                        . "Format menggunakan Markdown yang rapi (bold, bullet points). Gunakan bahasa Indonesia profesional tapi ringkas.\n"
+                        . "PENTING: DILARANG KERAS MENGGUNAKAN EMOJI SAMA SEKALI karena tidak disupport oleh PDF (akan menjadi tanda tanya). Gunakan teks biasa saja.";
 
                 $geminiResponse = \Illuminate\Support\Facades\Http::timeout(60)->withHeaders([
                     'Content-Type' => 'application/json',
@@ -117,7 +118,12 @@ class GeneratePdfRecap extends Command
                 ]);
 
                 if ($geminiResponse->successful()) {
-                    $executiveSummary = $geminiResponse->json('candidates.0.content.parts.0.text') ?? $executiveSummary;
+                    $rawContent = $geminiResponse->json('candidates.0.content.parts.0.text') ?? $executiveSummary;
+                    // Hapus karakter emoji dengan regex sebagai perlindungan ekstra untuk dompdf
+                    $cleanedContent = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $rawContent); // Hapus emoji modern
+                    $cleanedContent = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $cleanedContent); // Hapus simbol lama
+                    
+                    $executiveSummary = $cleanedContent;
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Executive Summary Error: " . $e->getMessage());

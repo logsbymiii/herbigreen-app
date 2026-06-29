@@ -135,7 +135,7 @@
     </div>
 
     <!-- SECTION 1: EXECUTIVE SUMMARY -->
-    <div class="section-title">📊 Section 1: Executive Summary & Absensi</div>
+    <div class="section-title">Section 1: Executive Summary & Absensi</div>
     
     <table class="stats-table">
         <tr>
@@ -149,7 +149,7 @@
             </td>
             <td>
                 <span class="stats-value" style="color: #991b1b;">{{ $stats['alpa'] }}</span>
-                <span class="stats-label">Alpa / Mangkir</span>
+                <span class="stats-label">Alpha</span>
             </td>
             <td>
                 <span class="stats-value">{{ $stats['laporan'] }}</span>
@@ -160,7 +160,7 @@
 
     @if(!empty($executiveSummary))
     <div class="ai-summary">
-        <strong>📝 Ringkasan AI:</strong>
+        <strong>Ringkasan AI:</strong>
         <div style="margin-top: 5px;">
             {!! $executiveSummary !!}
         </div>
@@ -168,7 +168,7 @@
     @endif
 
     <!-- SECTION 2: FINANCIAL & PERFORMANCE -->
-    <div class="section-title">💰 Section 2: Financial & Performance</div>
+    <div class="section-title">Section 2: Financial & Performance</div>
     
     <div style="margin-bottom: 10px;">
         <strong style="font-size: 14px;">Total GMV Perusahaan: <span class="text-green">Rp {{ number_format($stats['total_gmv'], 0, ',', '.') }}</span></strong>
@@ -203,7 +203,7 @@
     @endif
 
     <!-- SECTION 3: WALL OF SHAME -->
-    <div class="section-title" style="background-color: #991b1b;">🚨 Section 3: Evaluasi Kedisiplinan</div>
+    <div class="section-title" style="background-color: #991b1b;">Section 3: Evaluasi Kedisiplinan</div>
 
     @if(count($wfhList) > 0 || count($lateList) > 0 || count($noReportList) > 0)
         <table class="data-table wos-table">
@@ -218,7 +218,7 @@
                 @foreach($wfhList as $emp)
                 <tr>
                     <td class="font-bold">{{ $emp->name }}</td>
-                    <td>🏠 Status WFH</td>
+                    <td>Status WFH</td>
                     <td>Harap dipantau produktivitas remote-nya.</td>
                 </tr>
                 @endforeach
@@ -226,7 +226,7 @@
                 @foreach($lateList as $emp)
                 <tr>
                     <td class="font-bold">{{ $emp->name }}</td>
-                    <td class="text-red">⏰ Datang Terlambat</td>
+                    <td class="text-red">Datang Terlambat</td>
                     <td>Absen masuk tercatat pada {{ \Carbon\Carbon::parse($emp->attendance_today->clocked_in_at)->format('H:i') }} WIB (Toleransi 08:00 WIB).</td>
                 </tr>
                 @endforeach
@@ -234,18 +234,18 @@
                 @foreach($noReportList as $emp)
                 <tr>
                     <td class="font-bold">{{ $emp->name }}</td>
-                    <td class="text-red">❌ Tidak Lapor</td>
+                    <td class="text-red">Tidak Lapor</td>
                     <td>Terkena auto-cutoff pkl 19:00 karena tidak mengumpulkan Laporan Sore.</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <div class="wos-empty">🎉 Luar biasa! Semua karyawan disiplin, tidak ada keterlambatan dan absen mangkir hari ini.</div>
+        <div class="wos-empty">Luar biasa! Semua karyawan disiplin, tidak ada keterlambatan dan absen alpha hari ini.</div>
     @endif
 
     <!-- SECTION 4: DETAIL LAPORAN DIVISI -->
-    <div class="section-title">📝 Section 4: Detail Laporan Divisi (Lampiran)</div>
+    <div class="section-title">Section 4: Detail Laporan Divisi (Lampiran)</div>
     
     <table class="data-table">
         <thead>

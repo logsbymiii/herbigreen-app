@@ -55,9 +55,9 @@
                     <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 8px;"></div> Lengkap</div>
                     <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b; margin-right: 8px;"></div> Ada izin/sakit</div>
                 </div>
-                <div>
+                <!-- <div>
                     {{ $this->exportAction }}
-                </div>
+                </div> -->
             </div>
         </div>
 

@@ -54,8 +54,12 @@ class ListAttendances extends ListRecords
     #[On('filterByDate')]
     public function handleFilterByDate($date)
     {
-        $this->tableFilters['date']['date_from'] = $date;
-        $this->tableFilters['date']['date_until'] = $date;
-        $this->resetTable();
+        if (is_array($date) && isset($date['date'])) {
+            $date = $date['date'];
+        }
+        $this->tableFilters['date'] = [
+            'date_from' => $date,
+            'date_until' => $date,
+        ];
     }
 }

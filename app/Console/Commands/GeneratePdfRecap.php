@@ -119,9 +119,9 @@ class GeneratePdfRecap extends Command
 
                 if ($geminiResponse->successful()) {
                     $rawContent = $geminiResponse->json('candidates.0.content.parts.0.text') ?? $executiveSummary;
-                    // Hapus karakter emoji dengan regex sebagai perlindungan ekstra untuk dompdf
-                    $cleanedContent = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $rawContent); // Hapus emoji modern
-                    $cleanedContent = preg_replace('/[\x{2600}-\x{27BF}]/u', '', $cleanedContent); // Hapus simbol lama
+                    // Hapus SEMUA karakter selain huruf, angka, tanda baca, dan spasi (Whitelist approach)
+                    // Ini dijamin 100% menghapus semua emoji dan simbol aneh yang bikin DomPDF error '?'
+                    $cleanedContent = preg_replace('/[^\p{L}\p{N}\p{P}\p{Z}\n\r]/u', '', $rawContent);
                     
                     $executiveSummary = $cleanedContent;
                 }

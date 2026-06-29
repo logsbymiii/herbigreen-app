@@ -57,6 +57,7 @@ class AttendanceCalendarWidget extends Widget implements HasActions
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
         
         $attendances = Attendance::whereBetween('date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])->get();
+        $totalEmployees = \App\Models\Employee::where('is_active', true)->count();
 
         $this->calendarData = [];
         
@@ -67,10 +68,13 @@ class AttendanceCalendarWidget extends Widget implements HasActions
             
             $status = 'none';
             if ($dayAttendances->count() > 0) {
-                if ($dayAttendances->whereIn('type', ['sakit', 'izin'])->count() > 0) {
-                    $status = 'warning'; // Ada izin/sakit
+                $attendedCount = $dayAttendances->unique('employee_id')->count();
+                $hasIzinSakit = $dayAttendances->whereIn('type', ['sakit', 'izin'])->count() > 0;
+                
+                if ($attendedCount < $totalEmployees) {
+                    $status = $hasIzinSakit ? 'warning' : 'incomplete';
                 } else {
-                    $status = 'success'; // Lengkap hadir
+                    $status = $hasIzinSakit ? 'warning' : 'success';
                 }
             }
 

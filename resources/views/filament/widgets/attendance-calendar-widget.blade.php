@@ -43,6 +43,8 @@
                             <div style="width: 6px; height: 6px; border-radius: 50%; background-color: {{ $day['isToday'] ? '#ffffff' : '#10b981' }}; margin-top: 4px;"></div>
                         @elseif($day['status'] === 'warning')
                             <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b; margin-top: 4px; {{ $day['isToday'] ? 'box-shadow: 0 0 0 1px white;' : '' }}"></div>
+                        @elseif($day['status'] === 'incomplete')
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #ef4444; margin-top: 4px; {{ $day['isToday'] ? 'box-shadow: 0 0 0 1px white;' : '' }}"></div>
                         @else
                             <div style="width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; opacity: 0;"></div>
                         @endif
@@ -52,8 +54,9 @@
 
             <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 0.75rem; justify-content: space-between; align-items: center;">
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 8px;"></div> Lengkap</div>
-                    <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b; margin-right: 8px;"></div> Ada izin/sakit</div>
+                    <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10b981; margin-right: 6px;"></div> Hadir Semua</div>
+                    <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #ef4444; margin-right: 6px;"></div> Belum Lengkap</div>
+                    <div style="display: flex; align-items: center;"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: #f59e0b; margin-right: 6px;"></div> Ada Izin/Sakit</div>
                 </div>
                 <!-- <div>
                     {{ $this->exportAction }}

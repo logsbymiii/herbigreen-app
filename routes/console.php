@@ -26,5 +26,5 @@ Schedule::command('app:deadline-lapor-sore')->dailyAt('19:00');
 // 6. Reminder Lapor Malam (Khusus Host Sesi Malam) (22:30)
 Schedule::command('app:reminder-lapor-malam')->dailyAt('22:30');
 
-// 7. Rekap Laporan PDF ke Mas Jodi (00:00)
-Schedule::command('app:generate-pdf-recap')->dailyAt('00:00');
+// 7. Rekap Laporan PDF ke Mas Jodi (23:59)
+Schedule::command('app:generate-pdf-recap')->dailyAt('23:59');

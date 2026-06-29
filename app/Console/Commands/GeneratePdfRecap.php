@@ -13,7 +13,7 @@ class GeneratePdfRecap extends Command
      */
     protected $signature = 'app:generate-pdf-recap';
 
-    protected $description = 'Generate rekap harian PDF dan kirim ke Mas Jodi jam 00:00';
+    protected $description = 'Generate rekap harian PDF dan kirim ke Mas Jodi jam 23:59';
 
     public function handle()
     {

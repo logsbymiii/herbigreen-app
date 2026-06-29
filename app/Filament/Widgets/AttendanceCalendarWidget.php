@@ -23,6 +23,13 @@ class AttendanceCalendarWidget extends Widget implements HasActions
     public $currentMonth;
     public $currentYear;
     public $calendarData = [];
+    public $selectedDate = null;
+
+    public function selectDate($date)
+    {
+        $this->selectedDate = $date;
+        $this->dispatch('filterByDate', date: $date);
+    }
 
     public function mount()
     {

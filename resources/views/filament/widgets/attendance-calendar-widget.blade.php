@@ -36,8 +36,13 @@
                 @foreach($calendarData as $day)
                     @php
                         $dayDateStr = \Carbon\Carbon::createFromDate($currentYear, $currentMonth, $day['date'])->format('Y-m-d');
+                        $isSelected = $selectedDate === $dayDateStr;
+                        $isTodayAndSelected = $day['isToday'] && $isSelected;
+                        $bgStyle = $day['isToday'] 
+                            ? 'background-color: #10b981; color: white; font-weight: bold;' . ($isSelected ? ' outline: 2px solid #059669; outline-offset: 2px;' : '')
+                            : ($isSelected ? 'background-color: #e5e7eb; border: 1px solid #d1d5db; color: #111827; font-weight: bold;' : 'color: inherit;');
                     @endphp
-                    <a wire:click="$dispatch('filterByDate', { date: '{{ $dayDateStr }}' })" class="{{ $day['isToday'] ? '' : 'hover:bg-gray-100 dark:hover:bg-gray-800' }}" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; {{ $day['isToday'] ? 'background-color: #10b981; color: white; font-weight: bold;' : 'color: inherit;' }}">
+                    <a wire:click="selectDate('{{ $dayDateStr }}')" class="{{ $isSelected || $day['isToday'] ? '' : 'hover:bg-gray-100 dark:hover:bg-gray-800' }}" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; {{ $bgStyle }}">
                         <span>{{ $day['date'] }}</span>
                         @if($day['status'] === 'success')
                             <div style="width: 6px; height: 6px; border-radius: 50%; background-color: {{ $day['isToday'] ? '#ffffff' : '#10b981' }}; margin-top: 4px;"></div>

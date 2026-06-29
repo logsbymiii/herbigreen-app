@@ -473,9 +473,15 @@ _(Ketik *batal* untuk membatalkan)_");
                     return ['status' => true];
                 }
             }
+            $isHostLive = strtolower($employee->division->name ?? '') === 'host live';
+            if ($isHostLive) {
+                $this->conversationState->setCurrentStep($chatId, 'awaiting_host_sessions', ['type' => $type]);
+                $this->sendMessage($chatId, "🎙️ *Host Live*\n\nHari ini kamu bertugas untuk berapa sesi Live?\n\n1. Satu Sesi\n2. Dua Sesi (Pagi & Malam)\n\nBalas dengan angka 1 atau 2.");
+                return ['status' => true];
+            }
             
             $this->conversationState->clearState($chatId);
-            $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}");
+            $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}&sessions=1");
             $keyboard = [
                 'inline_keyboard' => [
                     [
@@ -497,6 +503,44 @@ _(Ketik *batal* untuk membatalkan)_");
         // Kalau Sakit atau Izin, tanya alasannya
         $this->conversationState->setCurrentStep($chatId, 'awaiting_absen_reason', ['type' => $type]);
         $this->sendMessage($chatId, "📝 Silakan ketik alasan {$type} Anda.\n\n*(Opsional: Anda juga bisa melampirkan foto surat dokter/bukti izin dengan caption alasannya)*");
+        return ['status' => true];
+    }
+
+    private function processHostSessions(int | string $chatId, string $message): array
+    {
+        $employee = Employee::where('telegram_id', $chatId)->first();
+        if (!$employee) {
+            $this->conversationState->clearState($chatId);
+            return ['status' => false];
+        }
+
+        $choice = trim($message);
+        if (!in_array($choice, ['1', '2'])) {
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1 atau 2.");
+            return ['status' => true];
+        }
+
+        $tempData = $this->conversationState->getTempData($chatId);
+        $type = $tempData['type'] ?? 'hadir';
+
+        $this->conversationState->clearState($chatId);
+        
+        $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}&sessions={$choice}");
+        $keyboard = [
+            'inline_keyboard' => [
+                [
+                    ['text' => '📸 Buka Kamera Absen', 'web_app' => ['url' => $appUrl]]
+                ]
+            ]
+        ];
+        
+        $botToken = env('TELEGRAM_BOT_TOKEN');
+        \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+            'chat_id' => $chatId,
+            'text' => "📍 *Absen 1-Klik Aktif!* (Target: {$choice} Sesi)\n\nKlik tombol di bawah untuk membuka kamera absen. Lokasi dan foto akan dikirim otomatis! 🚀",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => json_encode($keyboard)
+        ]);
         return ['status' => true];
     }
 
@@ -750,6 +794,7 @@ _(Ketik *batal* untuk membatalkan)_");
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
             'awaiting_report_text'  => $this->processReportText($chatId, $message),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
+            'awaiting_host_sessions'=> $this->processHostSessions($chatId, $message),
             'awaiting_absen_reason' => $this->processAbsenReason($chatId, $message, $rawUpdate ?? []),
             'awaiting_edit_report_text'  => $this->processEditReportText($chatId, $message),
             'awaiting_edit_profile_choice' => $this->processEditProfileChoice($chatId, $message),

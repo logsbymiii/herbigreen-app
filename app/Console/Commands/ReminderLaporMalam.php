@@ -31,11 +31,19 @@ class ReminderLaporMalam extends Command
         
         $count = 0;
         foreach ($employees as $emp) {
-            $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
-                ->whereDate('report_date', now()->format('Y-m-d'))
-                ->exists();
+            $absenHariIni = \App\Models\Attendance::where('employee_id', $emp->id)
+                ->whereDate('date', now()->format('Y-m-d'))
+                ->whereIn('type', ['hadir', 'wfh', 'telat'])
+                ->first();
+            
+            $expectedSessions = $absenHariIni ? $absenHariIni->expected_sessions : 1;
+            
+            $gmvCount = \App\Models\GmvReport::where('employee_id', $emp->id)
+                ->whereDate('live_date', now()->format('Y-m-d'))->count();
+                
+            $belumLengkap = $gmvCount < $expectedSessions;
 
-            if (!$sudahLapor) {
+            if ($belumLengkap) {
                 $provider->sendMessage($emp->{$identifierColumn}, "🌙 Selamat Malam, {$emp->name}. Mohon jangan lupa untuk mengirimkan laporan GMV shift malam Anda sebelum mengakhiri pekerjaan. Terima kasih. 😴");
                 $count++;
             }

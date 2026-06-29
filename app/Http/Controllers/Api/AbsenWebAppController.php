@@ -25,6 +25,7 @@ class AbsenWebAppController extends Controller
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');
         $photoBase64 = $request->input('photo');
+        $expectedSessions = $request->input('sessions', 1);
 
         if (!$telegramId || !$lat || !$lng || !$photoBase64) {
             return response()->json(['status' => false, 'message' => 'Data tidak lengkap']);
@@ -115,6 +116,7 @@ class AbsenWebAppController extends Controller
             'date'        => now()->format('Y-m-d'),
             'clocked_in_at' => now(),
             'proof_path'  => $filename,
+            'expected_sessions' => $expectedSessions,
         ]);
 
         // Kirim Notif ke Telegram User

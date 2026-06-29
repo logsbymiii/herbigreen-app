@@ -30,7 +30,17 @@ class ReminderLaporAwal extends Command
         $count = 0;
         foreach ($employees as $emp) {
             $isHostLive = strtolower($emp->division->name ?? '') === 'host live';
-            if ($isHostLive) continue; // Host live ada jam sendiri
+            if ($isHostLive) {
+                $absenHariIni = \App\Models\Attendance::where('employee_id', $emp->id)
+                    ->whereDate('date', now()->format('Y-m-d'))
+                    ->whereIn('type', ['hadir', 'wfh', 'telat'])
+                    ->first();
+                $expectedSessions = $absenHariIni ? $absenHariIni->expected_sessions : 1;
+                if ($expectedSessions < 2) continue; // 1 sesi = malam
+                $gmvCount = \App\Models\GmvReport::where('employee_id', $emp->id)
+                    ->whereDate('live_date', now()->format('Y-m-d'))->count();
+                if ($gmvCount >= 1) continue; // Sudah lapor sesi 1
+            }
             
             $sudahLapor = \App\Models\SmartDailyReport::where('employee_id', $emp->id)
                 ->whereDate('report_date', now()->format('Y-m-d'))

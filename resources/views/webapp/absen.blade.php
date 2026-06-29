@@ -242,6 +242,7 @@
         
         let userLocation = null;
         const absenType = new URLSearchParams(window.location.search).get('type') || 'hadir';
+        const sessions = new URLSearchParams(window.location.search).get('sessions') || 1;
         
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             greeting.innerText = "Halo, " + tg.initDataUnsafe.user.first_name + " 👋";
@@ -317,7 +318,8 @@
                 latitude: userLocation.lat,
                 longitude: userLocation.lng,
                 photo: photoData,
-                uid: new URLSearchParams(window.location.search).get('uid')
+                uid: new URLSearchParams(window.location.search).get('uid'),
+                sessions: sessions
             };
 
             try {

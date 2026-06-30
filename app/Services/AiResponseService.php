@@ -11,8 +11,8 @@ class AiResponseService
 
     public function __construct()
     {
-        // Ganti jadi pakai Groq
-        $this->apiKey = env('GROQ_API_KEY');
+        // Ganti jadi pakai Koboi LiteLLM
+        $this->apiKey = env('LLM_API_KEY');
     }
 
     /**
@@ -295,9 +295,9 @@ Format JSON yang diharapkan:
         }
 
         try {
-            // Groq API Endpoint (OpenAI compatible)
+            // Koboi LiteLLM Endpoint
             $payload = [
-                'model' => 'llama-3.3-70b-versatile',
+                'model' => 'gemini-1.5-flash',
                 'messages' => [
                     [
                         'role' => 'system',
@@ -319,7 +319,7 @@ Format JSON yang diharapkan:
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post('https://api.groq.com/openai/v1/chat/completions', $payload);
+            ])->timeout(60)->post('https://litellm.koboi2026.biz.id/v1/chat/completions', $payload);
 
             if ($response->successful()) {
                 $text = $response->json('choices.0.message.content');

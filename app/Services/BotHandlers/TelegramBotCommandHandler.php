@@ -669,7 +669,7 @@ _(Ketik *batal* untuk membatalkan)_");
                 $fileContent = file_get_contents($urlFile);
                 if ($fileContent) {
                     // Validasi wajah menggunakan AI (Gemini Vision)
-                    $geminiKey = env('GEMINI_API_KEY');
+                    $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
                     $isFaceValid = true;
                     if ($geminiKey) {
                         try {

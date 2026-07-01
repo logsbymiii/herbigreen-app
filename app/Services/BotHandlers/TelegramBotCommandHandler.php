@@ -940,7 +940,6 @@ _Contoh: 14.00-15.00_");
                 'live_date'       => $tempData['live_date'],
             ]);
 
-            // Tambahkan juga ke SmartDailyReport supaya tampil di Laporan per Divisi dan gak masuk Wall of Shame
             $platformDisplay = $tempData['platform'] ?? 'Lainnya';
             $accountDisplay = $tempData['account_name'] ?? '';
             $timeDisplay = '';
@@ -948,23 +947,22 @@ _Contoh: 14.00-15.00_");
                 $timeDisplay = " ({$tempData['live_start']}-{$tempData['live_end']})";
             }
             $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
+            $pesanan = $tempData['order_count'] ?? 0;
+            $produk_terjual = $tempData['product_sold'] ?? 0;
+            $penonton = $tempData['viewers_count'] ?? 0;
+            $penonton_tertinggi = $tempData['highest_viewers'] ?? 0;
             
-            $smartReport = \App\Models\SmartDailyReport::firstOrNew([
-                'employee_id' => $tempData['employee_id'],
-                'report_date' => now()->format('Y-m-d'),
-            ]);
+            $newReportText = "Melaporkan data sesi Live Streaming:\n"
+                           . "- Platform: {$platformDisplay}\n"
+                           . "- Akun: {$accountDisplay}{$timeDisplay}\n"
+                           . "- Total Omset/GMV: Rp {$gmvFormatted}\n"
+                           . "- Jumlah Pesanan: {$pesanan}\n"
+                           . "- Produk Terjual: {$produk_terjual}\n"
+                           . "- Total Dilihat: {$penonton}\n"
+                           . "- Penonton Tertinggi: {$penonton_tertinggi}\n";
             
-            $newReportText = "Melaporkan GMV Rp {$gmvFormatted} untuk live {$platformDisplay} {$accountDisplay}{$timeDisplay}";
-            
-            if ($smartReport->exists) {
-                $smartReport->raw_report .= "\n" . $newReportText;
-            } else {
-                $smartReport->raw_report = $newReportText;
-                $pesanan = $tempData['order_count'] ?? 0;
-                $smartReport->ai_insight = "Mencetak omset Rp {$gmvFormatted} dari {$pesanan} pesanan di platform {$platformDisplay}.";
-                $smartReport->extracted_metrics = ['tipe' => 'Otomatis dari GMV'];
-            }
-            $smartReport->save();
+            // Lemparkan ke Smart AI untuk dibikinkan Executive Summary yang panjang dan rapi
+            \App\Jobs\ProcessSmartDailyReportJob::dispatch($tempData['employee_id'], $newReportText, (string)$chatId);
 
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");

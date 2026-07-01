@@ -292,6 +292,30 @@ class FonnteBotCommandHandler extends BaseBotCommandHandler
                 'live_date'       => $tempData['live_date'],
             ]);
 
+            $platformDisplay = $tempData['platform'] ?? 'Lainnya';
+            $accountDisplay = $tempData['account_name'] ?? '';
+            $timeDisplay = '';
+            if (!empty($tempData['live_start']) && !empty($tempData['live_end'])) {
+                $timeDisplay = " ({$tempData['live_start']}-{$tempData['live_end']})";
+            }
+            $gmvFormatted = number_format($tempData['gmv_amount'], 0, ',', '.');
+            $pesanan = $tempData['order_count'] ?? 0;
+            $produk_terjual = $tempData['product_sold'] ?? 0;
+            $penonton = $tempData['viewers_count'] ?? 0;
+            $penonton_tertinggi = $tempData['highest_viewers'] ?? 0;
+            
+            $newReportText = "Melaporkan data sesi Live Streaming:\n"
+                           . "- Platform: {$platformDisplay}\n"
+                           . "- Akun: {$accountDisplay}{$timeDisplay}\n"
+                           . "- Total Omset/GMV: Rp {$gmvFormatted}\n"
+                           . "- Jumlah Pesanan: {$pesanan}\n"
+                           . "- Produk Terjual: {$produk_terjual}\n"
+                           . "- Total Dilihat: {$penonton}\n"
+                           . "- Penonton Tertinggi: {$penonton_tertinggi}\n";
+            
+            // Lemparkan ke Smart AI untuk dibikinkan Executive Summary yang panjang dan rapi
+            \App\Jobs\ProcessSmartDailyReportJob::dispatch($tempData['employee_id'], $newReportText, (string)$phone);
+
             $this->conversationState->clearState($phone);
             $this->sendMessage($phone, "✅ Mantap! Laporan GMV berhasil disimpan ke sistem.");
             \Illuminate\Support\Facades\Log::info("KOKI GMV: User confirm YA. Disimpan.");

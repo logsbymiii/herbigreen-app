@@ -88,6 +88,50 @@ class AbsenWebAppController extends Controller
 
         $filename = 'attendances/webapp_' . Str::random(20) . '.' . $imageType;
         
+        // --- VALIDASI WAJAH AI GEMINI ---
+        $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
+        $isFaceValid = false; // SUPER KETAT
+        if ($geminiKey) {
+            try {
+                $geminiResponse = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                    'contents' => [[
+                        'parts' => [
+                            [
+                                'inline_data' => [
+                                    'mime_type' => 'image/jpeg',
+                                    'data' => $imageParts[1],
+                                ]
+                            ],
+                            [
+                                'text' => "Apakah ada wajah manusia (selfie) yang terlihat jelas di foto ini? Jawab HANYA dengan kata 'YA' atau 'TIDAK' tanpa tambahan kalimat apapun."
+                            ]
+                        ]
+                    ]]
+                ]);
+
+                if ($geminiResponse->successful()) {
+                    $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
+                    \Illuminate\Support\Facades\Log::info("KOKI AI ABSEN WEBAPP: Gemini menjawab -> " . $aiAnswer);
+                    if (str_contains($aiAnswer, 'YA')) {
+                        $isFaceValid = true;
+                    }
+                } else {
+                    \Illuminate\Support\Facades\Log::error("KOKI AI ABSEN WEBAPP GAGAL: " . $geminiResponse->body());
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via AI WebApp: " . $e->getMessage());
+            }
+        }
+
+        if (!$isFaceValid) {
+            return response()->json([
+                'status' => false, 
+                'message' => 'ABSEN DITOLAK! Wajah kamu tidak terlihat dengan jelas. Pastikan foto selfie menampilkan wajahmu.'
+            ]);
+        }
+
         try {
             Storage::disk('r2')->put($filename, $imageBase64, 'public');
         } catch (\Exception $e) {

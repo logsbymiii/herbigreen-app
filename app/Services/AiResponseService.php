@@ -297,7 +297,7 @@ Format JSON yang diharapkan:
         try {
             // Koboi LiteLLM Endpoint
             $payload = [
-                'model' => 'gemini-2.5-flash',
+                'model' => 'gpt-4o-mini',
                 'messages' => [
                     [
                         'role' => 'system',

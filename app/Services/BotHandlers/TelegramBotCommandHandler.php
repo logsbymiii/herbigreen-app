@@ -668,6 +668,47 @@ _(Ketik *batal* untuk membatalkan)_");
             try {
                 $fileContent = file_get_contents($urlFile);
                 if ($fileContent) {
+                    // Validasi wajah menggunakan AI (Gemini Vision)
+                    $geminiKey = env('GEMINI_API_KEY');
+                    $isFaceValid = true;
+                    if ($geminiKey) {
+                        try {
+                            $base64Image = base64_encode($fileContent);
+                            $geminiResponse = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
+                                'Content-Type' => 'application/json',
+                            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                                'contents' => [[
+                                    'parts' => [
+                                        [
+                                            'inline_data' => [
+                                                'mime_type' => 'image/jpeg',
+                                                'data' => $base64Image,
+                                            ]
+                                        ],
+                                        [
+                                            'text' => "Apakah ada wajah manusia (selfie) yang terlihat jelas di foto ini? Jawab HANYA dengan 'YA' atau 'TIDAK'."
+                                        ]
+                                    ]
+                                ]]
+                            ]);
+
+                            if ($geminiResponse->successful()) {
+                                $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
+                                if (str_contains($aiAnswer, 'TIDAK')) {
+                                    $isFaceValid = false;
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via AI: " . $e->getMessage());
+                            // Fallback: anggap valid jika API error
+                        }
+                    }
+
+                    if (!$isFaceValid) {
+                        $this->sendMessage($chatId, "❌ *Absen Ditolak!*\n\nWajah kamu tidak terlihat dengan jelas di foto ini. Pastikan kamu mengambil foto selfie yang menampilkan wajahmu.\n\n📸 Silakan *kirim ulang foto selfie* Anda.");
+                        return ['status' => true];
+                    }
+
                     $fileName = 'attendances/' . uniqid('absen_') . '.jpg';
                     \Illuminate\Support\Facades\Storage::disk('r2')->put($fileName, $fileContent);
                     $proofPath = $fileName;

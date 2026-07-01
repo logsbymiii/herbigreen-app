@@ -686,7 +686,7 @@ _(Ketik *batal* untuk membatalkan)_");
                                             ]
                                         ],
                                         [
-                                            'text' => "Apakah ada wajah manusia (selfie) yang terlihat jelas di foto ini? Jawab HANYA dengan 'YA' atau 'TIDAK'."
+                                            'text' => "Apakah ada wajah manusia (selfie) yang terlihat jelas di foto ini? Jawab HANYA dengan kata 'YA' atau 'TIDAK' tanpa tambahan kalimat apapun."
                                         ]
                                     ]
                                 ]]
@@ -694,9 +694,14 @@ _(Ketik *batal* untuk membatalkan)_");
 
                             if ($geminiResponse->successful()) {
                                 $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
-                                if (str_contains($aiAnswer, 'TIDAK')) {
+                                \Illuminate\Support\Facades\Log::info("KOKI AI ABSEN: Gemini menjawab -> " . $aiAnswer);
+                                
+                                // Lebih galak: kalau nggak secara tegas jawab YA, tolak!
+                                if (!str_contains($aiAnswer, 'YA')) {
                                     $isFaceValid = false;
                                 }
+                            } else {
+                                \Illuminate\Support\Facades\Log::error("KOKI AI ABSEN GAGAL: " . $geminiResponse->body());
                             }
                         } catch (\Exception $e) {
                             \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via AI: " . $e->getMessage());

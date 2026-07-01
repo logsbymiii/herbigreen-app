@@ -960,7 +960,8 @@ _Contoh: 14.00-15.00_");
                 $smartReport->raw_report .= "\n" . $newReportText;
             } else {
                 $smartReport->raw_report = $newReportText;
-                $smartReport->ai_insight = "Host Live telah menginput omset harian.";
+                $pesanan = $tempData['order_count'] ?? 0;
+                $smartReport->ai_insight = "Mencetak omset Rp {$gmvFormatted} dari {$pesanan} pesanan di platform {$platformDisplay}.";
                 $smartReport->extracted_metrics = ['tipe' => 'Otomatis dari GMV'];
             }
             $smartReport->save();

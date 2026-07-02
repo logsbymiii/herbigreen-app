@@ -276,15 +276,8 @@
         function handleNativeCamera(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
-            // ANTI CHEAT: Tolak kalau ngambil dari galeri (foto lama)
-            const fileTime = file.lastModified;
-            const now = Date.now();
-            if (now - fileTime > 300000) { // Lebih dari 5 menit
-                event.target.value = ''; // Reset
-                tg.showAlert("❌ KETAHUAN! Dilarang upload foto dari Galeri. Wajib selfie langsung sekarang juga!");
-                return;
-            }
+            // Dihapus sementara: Cek lastModified bikin error di beberapa HP yang jam sistemnya ngaco
+            // (Live selfie dianggap foto lama)
             
             const reader = new FileReader();
             reader.onload = function(e) {

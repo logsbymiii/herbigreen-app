@@ -685,7 +685,7 @@ _(Ketik *batal* untuk membatalkan)_");
                                             ]
                                         ],
                                         [
-                                            'text' => "Apakah ada wajah manusia (selfie) yang terlihat jelas di foto ini? Jawab HANYA dengan kata 'YA' atau 'TIDAK' tanpa tambahan kalimat apapun."
+                                            'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
                                         ]
                                     ]
                                 ]]

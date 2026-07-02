@@ -87,7 +87,14 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 return $this->handleLapor($chatId);
             } elseif ($intent === 'gmv_report') {
                 return $this->handleGmv($chatId, $message);
+            } elseif ($intent === 'edit_report') {
+                return $this->handleEditLaporan($chatId);
+            } elseif ($intent === 'edit_profil') {
+                return $this->handleEditProfil($chatId);
             } else {
+                if (empty(trim($reply))) {
+                    $reply = "Oke sip! Maaf, sistem kurang paham maksudnya, bisa diulangi dengan kalimat lain? 😊";
+                }
                 $this->sendMessage($chatId, $reply);
                 return ['status' => true];
             }

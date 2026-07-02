@@ -452,8 +452,24 @@ _(Ketik *batal* untuk membatalkan)_");
             }
         }
 
-        // Validasi: laporan tidak boleh kosong atau terlalu pendek
-        if (strlen($cleanMessage) < 10) {
+        // Ambil URL foto jika ada
+        $photoUrl = null;
+        if (isset($rawUpdate['message']['photo'])) {
+            $photoId = end($rawUpdate['message']['photo'])['file_id'];
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'file_id' => $photoId
+            ]);
+            if ($response->successful()) {
+                $filePath = $response->json('result.file_path');
+                if ($filePath) {
+                    $photoUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                }
+            }
+        }
+
+        // Validasi: laporan tidak boleh kosong atau terlalu pendek (Kecuali ada foto)
+        if (strlen($cleanMessage) < 10 && !$photoUrl) {
             $this->sendMessage($chatId, "⚠️ Laporan terlalu singkat, *{$employee->name}*.\nHarap tuliskan minimal 10 karakter yang mendeskripsikan aktivitas Anda hari ini.");
             return ['status' => true];
         }
@@ -461,7 +477,7 @@ _(Ketik *batal* untuk membatalkan)_");
         // Fitur baru: Karyawan boleh mengirim laporan berkali-kali dalam sehari.
         // Laporan akan di-append/digabung oleh ProcessSmartDailyReportJob.
         
-        ProcessSmartDailyReportJob::dispatchSync($employee->id, $cleanMessage, (string) $chatId);
+        ProcessSmartDailyReportJob::dispatchSync($employee->id, $cleanMessage, (string) $chatId, $photoUrl);
         $this->conversationState->clearState($chatId);
 
         // AI generate konfirmasi yang beda tiap hari

@@ -19,7 +19,8 @@ class ProcessSmartDailyReportJob implements ShouldQueue
     public function __construct(
         public int $employeeId,
         public string $rawReportText,
-        public string $senderId
+        public string $senderId,
+        public ?string $photoUrl = null
     ) {}
 
     public function handle(): void
@@ -68,15 +69,42 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                         . "  \"kendala\": \"Tuliskan kendalanya di sini jika ada...\"\n"
                         . "}";
 
-                $llmResponse = Http::timeout(45)->withHeaders([
+                $messageContent = [];
+                
+                if ($this->photoUrl) {
+                    $prompt .= "\n\n[INFO TAMBAHAN]: User juga melampirkan sebuah FOTO/SCREENSHOT laporan. Tolong BACA TEKS, ANGKA, atau DATA APAPUN di dalam foto tersebut dengan teliti dan GABUNGKAN isinya ke dalam ringkasan (ai_insight) dan metrik (extracted_metrics). Jika foto berisi data yang relevan, anggap itu sebagai bagian dari laporan utama mereka.";
+                    
+                    try {
+                        $imageContent = \Illuminate\Support\Facades\Http::get($this->photoUrl)->body();
+                        $base64Image = base64_encode($imageContent);
+                        
+                        $messageContent[] = [
+                            'type' => 'text',
+                            'text' => $prompt
+                        ];
+                        $messageContent[] = [
+                            'type' => 'image_url',
+                            'image_url' => [
+                                'url' => "data:image/jpeg;base64,{$base64Image}"
+                            ]
+                        ];
+                    } catch (\Exception $e) {
+                        Log::error("Gagal mendownload foto laporan di SmartDailyReportJob: " . $e->getMessage());
+                        $messageContent = $prompt;
+                    }
+                } else {
+                    $messageContent = $prompt;
+                }
+
+                $llmResponse = Http::timeout(60)->withHeaders([
                     'Content-Type' => 'application/json',
                     'Authorization' => "Bearer {$llmKey}"
                 ])->post($llmUrl, [
-                    'model' => $llmModel,
+                    'model' => env('LLM_VISION_MODEL', 'gpt-4o'),
                     'messages' => [
                         [
                             'role' => 'user',
-                            'content' => $prompt
+                            'content' => $messageContent
                         ]
                     ],
                     'temperature' => 0.2

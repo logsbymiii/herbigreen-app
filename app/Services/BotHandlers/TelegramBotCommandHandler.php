@@ -46,6 +46,11 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return $this->handleWfhApproval($chatId, strtoupper($matches[1]), $matches[2]);
         }
 
+        // Cek intercept untuk approval Izin/Sakit dari HR
+        if (preg_match('/^(ACC|TOLAK)\s+(SAKIT|IZIN)\s+(\d+)$/i', trim($message), $matches)) {
+            return $this->handleLeaveApproval($chatId, strtoupper($matches[1]), strtolower($matches[2]), $matches[3]);
+        }
+
         // Cek apakah user mau batalin proses
         $msgLower = strtolower(trim($message));
         if (strlen($msgLower) <= 25 && (in_array($msgLower, ['batal', 'cancel', 'gak jadi', 'stop']) || str_contains($msgLower, 'gak jadi') || str_contains($msgLower, 'batal'))) {
@@ -186,6 +191,55 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $userMsg = $action === 'ACC' 
             ? "🎉 *PENGUMUMAN*\n\nPengajuan WFH kamu untuk tanggal {$tanggal} *DISETUJUI* oleh HR. \nJangan lupa /absen Hadir pakai opsi WFH ya!"
             : "❌ *PENGUMUMAN*\n\nMaaf, pengajuan WFH kamu untuk tanggal {$tanggal} *DITOLAK* oleh HR. Harap tetap bekerja dari kantor.";
+            
+        $this->sendMessage($employee->telegram_id, $userMsg);
+
+        return ['status' => true];
+    }
+
+    private function handleLeaveApproval(int | string $chatId, string $action, string $type, string $leaveId): array
+    {
+        // Pastikan yang nge-chat adalah HR (Simau)
+        $simauId = env('SIMAU_TELEGRAM_ID');
+        if ($chatId != $simauId) {
+            $this->sendMessage($chatId, "❌ Hanya HR yang bisa menyetujui Izin/Sakit.");
+            return ['status' => true];
+        }
+
+        $leaveRequest = \App\Models\LeaveRequest::find($leaveId);
+        if (!$leaveRequest) {
+            $this->sendMessage($chatId, "❌ Pengajuan " . strtoupper($type) . " #{$leaveId} tidak ditemukan.");
+            return ['status' => true];
+        }
+
+        if ($leaveRequest->status !== 'pending') {
+            $this->sendMessage($chatId, "⚠️ Pengajuan " . strtoupper($type) . " #{$leaveId} sudah berstatus: {$leaveRequest->status}");
+            return ['status' => true];
+        }
+
+        $leaveRequest->status = $action === 'ACC' ? 'approved' : 'rejected';
+        $leaveRequest->responded_at = now();
+        $leaveRequest->save();
+
+        $employee = $leaveRequest->employee;
+        $tanggal = \Carbon\Carbon::parse($leaveRequest->request_date)->format('d M Y');
+
+        // Balas ke HR
+        $statusText = $action === 'ACC' ? 'Disetujui ✅' : 'Ditolak ❌';
+        $this->sendMessage($chatId, "Sip! Pengajuan " . strtoupper($type) . " #{$leaveId} a.n {$employee->name} untuk tanggal {$tanggal} telah *{$statusText}*.");
+
+        // Jika disetujui, otomatis buat record Attendance
+        if ($action === 'ACC') {
+            \App\Jobs\ProcessAttendanceJob::dispatchSync(
+                $employee->id,
+                $leaveRequest->reason,
+                $leaveRequest->type,
+                $leaveRequest->proof_path
+            );
+            $userMsg = "🎉 *PENGUMUMAN*\n\nPengajuan " . strtoupper($type) . " kamu untuk tanggal {$tanggal} *DISETUJUI* oleh HR. Data absensi {$type} kamu hari ini sudah tercatat otomatis.";
+        } else {
+            $userMsg = "❌ *PENGUMUMAN*\n\nMaaf, pengajuan " . strtoupper($type) . " kamu untuk tanggal {$tanggal} *DITOLAK* oleh HR. Silakan hubungi HR untuk info lebih lanjut.";
+        }
             
         $this->sendMessage($employee->telegram_id, $userMsg);
 
@@ -741,43 +795,33 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             try {
                 $fileContent = file_get_contents($urlFile);
                 if ($fileContent) {
-                    // Validasi wajah menggunakan AI (LiteLLM Vision)
-                    $llmKey = env('LLM_VISION_API_KEY');
-                    $llmUrl = env('LLM_BASE_URL', 'https://litellm.koboi2026.biz.id/v1/chat/completions');
-                    $llmModel = env('LLM_VISION_MODEL', 'gpt-4o');
+                    // Validasi wajah menggunakan AI (Google Gemini)
+                    $geminiKey = env('GEMINI_API_KEY');
                     
                     $isFaceValid = false; // Sistem kembali ketat (Bypass mati)
-                    if ($llmKey) {
+                    if ($geminiKey) {
                         try {
                             $base64Image = base64_encode($fileContent);
-                            $llmResponse = \Illuminate\Support\Facades\Http::timeout(20)->withHeaders([
+                            $geminiResponse = \Illuminate\Support\Facades\Http::timeout(20)->withHeaders([
                                 'Content-Type' => 'application/json',
-                                'Authorization' => "Bearer {$llmKey}"
-                            ])->post($llmUrl, [
-                                'model' => $llmModel,
-                                'messages' => [
-                                    [
-                                        'role' => 'user',
-                                        'content' => [
-                                            [
-                                                'type' => 'text',
-                                                'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
-                                            ],
-                                            [
-                                                'type' => 'image_url',
-                                                'image_url' => [
-                                                    'url' => "data:image/jpeg;base64,{$base64Image}"
-                                                ]
+                            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
+                                'contents' => [[
+                                    'parts' => [
+                                        [
+                                            'inline_data' => [
+                                                'mime_type' => 'image/jpeg',
+                                                'data' => $base64Image,
                                             ]
+                                        ],
+                                        [
+                                            'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
                                         ]
                                     ]
-                                ],
-                                'max_tokens' => 10,
-                                'temperature' => 0.0
+                                ]]
                             ]);
 
-                            if ($llmResponse->successful()) {
-                                $aiAnswer = strtoupper(trim($llmResponse->json('choices.0.message.content')));
+                            if ($geminiResponse->successful()) {
+                                $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
                                 \Illuminate\Support\Facades\Log::info("KOBOI AI ABSEN TELEGRAM: Menjawab -> " . $aiAnswer);
                                 
                                 if (!str_contains($aiAnswer, 'YA')) {

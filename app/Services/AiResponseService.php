@@ -8,11 +8,14 @@ use Illuminate\Support\Facades\Log;
 class AiResponseService
 {
     private ?string $apiKey;
+    private string $baseUrl;
+    private string $model;
 
     public function __construct()
     {
-        // Ganti jadi pakai Koboi LiteLLM
-        $this->apiKey = env('LLM_API_KEY');
+        $this->apiKey = env('LLM_CHAT_API_KEY');
+        $this->baseUrl = env('LLM_BASE_URL', 'https://lite.koboillm.com/v1/chat/completions');
+        $this->model = env('LLM_CHAT_MODEL', 'gpt-4o-mini');
     }
 
     /**
@@ -297,7 +300,7 @@ Format JSON yang diharapkan:
         try {
             // Koboi LiteLLM Endpoint
             $payload = [
-                'model' => 'gpt-4o-mini',
+                'model' => $this->model,
                 'messages' => [
                     [
                         'role' => 'system',
@@ -319,7 +322,7 @@ Format JSON yang diharapkan:
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post('https://litellm.koboi2026.biz.id/v1/chat/completions', $payload);
+            ])->timeout(60)->post($this->baseUrl, $payload);
 
             if ($response->successful()) {
                 $text = $response->json('choices.0.message.content');

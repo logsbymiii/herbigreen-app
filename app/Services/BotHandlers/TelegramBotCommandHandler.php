@@ -608,7 +608,7 @@ _(Ketik *batal* untuk membatalkan)_");
         
         $officeLat = env('OFFICE_LATITUDE', -7.6631268);
         $officeLng = env('OFFICE_LONGITUDE', 112.6964359);
-        $officeRadius = env('OFFICE_RADIUS', 50);
+        $officeRadius = env('OFFICE_RADIUS', 200);
 
         // Rumus Haversine buat hitung jarak
         $earthRadius = 6371000; // Meter

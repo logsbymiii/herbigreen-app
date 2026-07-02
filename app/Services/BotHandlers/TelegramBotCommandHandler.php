@@ -886,7 +886,7 @@ _(Ketik *batal* untuk membatalkan)_");
     private function handleConversationStep(int | string $chatId, string $step, string $message, array $rawUpdate = []): array
     {
         $messageLower = strtolower(trim($message));
-        if (preg_match('/\b(batal|cancel|gak jadi|ulang|salah)\b/i', $messageLower) && $step !== 'confirm_registration') {
+        if (strlen($messageLower) <= 25 && preg_match('/\b(batal|cancel|gak jadi|ulang|salah)\b/i', $messageLower) && $step !== 'confirm_registration') {
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "❌ Proses dibatalkan/diulang.\n\nKetik /daftar jika ingin mendaftar ulang dari awal.");
             return ['status' => false, 'message' => 'Process cancelled by user'];

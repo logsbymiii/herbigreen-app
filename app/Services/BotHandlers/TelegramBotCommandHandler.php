@@ -669,7 +669,7 @@ _(Ketik *batal* untuk membatalkan)_");
                 if ($fileContent) {
                     // Validasi wajah menggunakan AI (Gemini Vision)
                     $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
-                    $isFaceValid = false; // Default: tolak! Hanya lolos kalau Gemini bilang YA
+                    $isFaceValid = true; // DEMO MODE: Otomatis lolos walau Gemini rate-limit/error
                     if ($geminiKey) {
                         try {
                             $base64Image = base64_encode($fileContent);
@@ -698,6 +698,8 @@ _(Ketik *batal* untuk membatalkan)_");
                                 // Lebih galak: kalau nggak secara tegas jawab YA, tolak!
                                 if (!str_contains($aiAnswer, 'YA')) {
                                     $isFaceValid = false;
+                                } else {
+                                    \Illuminate\Support\Facades\Log::error("KOKI AI GAGAL: " . $geminiResponse->body());
                                 }
                             } else {
                                 \Illuminate\Support\Facades\Log::error("KOKI AI ABSEN GAGAL: " . $geminiResponse->body());

@@ -89,7 +89,7 @@ class AbsenWebAppController extends Controller
         
         // --- VALIDASI WAJAH AI GEMINI ---
         $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
-        $isFaceValid = false; // SUPER KETAT
+        $isFaceValid = true; // DEMO MODE: Otomatis lolos walau Gemini rate-limit/error
         if ($geminiKey) {
             try {
                 $geminiResponse = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([

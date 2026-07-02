@@ -606,8 +606,8 @@ _(Ketik *batal* untuk membatalkan)_");
         $lat = $location['latitude'];
         $lng = $location['longitude'];
         
-        $officeLat = env('OFFICE_LATITUDE', -7.662837363034964);
-        $officeLng = env('OFFICE_LONGITUDE', 112.69715613912979);
+        $officeLat = env('OFFICE_LATITUDE', -7.6631268);
+        $officeLng = env('OFFICE_LONGITUDE', 112.6964359);
         $officeRadius = env('OFFICE_RADIUS', 50);
 
         // Rumus Haversine buat hitung jarak

@@ -209,7 +209,7 @@
                 <div class="inner-circle"></div>
             </div>
             
-            <input type="file" id="native-camera" accept="image/jpeg,image/png,image/jpg" capture="camera" style="display: none;" onchange="handleNativeCamera(event)">
+            <input type="file" id="native-camera" accept="image/jpeg,image/png,image/jpg" capture="user" style="display: none;" onchange="handleNativeCamera(event)">
             <div style="margin-top: 15px; color: #ddd; font-size: 13px; text-decoration: underline; cursor: pointer;" onclick="document.getElementById('native-camera').click()">Kamera layar hitam? Klik disini (Kamera Bawaan)</div>
         </div>
     </div>
@@ -276,6 +276,15 @@
         function handleNativeCamera(event) {
             const file = event.target.files[0];
             if (!file) return;
+            
+            // ANTI CHEAT: Tolak kalau ngambil dari galeri (foto lama)
+            const fileTime = file.lastModified;
+            const now = Date.now();
+            if (now - fileTime > 300000) { // Lebih dari 5 menit
+                event.target.value = ''; // Reset
+                tg.showAlert("❌ KETAHUAN! Dilarang upload foto dari Galeri. Wajib selfie langsung sekarang juga!");
+                return;
+            }
             
             const reader = new FileReader();
             reader.onload = function(e) {

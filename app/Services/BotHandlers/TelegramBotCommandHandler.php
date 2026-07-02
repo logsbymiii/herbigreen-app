@@ -814,7 +814,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                                             ]
                                         ],
                                         [
-                                            'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
+                                            'text' => "Kamu adalah sistem keamanan AI. Analisis foto ini secara KETAT! Apakah ada orang, wajah manusia ASLI, atau bagian tubuh manusia (seperti tangan) di lingkungan kerja/nyata? Jawab 'YA' jika ada indikasi kuat manusia sungguhan. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, layar hitam, ATAU jika ini adalah FOTO DARI SEBUAH LAYAR MONITOR/HP (foto dari foto lain). Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
                                         ]
                                     ]
                                 ]]

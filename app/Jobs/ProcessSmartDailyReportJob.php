@@ -55,13 +55,13 @@ class ProcessSmartDailyReportJob implements ShouldQueue
 
         if ($llmKey) {
             try {
-                $prompt = "Kamu adalah AI analis kinerja karyawan. Karyawan ini berada di divisi: '{$divisionName}'.\n\n"
-                        . "Berikut adalah laporan harian yang mereka kirim (teks mentah, mungkin berisi beberapa update/tambahan dalam sehari):\n"
+                $prompt = "Kamu adalah AI Senior Data Analyst. Karyawan ini berada di divisi: '{$divisionName}'.\n\n"
+                        . "Berikut adalah laporan harian yang mereka kirim (berisi teks, dan mungkin ada tambahan/update):\n"
                         . "```\n{$mergedRawText}\n```\n\n"
-                        . "Tugasmu (SANGAT PENTING: INI DATA KRUSIAL, BACA DENGAN TELITI!):\n"
-                        . "1. Ekstrak SELURUH data kuantitatif dan angka yang relevan tanpa terlewat satu pun (misal: jumlah chat, jumlah video diedit, jumlah pesanan, total sampel, dll). Ubah jadi format key-value JSON yang ringkas. Pastikan kunci (key) HANYA menggunakan bahasa Indonesia dengan format snake_case (contoh: video_baru, logo_dibuat, postingan_diupload). JIKA ada laporan tambahan, GABUNGKAN/AKUMULASIKAN total angkanya secara akurat. JANGAN ADA ANGKA YANG HILANG ATAU SALAH BACA!\n"
-                        . "2. Buatkan ringkasan eksekutif (ai_insight) yang menjabarkan isi laporan secara LENGKAP namun lebih rapi, terstruktur, dan profesional. WAJIB gunakan format Markdown (gunakan bullet points, dan BOLD untuk metrik/angka penting). Rangkum SELURUH poin utama pencapaian dari semua update yang ada secara kronologis atau logis. (JANGAN cuma sekadar memuji/memberi saran pendek, jadikan ini laporan utuh yang layak dibaca manajer).\n"
-                        . "3. Ekstrak kendala atau masalah yang dialami (jika ada) ke dalam key `kendala`. Jika tidak ada kendala, isi dengan null atau string kosong.\n\n"
+                        . "Tugasmu (SANGAT PENTING: INI DATA KRUSIAL, BACA DENGAN TELITI, JADILAH CERDAS & AKURAT!):\n"
+                        . "1. Ekstrak SELURUH data kuantitatif dan angka. Ubah jadi format key-value JSON (contoh: video_baru, logo_dibuat). JIKA ada laporan tambahan, GABUNGKAN/AKUMULASIKAN angkanya secara akurat.\n"
+                        . "2. Buatkan ringkasan eksekutif (ai_insight) menggunakan Markdown. Rangkum SELURUH pencapaian. PENTING: JANGAN PERNAH mengarang data, angka, atau menambah sesi/laporan fiktif (halusinasi) yang tidak ada di dalam teks atau foto asli! Jaga integritas data 100% sesuai fakta dari karyawan.\n"
+                        . "3. Ekstrak kendala atau masalah ke dalam key `kendala`. Jika tidak ada, isi dengan null.\n\n"
                         . "Format balasan WAJIB berupa JSON mentah TANPA markdown (tanpa ```json dll), dengan struktur persis seperti ini:\n"
                         . "{\n"
                         . "  \"extracted_metrics\": {\"kunci\": \"nilai angka/teks ringkas\"},\n"

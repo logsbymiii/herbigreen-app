@@ -257,10 +257,15 @@
                     audio: false 
                 });
                 video.srcObject = stream;
-                // Wajib dipanggil play() khusus untuk iOS/Safari WebView
-                video.play().catch(e => console.log("Play interrupted:", e));
+                video.play().catch(e => console.log(e));
             } catch (err) {
-                tg.showAlert("Gagal buka kamera! Pastikan Telegram punya izin akses kamera HP kamu.");
+                try {
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = fallbackStream;
+                    video.play().catch(e => console.log(e));
+                } catch (err2) {
+                    tg.showAlert("Gagal buka kamera! Pastikan Telegram punya izin akses kamera HP kamu.");
+                }
             }
         }
 

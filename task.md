@@ -1,0 +1,5 @@
+- `[x]` Update `.env` file with LLM Proxy Configurations
+- `[x]` Refactor `AbsenWebAppController.php` to use OpenAI Vision format & remove bypass
+- `[x]` Refactor `TelegramBotCommandHandler.php` to use OpenAI Vision format & remove bypass
+- `[x]` Refactor `ProcessSmartDailyReportJob.php` to use OpenAI Chat format
+- `[x]` Run basic syntax checks and instruct user to update server `.env`

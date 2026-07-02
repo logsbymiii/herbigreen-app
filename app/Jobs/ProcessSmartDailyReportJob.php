@@ -33,7 +33,9 @@ class ProcessSmartDailyReportJob implements ShouldQueue
         }
 
         $divisionName = $employee->division->name;
-        $geminiKey = env('GEMINI_API_KEY');
+        $llmKey = env('LLM_CHAT_API_KEY');
+        $llmUrl = env('LLM_BASE_URL', 'https://litellm.koboi2026.biz.id/v1/chat/completions');
+        $llmModel = env('LLM_CHAT_MODEL', 'gpt-4o');
 
         // Cek apakah sudah ada laporan sebelumnya hari ini untuk digabungkan
         $existingReport = SmartDailyReport::where('employee_id', $this->employeeId)
@@ -50,7 +52,7 @@ class ProcessSmartDailyReportJob implements ShouldQueue
         $aiInsight = "Laporan berhasil diterima.";
         $kendala = null;
 
-        if ($geminiKey) {
+        if ($llmKey) {
             try {
                 $prompt = "Kamu adalah AI analis kinerja karyawan. Karyawan ini berada di divisi: '{$divisionName}'.\n\n"
                         . "Berikut adalah laporan harian yang mereka kirim (teks mentah, mungkin berisi beberapa update/tambahan dalam sehari):\n"
@@ -66,16 +68,22 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                         . "  \"kendala\": \"Tuliskan kendalanya di sini jika ada...\"\n"
                         . "}";
 
-                $geminiResponse = Http::timeout(45)->withHeaders([
+                $llmResponse = Http::timeout(45)->withHeaders([
                     'Content-Type' => 'application/json',
-                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
-                    'contents' => [[
-                        'parts' => [['text' => $prompt]]
-                    ]]
+                    'Authorization' => "Bearer {$llmKey}"
+                ])->post($llmUrl, [
+                    'model' => $llmModel,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => $prompt
+                        ]
+                    ],
+                    'temperature' => 0.2
                 ]);
 
-                if ($geminiResponse->successful()) {
-                    $rawText = $geminiResponse->json('candidates.0.content.parts.0.text');
+                if ($llmResponse->successful()) {
+                    $rawText = $llmResponse->json('choices.0.message.content');
                     $cleanJsonStr = str_replace(['```json', '```'], '', $rawText);
                     $parsed = json_decode(trim($cleanJsonStr), true);
 
@@ -84,13 +92,13 @@ class ProcessSmartDailyReportJob implements ShouldQueue
                         $aiInsight = $parsed['ai_insight'] ?? "Bagus, pertahankan kerjamu hari ini!";
                         $kendala = $parsed['kendala'] ?? null;
                     }
-                    Log::info("KOKI SMART REPORT: Gemini berhasil parsing dan generate Executive Summary.");
+                    Log::info("KOBOI SMART REPORT: Berhasil parsing dan generate Executive Summary.");
                 } else {
-                    Log::error("KOKI SMART REPORT: Gemini API Error! Status: " . $geminiResponse->status() . " Body: " . $geminiResponse->body());
+                    Log::error("KOBOI SMART REPORT GAGAL: Status: " . $llmResponse->status() . " Body: " . $llmResponse->body());
                     $aiInsight = "Catatan diterima (Gagal AI Parse).";
                 }
             } catch (\Exception $e) {
-                Log::error("KOKI SMART REPORT: Gemini gagal (Exception): " . $e->getMessage());
+                Log::error("KOBOI SMART REPORT EXCEPTION: " . $e->getMessage());
                 $aiInsight = "Catatan diterima (AI Exception).";
             }
         }

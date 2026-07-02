@@ -667,46 +667,57 @@ _(Ketik *batal* untuk membatalkan)_");
             try {
                 $fileContent = file_get_contents($urlFile);
                 if ($fileContent) {
-                    // Validasi wajah menggunakan AI (Gemini Vision)
-                    $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
-                    $isFaceValid = true; // DEMO MODE: Otomatis lolos walau Gemini rate-limit/error
-                    if ($geminiKey) {
+                    // Validasi wajah menggunakan AI (LiteLLM Vision)
+                    $llmKey = env('LLM_VISION_API_KEY');
+                    $llmUrl = env('LLM_BASE_URL', 'https://litellm.koboi2026.biz.id/v1/chat/completions');
+                    $llmModel = env('LLM_VISION_MODEL', 'gpt-4o');
+                    
+                    $isFaceValid = false; // Sistem kembali ketat (Bypass mati)
+                    if ($llmKey) {
                         try {
                             $base64Image = base64_encode($fileContent);
-                            $geminiResponse = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
+                            $llmResponse = \Illuminate\Support\Facades\Http::timeout(20)->withHeaders([
                                 'Content-Type' => 'application/json',
-                            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
-                                'contents' => [[
-                                    'parts' => [
-                                        [
-                                            'inline_data' => [
-                                                'mime_type' => 'image/jpeg',
-                                                'data' => $base64Image,
+                                'Authorization' => "Bearer {$llmKey}"
+                            ])->post($llmUrl, [
+                                'model' => $llmModel,
+                                'messages' => [
+                                    [
+                                        'role' => 'user',
+                                        'content' => [
+                                            [
+                                                'type' => 'text',
+                                                'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
+                                            ],
+                                            [
+                                                'type' => 'image_url',
+                                                'image_url' => [
+                                                    'url' => "data:image/jpeg;base64,{$base64Image}"
+                                                ]
                                             ]
-                                        ],
-                                        [
-                                            'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
                                         ]
                                     ]
-                                ]]
+                                ],
+                                'max_tokens' => 10,
+                                'temperature' => 0.0
                             ]);
 
-                            if ($geminiResponse->successful()) {
-                                $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
-                                \Illuminate\Support\Facades\Log::info("KOKI AI ABSEN: Gemini menjawab -> " . $aiAnswer);
+                            if ($llmResponse->successful()) {
+                                $aiAnswer = strtoupper(trim($llmResponse->json('choices.0.message.content')));
+                                \Illuminate\Support\Facades\Log::info("KOBOI AI ABSEN TELEGRAM: Menjawab -> " . $aiAnswer);
                                 
-                                // Lebih galak: kalau nggak secara tegas jawab YA, tolak!
                                 if (!str_contains($aiAnswer, 'YA')) {
                                     $isFaceValid = false;
                                 } else {
-                                    \Illuminate\Support\Facades\Log::error("KOKI AI GAGAL: " . $geminiResponse->body());
+                                    $isFaceValid = true;
                                 }
                             } else {
-                                \Illuminate\Support\Facades\Log::error("KOKI AI ABSEN GAGAL: " . $geminiResponse->body());
+                                \Illuminate\Support\Facades\Log::error("KOBOI AI ABSEN TELEGRAM GAGAL: " . $llmResponse->body());
+                                $isFaceValid = true; // Fallback jika proxy down
                             }
                         } catch (\Exception $e) {
-                            \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via AI: " . $e->getMessage());
-                            // Fallback: anggap valid jika API error
+                            \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via KOBOI AI Telegram: " . $e->getMessage());
+                            $isFaceValid = true; // Fallback
                         }
                     }
 

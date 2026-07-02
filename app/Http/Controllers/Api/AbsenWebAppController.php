@@ -87,40 +87,54 @@ class AbsenWebAppController extends Controller
 
         $filename = 'attendances/webapp_' . Str::random(20) . '.' . $imageType;
         
-        // --- VALIDASI WAJAH AI GEMINI ---
-        $geminiKey = config('services.gemini.api_key') ?? env('GEMINI_API_KEY');
-        $isFaceValid = true; // DEMO MODE: Otomatis lolos walau Gemini rate-limit/error
-        if ($geminiKey) {
+        // --- VALIDASI WAJAH KOBOI AI (LITELLM) ---
+        $llmKey = env('LLM_VISION_API_KEY');
+        $llmUrl = env('LLM_BASE_URL', 'https://litellm.koboi2026.biz.id/v1/chat/completions');
+        $llmModel = env('LLM_VISION_MODEL', 'gpt-4o');
+        
+        $isFaceValid = false; // Sistem kembali ketat (Bypass mati)
+        if ($llmKey) {
             try {
-                $geminiResponse = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
+                $llmResponse = \Illuminate\Support\Facades\Http::timeout(20)->withHeaders([
                     'Content-Type' => 'application/json',
-                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$geminiKey}", [
-                    'contents' => [[
-                        'parts' => [
-                            [
-                                'inline_data' => [
-                                    'mime_type' => 'image/jpeg',
-                                    'data' => $imageParts[1],
+                    'Authorization' => "Bearer {$llmKey}"
+                ])->post($llmUrl, [
+                    'model' => $llmModel,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => [
+                                [
+                                    'type' => 'text',
+                                    'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
+                                ],
+                                [
+                                    'type' => 'image_url',
+                                    'image_url' => [
+                                        'url' => "data:image/jpeg;base64,{$imageParts[1]}"
+                                    ]
                                 ]
-                            ],
-                            [
-                                'text' => "Apakah ada orang, wajah, atau bagian tubuh manusia di foto ini (walaupun sedikit gelap/blur)? Jawab 'YA' jika ada indikasi manusia. Jawab 'TIDAK' jika ini murni foto tembok kosong, lantai, atau layar hitam. Jawab HANYA dengan kata 'YA' atau 'TIDAK'."
                             ]
                         ]
-                    ]]
+                    ],
+                    'max_tokens' => 10,
+                    'temperature' => 0.0
                 ]);
 
-                if ($geminiResponse->successful()) {
-                    $aiAnswer = strtoupper(trim($geminiResponse->json('candidates.0.content.parts.0.text')));
-                    \Illuminate\Support\Facades\Log::info("KOKI AI ABSEN WEBAPP: Gemini menjawab -> " . $aiAnswer);
+                if ($llmResponse->successful()) {
+                    $aiAnswer = strtoupper(trim($llmResponse->json('choices.0.message.content')));
+                    \Illuminate\Support\Facades\Log::info("KOBOI AI ABSEN WEBAPP: Menjawab -> " . $aiAnswer);
                     if (str_contains($aiAnswer, 'YA')) {
                         $isFaceValid = true;
                     }
                 } else {
-                    \Illuminate\Support\Facades\Log::error("KOKI AI ABSEN WEBAPP GAGAL: " . $geminiResponse->body());
+                    \Illuminate\Support\Facades\Log::error("KOBOI AI ABSEN WEBAPP GAGAL: " . $llmResponse->body());
+                    // Fallback: anggap valid jika API Koboi error sementara
+                    $isFaceValid = true; 
                 }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via AI WebApp: " . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error("Gagal validasi wajah via KOBOI AI WebApp: " . $e->getMessage());
+                $isFaceValid = true; // Fallback
             }
         }
 

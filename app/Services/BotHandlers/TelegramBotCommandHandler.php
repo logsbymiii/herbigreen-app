@@ -627,8 +627,7 @@ _(Ketik *batal* untuk membatalkan)_");
 
         if ($distance > $officeRadius && !$isWfh) {
             $this->conversationState->clearState($chatId);
-            $jarak = round($distance);
-            $this->sendMessage($chatId, "❌ *ABSEN DITOLAK!*\n\nKamu terdeteksi berada di luar area kantor (jarakmu {$jarak} meter dari titik kantor, maksimal {$officeRadius} meter).\n\nJika kamu WFH atau tugas luar, pastikan sudah mendapatkan izin dari HR.");
+            $this->sendMessage($chatId, "❌ *ABSEN DITOLAK!*\n\nKamu terdeteksi berada di luar area kantor.\n\nJika kamu WFH atau tugas luar, pastikan sudah mendapatkan izin dari HR.");
             return ['status' => true];
         }
 
@@ -638,7 +637,7 @@ _(Ketik *batal* untuk membatalkan)_");
             'is_wfh' => $isWfh
         ]);
         
-        $msg = $isWfh ? "✅ Lokasi aman! (Mode WFH Aktif)." : "✅ Lokasi aman! (Jarak: ".round($distance)." meter).";
+        $msg = $isWfh ? "✅ Lokasi aman! (Mode WFH Aktif)." : "✅ Lokasi aman!";
         $this->sendMessage($chatId, "{$msg}\n\n📸 Silakan *kirim foto selfie* Anda sebagai bukti kehadiran.");
         return ['status' => true];
     }

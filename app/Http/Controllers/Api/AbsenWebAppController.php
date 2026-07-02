@@ -69,10 +69,9 @@ class AbsenWebAppController extends Controller
         $isAdmin = strtolower($employee->role ?? '') === 'admin';
 
         if ($distance > $officeRadius && !$isWfh && !$isFreelance && !$isAdmin) {
-            $distFormat = number_format($distance, 0, ',', '.');
             return response()->json([
                 'status' => false, 
-                'message' => "ABSEN DITOLAK! Kamu berada di luar area kantor (jarakmu {$distFormat} meter dari pusat kantor, maksimal {$officeRadius}m)."
+                'message' => "ABSEN DITOLAK! Kamu berada di luar area kantor."
             ]);
         }
 
@@ -168,9 +167,9 @@ class AbsenWebAppController extends Controller
             $provider = MessageProviderFactory::create();
             
             if ($attendanceType === 'telat') {
-                $lokasiText = "Telat (Jarak: " . number_format($distance, 0) . "m)";
+                $lokasiText = "Telat (Luar Batas Waktu)";
             } else {
-                $lokasiText = ($isWfh) ? "Hadir (WFH)" : "Hadir (Jarak: " . number_format($distance, 0) . "m)";
+                $lokasiText = ($isWfh) ? "Hadir (WFH)" : "Hadir (Di Kantor)";
             }
             
             if ($isFreelance && $distance > $officeRadius) $lokasiText .= " [Remote/Freelance]";

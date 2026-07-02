@@ -23,7 +23,9 @@ class ReminderLaporMalam extends Command
         $employees = \App\Models\Employee::whereNotNull($identifierColumn)
             ->whereHas('division', function($q) {
                 $q->where('name', 'like', '%Host Live%');
-            })->get();
+            })
+            ->whereIn('shift', ['malam', 'full'])
+            ->get();
             
         $provider = \App\Services\MessageProviderFactory::create();
 

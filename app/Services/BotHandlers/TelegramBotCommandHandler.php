@@ -602,9 +602,13 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 }
             }
             // Divisi Host Live tidak lagi menggunakan pilihan shift, langsung ke WebApp seperti divisi lain
+            $expectedSessions = 1;
+            if (strtolower($employee->division->name ?? '') === 'host live') {
+                $expectedSessions = ($employee->shift === 'full') ? 2 : 1;
+            }
             
             $this->conversationState->clearState($chatId);
-            $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}&sessions=1");
+            $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}&sessions={$expectedSessions}");
             $keyboard = [
                 'inline_keyboard' => [
                     [

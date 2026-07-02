@@ -18,7 +18,19 @@ class EmployeeForm
                     ->relationship('division', 'name')
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->reactive(),
+
+                Select::make('shift')
+                    ->label('Shift (Khusus Host Live)')
+                    ->options([
+                        'pagi' => 'Shift Pagi (1 Sesi)',
+                        'malam' => 'Shift Malam (1 Sesi)',
+                        'full' => 'Shift Full (Pagi & Malam)',
+                    ])
+                    ->hidden(fn (\Filament\Forms\Get $get) => 
+                        \App\Models\Division::find($get('division_id'))?->name !== 'Host Live'
+                    ),
 
                 TextInput::make('name')
                     ->label('Nama Lengkap')

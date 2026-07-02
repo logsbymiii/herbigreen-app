@@ -48,7 +48,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
 
         // Cek apakah user mau batalin proses
         $msgLower = strtolower(trim($message));
-        if (in_array($msgLower, ['batal', 'cancel', 'gak jadi', 'stop']) || str_contains($msgLower, 'gak jadi') || str_contains($msgLower, 'batal')) {
+        if (strlen($msgLower) <= 25 && (in_array($msgLower, ['batal', 'cancel', 'gak jadi', 'stop']) || str_contains($msgLower, 'gak jadi') || str_contains($msgLower, 'batal'))) {
             $this->conversationState->clearState($chatId);
             $this->sendMessage($chatId, "Proses dibatalkan. Silakan ketik /start untuk kembali ke menu utama.");
             return ['status' => true];

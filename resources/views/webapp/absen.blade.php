@@ -192,7 +192,7 @@
 <body>
 
     <div class="video-container">
-        <video id="camera-preview" autoplay playsinline muted></video>
+        <video id="camera-preview" autoplay playsinline webkit-playsinline muted></video>
         
         <div class="overlay-top">
             <h2>Herbigreen HR</h2>
@@ -253,10 +253,12 @@
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    video: { facingMode: 'user' },
                     audio: false 
                 });
                 video.srcObject = stream;
+                // Wajib dipanggil play() khusus untuk iOS/Safari WebView
+                video.play().catch(e => console.log("Play interrupted:", e));
             } catch (err) {
                 tg.showAlert("Gagal buka kamera! Pastikan Telegram punya izin akses kamera HP kamu.");
             }

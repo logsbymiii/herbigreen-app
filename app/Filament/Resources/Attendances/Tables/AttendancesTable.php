@@ -47,7 +47,7 @@ class AttendancesTable
                     ->visibility('private')
                     ->square()
                     ->getStateUsing(function ($record) {
-                        if ($record->type !== 'hadir' || !$record->proof_path) return null;
+                        if (!in_array($record->type, ['hadir', 'wfh']) || !$record->proof_path) return null;
                         return $record->proof_path;
                     })
                     ->action(
@@ -73,7 +73,7 @@ class AttendancesTable
                     ->visibility('private')
                     ->square()
                     ->getStateUsing(function ($record) {
-                        if ($record->type === 'hadir' || !$record->proof_path) return null;
+                        if (!in_array($record->type, ['sakit', 'izin']) || !$record->proof_path) return null;
                         return $record->proof_path;
                     })
                     ->action(

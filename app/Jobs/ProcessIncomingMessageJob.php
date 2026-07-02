@@ -83,6 +83,16 @@ class ProcessIncomingMessageJob implements ShouldQueue
         } elseif ($intent === 'gmv_report') {
             $stateService = new \App\Services\DatabaseConversationState();
             
+            // Cek batasan laporan GMV harian (maksimal 3x)
+            $gmvCount = \App\Models\GmvReport::where('employee_id', $this->employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->count();
+                
+            if ($gmvCount >= 3) {
+                $provider->sendMessage($this->sender, "⚠️ Kamu sudah mengirimkan laporan GMV sebanyak 3 kali hari ini.\nBatas maksimal laporan GMV adalah 3 kali sehari. Terima kasih atas kerja kerasmu!");
+                return;
+            }
+
             $gmvAccount = $analysis['gmv_account'] ?? null;
             $gmvStart = $analysis['gmv_start'] ?? null;
             $gmvEnd = $analysis['gmv_end'] ?? null;

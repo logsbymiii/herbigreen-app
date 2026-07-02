@@ -386,16 +386,25 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             return ['status' => true];
         } elseif ($choice === '3' && $isHostLive) {
             $employee = Employee::where('telegram_id', $chatId)->first();
+            
+            // Cek batasan laporan GMV harian (maksimal 3x)
+            $gmvCount = \App\Models\GmvReport::where('employee_id', $employee->id)
+                ->whereDate('created_at', now()->format('Y-m-d'))
+                ->count();
+                
+            if ($gmvCount >= 3) {
+                $this->sendMessage($chatId, "⚠️ Kamu sudah mengirimkan laporan GMV sebanyak 3 kali hari ini.\nBatas maksimal laporan GMV adalah 3 kali sehari. Terima kasih atas kerja kerasmu!");
+                $this->conversationState->clearState($chatId);
+                return ['status' => true];
+            }
+
             $this->conversationState->setCurrentStep($chatId, 'awaiting_gmv_account', [
                 'employee_id' => $employee->id,
             ]);
-            $this->sendMessage($chatId, "📝 Silakan ketik *nama akun* yang Anda gunakan untuk live.
-
-_Contoh: HERBITOK OFFICIAL_");
+            $this->sendMessage($chatId, "📝 Silakan ketik *nama akun* yang Anda gunakan untuk live.\n\n_Contoh: HERBITOK OFFICIAL_");
             return ['status' => true];
         } else {
-            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1, 2, atau 3.
-_(Ketik *batal* untuk membatalkan)_");
+            $this->sendMessage($chatId, "❌ Pilihan tidak valid. Silakan balas dengan angka 1, 2, atau 3.\n_(Ketik *batal* untuk membatalkan)_");
             return ['status' => true];
         }
     }

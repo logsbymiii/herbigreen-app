@@ -35,19 +35,24 @@ class ProcessAttendanceJob implements ShouldQueue
         $finalPath = null;
 
         if (!empty($this->mediaPath)) {
-            try {
-                $response = Http::withoutVerifying()->timeout(30)->get($this->mediaPath);
+            if (str_starts_with($this->mediaPath, 'http')) {
+                try {
+                    $response = Http::withoutVerifying()->timeout(30)->get($this->mediaPath);
 
-                if ($response->successful()) {
-                    $filename = 'attendances/' . Str::random(30) . '.jpg';
-                    $stored = Storage::disk('r2')->put($filename, $response->body(), 'public');
+                    if ($response->successful()) {
+                        $extension = pathinfo(parse_url($this->mediaPath, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                        $filename = 'attendances/' . Str::random(30) . '.' . $extension;
+                        $stored = Storage::disk('r2')->put($filename, $response->body(), 'public');
 
-                    if ($stored) {
-                        $finalPath = $filename;
+                        if ($stored) {
+                            $finalPath = $filename;
+                        }
                     }
+                } catch (\Exception $e) {
+                    Log::error("KOKI ABSEN ERROR (Download Foto): " . $e->getMessage());
                 }
-            } catch (\Exception $e) {
-                Log::error("KOKI ABSEN ERROR (Download Foto): " . $e->getMessage());
+            } else {
+                $finalPath = $this->mediaPath;
             }
         }
 

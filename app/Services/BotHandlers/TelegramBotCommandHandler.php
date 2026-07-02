@@ -684,8 +684,8 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
         $type = $tempData['type'] ?? 'izin';
         $reason = trim($message);
 
-        if (strlen($reason) < 3 && empty($rawUpdate['message']['photo']) && empty($rawUpdate['message']['document'])) {
-            $this->sendMessage($chatId, "⚠️ Alasan terlalu singkat. Mohon berikan alasan yang jelas.");
+        if (strlen($reason) < 10) {
+            $this->sendMessage($chatId, "⚠️ Alasan terlalu singkat (minimal 10 huruf). Mohon berikan alasan yang lebih jelas.");
             return ['status' => true];
         }
 
@@ -698,8 +698,14 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
             $fileId = $rawUpdate['message']['document']['file_id'];
         }
 
+        if ($type === 'sakit' && !$fileId) {
+            $this->sendMessage($chatId, "❌ Pengajuan Sakit WAJIB melampirkan foto Surat Dokter atau Bukti Berobat. Silakan balas kembali pesan ini dengan melampirkan foto/dokumen beserta caption alasan Anda.");
+            return ['status' => true];
+        }
+
+        $finalPath = null;
+        $botToken = env('TELEGRAM_BOT_TOKEN');
         if ($fileId) {
-            $botToken = env('TELEGRAM_BOT_TOKEN');
             $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
                 'file_id' => $fileId
             ]);
@@ -707,17 +713,58 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                 $filePath = $response->json('result.file_path');
                 if ($filePath) {
                     $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                    try {
+                        $downloadResponse = \Illuminate\Support\Facades\Http::withoutVerifying()->timeout(30)->get($urlFile);
+                        if ($downloadResponse->successful()) {
+                            $extension = pathinfo(parse_url($urlFile, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                            $filename = 'leave_requests/' . \Illuminate\Support\Str::random(30) . '.' . $extension;
+                            $stored = \Illuminate\Support\Facades\Storage::disk('r2')->put($filename, $downloadResponse->body(), 'public');
+                            if ($stored) {
+                                $finalPath = $filename;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("KOKI ABSEN ERROR (Download Foto Sakit): " . $e->getMessage());
+                    }
                 }
             }
         }
 
-        ProcessAttendanceJob::dispatchSync($employee->id, $reason, $type, $urlFile);
-        $this->conversationState->clearState($chatId);
+        $leaveRequest = \App\Models\LeaveRequest::create([
+            'employee_id' => $employee->id,
+            'type'        => $type,
+            'reason'      => $reason,
+            'request_date'=> now()->format('Y-m-d'),
+            'proof_path'  => $finalPath,
+            'status'      => 'pending',
+        ]);
 
-        // AI generate konfirmasi yang kontekstual
-        $ai = new AiResponseService();
-        $konfirmasi = $ai->confirmAbsen($employee->name, $type);
-        $this->sendMessage($chatId, $konfirmasi);
+        $this->conversationState->clearState($chatId);
+        $this->sendMessage($chatId, "⏳ Pengajuan " . strtoupper($type) . " Anda sedang diproses dan menunggu persetujuan HR. Anda akan menerima notifikasi jika disetujui atau ditolak.");
+
+        // Forward ke HR
+        $simauId = env('SIMAU_TELEGRAM_ID');
+        if ($simauId) {
+            $hrText = "📩 *Pengajuan " . strtoupper($type) . " Baru*\n\n"
+                    . "Karyawan: {$employee->name}\n"
+                    . "Alasan: {$reason}\n\n"
+                    . "Balas pesan ini dengan:\n"
+                    . "`ACC " . strtoupper($type) . " {$leaveRequest->id}` untuk menyetujui\n"
+                    . "`TOLAK " . strtoupper($type) . " {$leaveRequest->id}` untuk menolak";
+            
+            if ($fileId) {
+                // Send photo directly using fileId
+                \Illuminate\Support\Facades\Http::post("https://api.telegram.org/bot{$botToken}/sendPhoto", [
+                    'chat_id' => $simauId,
+                    'photo' => $fileId,
+                    'caption' => $hrText,
+                    'parse_mode' => 'Markdown'
+                ]);
+            } else {
+                $this->sendMessage($simauId, $hrText);
+            }
+        }
+
         return ['status' => true];
     }
     

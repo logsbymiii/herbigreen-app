@@ -19,7 +19,7 @@ class EmployeeForm
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->reactive(),
+                    ->live(),
 
                 Select::make('shift')
                     ->label('Shift (Khusus Host Live)')
@@ -28,7 +28,7 @@ class EmployeeForm
                         'malam' => 'Shift Malam (1 Sesi)',
                         'full' => 'Shift Full (Pagi & Malam)',
                     ])
-                    ->hidden(fn (\Filament\Forms\Get $get) => 
+                    ->hidden(fn ($get) => 
                         \App\Models\Division::find($get('division_id'))?->name !== 'Host Live'
                     ),
 

@@ -208,6 +208,9 @@
             <div class="shutter-btn disabled" id="shutter-btn" onclick="takePhotoAndSubmit()">
                 <div class="inner-circle"></div>
             </div>
+            
+            <input type="file" id="native-camera" accept="image/*" capture="user" style="display: none;" onchange="handleNativeCamera(event)">
+            <div style="margin-top: 15px; color: #ddd; font-size: 13px; text-decoration: underline; cursor: pointer;" onclick="document.getElementById('native-camera').click()">Kamera layar hitam? Klik disini (Kamera Bawaan)</div>
         </div>
     </div>
     
@@ -269,6 +272,27 @@
             }
         }
 
+        let customPhotoData = null;
+        function handleNativeCamera(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    customPhotoData = canvas.toDataURL('image/jpeg', 0.8);
+                    takePhotoAndSubmit(true);
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
         function initLocation() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -301,8 +325,8 @@
             }
         }
 
-        async function takePhotoAndSubmit() {
-            if (shutterBtn.classList.contains('disabled')) return;
+        async function takePhotoAndSubmit(isNative = false) {
+            if (shutterBtn.classList.contains('disabled') && !isNative) return;
             if (!userLocation) {
                 tg.showAlert("Tunggu lokasi GPS terkunci dulu!");
                 return;
@@ -310,18 +334,18 @@
 
             loading.classList.add('active');
             
-            // Draw video frame to canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            
-            // Mirror canvas because front camera is mirrored
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Get base64 JPEG
-            const photoData = canvas.toDataURL('image/jpeg', 0.8);
+            let photoData = null;
+            if (isNative) {
+                photoData = customPhotoData;
+            } else {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                photoData = canvas.toDataURL('image/jpeg', 0.8);
+            }
 
             // Prepare payload
             const payload = {

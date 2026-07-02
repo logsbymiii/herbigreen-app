@@ -209,7 +209,7 @@
                 <div class="inner-circle"></div>
             </div>
             
-            <input type="file" id="native-camera" accept="image/*" capture="user" style="display: none;" onchange="handleNativeCamera(event)">
+            <input type="file" id="native-camera" accept="image/jpeg,image/png,image/jpg" capture="camera" style="display: none;" onchange="handleNativeCamera(event)">
             <div style="margin-top: 15px; color: #ddd; font-size: 13px; text-decoration: underline; cursor: pointer;" onclick="document.getElementById('native-camera').click()">Kamera layar hitam? Klik disini (Kamera Bawaan)</div>
         </div>
     </div>

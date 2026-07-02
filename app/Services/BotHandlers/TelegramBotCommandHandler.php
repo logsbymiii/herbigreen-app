@@ -400,7 +400,7 @@ _(Ketik *batal* untuk membatalkan)_");
         }
     }
 
-    private function processReportText(int | string $chatId, string $message): array
+    private function processReportText(int | string $chatId, string $message, array $rawUpdate = []): array
     {
         $employee = Employee::where('telegram_id', $chatId)->first();
 
@@ -409,8 +409,50 @@ _(Ketik *batal* untuk membatalkan)_");
             return ['status' => false];
         }
 
-        // Validasi: laporan tidak boleh kosong atau terlalu pendek
         $cleanMessage = trim($message);
+
+        // Jika user melampirkan file PDF, kita baca dulu teksnya
+        $fileId = null;
+        if (isset($rawUpdate['message']['document'])) {
+            $mimeType = $rawUpdate['message']['document']['mime_type'] ?? '';
+            $fileName = $rawUpdate['message']['document']['file_name'] ?? '';
+            
+            if ($mimeType === 'application/pdf' || str_ends_with(strtolower($fileName), '.pdf')) {
+                $fileId = $rawUpdate['message']['document']['file_id'];
+            }
+        }
+
+        if ($fileId) {
+            $this->sendMessage($chatId, "⏳ Membaca teks dari dokumen PDF Anda...");
+            $botToken = env('TELEGRAM_BOT_TOKEN');
+            $response = \Illuminate\Support\Facades\Http::get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'file_id' => $fileId
+            ]);
+            if ($response->successful()) {
+                $filePath = $response->json('result.file_path');
+                if ($filePath) {
+                    $urlFile = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+                    $pdfContent = \Illuminate\Support\Facades\Http::get($urlFile)->body();
+                    
+                    try {
+                        $parser = new \Smalot\PdfParser\Parser();
+                        $pdf    = $parser->parseContent($pdfContent);
+                        $pdfText = trim($pdf->getText());
+                        
+                        if (!empty($pdfText)) {
+                            $cleanMessage .= "\n\n[Isi Dokumen PDF]:\n" . $pdfText;
+                        } else {
+                            $this->sendMessage($chatId, "⚠️ PDF Anda tidak memiliki teks yang bisa dibaca (mungkin hasil scan/gambar).");
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("Gagal parsing PDF di TelegramBotCommandHandler: " . $e->getMessage());
+                        $this->sendMessage($chatId, "⚠️ Gagal membaca dokumen PDF Anda.");
+                    }
+                }
+            }
+        }
+
+        // Validasi: laporan tidak boleh kosong atau terlalu pendek
         if (strlen($cleanMessage) < 10) {
             $this->sendMessage($chatId, "⚠️ Laporan terlalu singkat, *{$employee->name}*.\nHarap tuliskan minimal 10 karakter yang mendeskripsikan aktivitas Anda hari ini.");
             return ['status' => true];
@@ -857,7 +899,7 @@ _(Ketik *batal* untuk membatalkan)_");
             'confirm_registration'  => $this->processConfirmation($chatId, $message),
             'awaiting_wfh_reason'   => $this->processWfhReason($chatId, $message),
             'awaiting_report_type'  => $this->processReportType($chatId, $message, $rawUpdate ?? []),
-            'awaiting_report_text'  => $this->processReportText($chatId, $message),
+            'awaiting_report_text'  => $this->processReportText($chatId, $message, $rawUpdate ?? []),
             'awaiting_absen_type'   => $this->processAbsenType($chatId, $message),
             'awaiting_host_sessions'=> $this->processHostSessions($chatId, $message),
             'awaiting_absen_reason' => $this->processAbsenReason($chatId, $message, $rawUpdate ?? []),

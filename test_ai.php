@@ -6,22 +6,24 @@ $kernel->bootstrap();
 
 use App\Services\AiResponseService;
 
-$ai = new AiResponseService();
-$reflection = new \ReflectionClass($ai);
-$keyProp = $reflection->getProperty('apiKey');
-$keyProp->setAccessible(true);
-$keyProp->setValue($ai, 'sk-eavYEGWB7evW5BBAKEB2rA');
+use App\Jobs\ProcessSmartDailyReportJob;
+use App\Models\Employee;
+use App\Models\Division;
 
-$urlProp = $reflection->getProperty('baseUrl');
-$urlProp->setAccessible(true);
-$urlProp->setValue($ai, 'https://lite.koboillm.com/v1/chat/completions');
+// Create dummy division and employee if not exists
+$div = Division::firstOrCreate(['name' => 'Editor Konten']);
+$emp = Employee::firstOrCreate(
+    ['telegram_id' => '12345678'],
+    ['name' => 'Test Employee', 'division_id' => $div->id, 'phone' => '081234567890']
+);
 
-$modelProp = $reflection->getProperty('model');
-$modelProp->setAccessible(true);
-$modelProp->setValue($ai, 'gpt-4o-mini');
+putenv('LLM_CHAT_API_KEY=sk-eavYEGWB7evW5BBAKEB2rA');
+putenv('LLM_BASE_URL=https://lite.koboillm.com/v1/chat/completions');
+putenv('LLM_CHAT_MODEL=gpt-4o-mini');
 
-$result = $ai->analyzeIntentAndReply('helmi', 'Tim', 'aku mau ubah profil dong', false, null, 'BELUM ABSEN SAMA SEKALI');
+$job = new ProcessSmartDailyReportJob($emp->id, "Hari ini saya mengedit 5 video pendek dan membuat 2 logo.", "12345678");
+$job->handle();
 
-echo "Intent: " . $result['intent'] . "\n";
-echo "Reply: " . $result['reply'] . "\n";
-var_dump($result);
+$report = \App\Models\SmartDailyReport::where('employee_id', $emp->id)->latest()->first();
+echo "AI Insight: " . $report->ai_insight . "\n";
+

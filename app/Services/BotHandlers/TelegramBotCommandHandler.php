@@ -601,12 +601,7 @@ class TelegramBotCommandHandler extends BaseBotCommandHandler
                     return ['status' => true];
                 }
             }
-            $isHostLive = strtolower($employee->division->name ?? '') === 'host live';
-            if ($isHostLive) {
-                $this->conversationState->setCurrentStep($chatId, 'awaiting_host_sessions', ['type' => $type]);
-                $this->sendMessage($chatId, "🎙️ *Host Live*\n\nHari ini kamu bertugas untuk berapa sesi Live?\n\n1. Satu Sesi\n2. Dua Sesi (Pagi & Malam)\n\nBalas dengan angka 1 atau 2.");
-                return ['status' => true];
-            }
+            // Divisi Host Live tidak lagi menggunakan pilihan shift, langsung ke WebApp seperti divisi lain
             
             $this->conversationState->clearState($chatId);
             $appUrl = url("/webapp/absen?type={$type}&uid={$employee->telegram_id}&sessions=1");

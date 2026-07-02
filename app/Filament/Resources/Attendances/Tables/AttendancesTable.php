@@ -46,24 +46,21 @@ class AttendancesTable
                     ->disk('r2')
                     ->visibility('private')
                     ->square()
-                    ->getStateUsing(function ($record) {
-                        if (!in_array($record->type, ['hadir', 'wfh']) || !$record->proof_path) return null;
+                    ->state(function ($record) {
+                        $type = strtolower($record->type ?? '');
+                        if (!in_array($type, ['hadir', 'wfh', 'telat']) || empty($record->proof_path)) return null;
                         return $record->proof_path;
                     })
                     ->action(
                         \Filament\Actions\Action::make('viewBuktiKehadiran')
-                            ->label('Lihat Bukti')
+                            ->label('Lihat Bukti Kehadiran')
                             ->icon('heroicon-o-eye')
                             ->modalHeading('Bukti Kehadiran')
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Tutup')
                             ->modalContent(function ($record) {
-                                if (!$record->proof_path) {
-                                    return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti lampiran</p>');
-                                }
-                                $url = str_starts_with($record->proof_path, 'http') 
-                                    ? $record->proof_path 
-                                    : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
+                                if (empty($record->proof_path)) return new \Illuminate\Support\HtmlString('<p>Tidak ada bukti kehadiran</p>');
+                                $url = str_starts_with($record->proof_path, 'http') ? $record->proof_path : \Illuminate\Support\Facades\Storage::disk('r2')->temporaryUrl($record->proof_path, now()->addMinutes(10));
                                 return new \Illuminate\Support\HtmlString('<img src="' . $url . '" style="width: 100%; border-radius: 8px;" />');
                             })
                     ),
@@ -72,8 +69,9 @@ class AttendancesTable
                     ->disk('r2')
                     ->visibility('private')
                     ->square()
-                    ->getStateUsing(function ($record) {
-                        if (!in_array($record->type, ['sakit', 'izin']) || !$record->proof_path) return null;
+                    ->state(function ($record) {
+                        $type = strtolower($record->type ?? '');
+                        if (!in_array($type, ['sakit', 'izin']) || empty($record->proof_path)) return null;
                         return $record->proof_path;
                     })
                     ->action(
